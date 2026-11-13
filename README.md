@@ -128,7 +128,9 @@ alone - saying so instead of reporting a success the reading would never see.
 
 - `docs/reviews/*.md` - an adversarial review note; stage 6 reports it missing,
   stale, or with no findings (a first review that found nothing did not look).
-- Evidence tiers: a stage where no evidence is `measured` is reported.
+- Evidence tiers: a stage where no evidence is `measured` is reported; stage 4
+  also reads `evidence_tier` from projtruth and reports verified requirements
+  that rest on guesses or untiered evidence.
 - `lifecycle guide` prints what a shallow stage looks like, which is the part a
   checker cannot decide.
 
@@ -253,6 +255,11 @@ Both packs are narrative structure that has to stay consistent while scenes
 are written out of order; that is why the checks are graph checks, not
 spell-check. `lifecycle guide <pack>` prints the full playbook, and the
 template files (`_template.md`) are never read as data.
+
+A pack can also **replace** a generic artifact it makes no sense for. The
+story pack stands in for the architecture and decision checks at stage 2: a
+novel has no architecture document, and its outline, cast and chapters are the
+design. Software and game projects keep the generic checks.
 
 ## Craft, not just structure
 

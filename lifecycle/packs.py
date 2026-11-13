@@ -826,5 +826,8 @@ PACKS = {
              "stages": (0, 2), "playbook": "game.md"},
     "story": {"discovery": [story_discovery], "design": [story_design, story_craft],
               "title": "Long-form story",
-              "stages": (0, 2), "playbook": "story.md"},
+              "stages": (0, 2), "playbook": "story.md",
+              # A novel has no architecture document; its design artifacts are
+              # the outline, cast and chapters, and the pack checks them.
+              "replaces": {"design": ["architecture", "decisions"]}},
 }

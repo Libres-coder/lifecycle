@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.2] - 2026-11-14
+
+### Added
+- **A pack can replace a generic artifact** (`replaces`): the story pack
+  stands in for `architecture` and `decisions` at stage 2, because a novel has
+  no architecture document and forcing one is theatre. Its outline, cast and
+  chapter checks are the design stage for that kind of work. Game and software
+  projects keep the generic checks.
+- **Stage 4 reads `evidence_tier`** (projtruth 1.2.2) and adds an advisory when
+  every verified requirement rests on `guessed` or untiered evidence. It does
+  not change any status; it makes "verified by a guess" visible to the stage
+  that trusts it. A projtruth older than 1.2.2 (no field in its JSON) is
+  ignored rather than misread.
+
 ## [1.4.1] - 2026-11-14
 
 An adversarial review of the pack layer (v1.3.0-1.4.0) found 2 P1 and 6 P2;

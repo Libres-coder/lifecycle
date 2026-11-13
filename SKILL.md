@@ -190,8 +190,9 @@ guide asks for thinking, the checks can only see artifacts.
 Some checks are advisory (WARN): a vision under 100 words, fewer than two
 non-goals, criteria too vague to test ("works"), a decision recorded without a
 reason, architecture that never mentions a trade-off or a failure, evidence
-marked `guessed`. They never fail a stage - taste is not a gate - but they are
-printed with what a shallow version looks like.
+marked `guessed`, a verified requirement whose evidence is untiered or guessed.
+They never fail a stage - taste is not a gate - but they are printed with what
+a shallow version looks like.
 
 ## Packs: work that is not software
 
@@ -209,7 +210,9 @@ Packs are opt-in by presence, and the first match wins (`--pack story` says
 which one the checks follow). **Each pack is a complete tool**: structure
 checks, a craft standard (what an excellent deliverable in that domain looks
 like, and what weak work looks like), advisory checks that make the empty case
-visible, and a scaffold that teaches the fields by existing.
+visible, and a scaffold that teaches the fields by existing. A pack may also
+**replace** a generic artifact it makes no sense for: the story pack stands in
+for the architecture and decision checks, because a novel has no architecture.
 
 **game** (`docs/game/`) - pillars, a world bible with characters/factions/
 locations/facts, and quest files with `id`, `act`, `order`, `requires`,

@@ -400,6 +400,20 @@ class StoryPackTests(unittest.TestCase):
             results.extend(check(self.repo))
         self.assertTrue(all(r["ok"] for r in results), results)
 
+    def test_story_pack_replaces_the_generic_design_artifacts(self):
+        from lifecycle import contract
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
+                resolves=["the-heir"])
+        chapter(self.repo, "two", "ch-02", order=20, pov="borin",
+                threads=["the-war"], resolves=["the-war"])
+        stages = contract.evaluate(self.repo, pack="story")
+        stage2 = next(s for s in stages if s["id"] == 2)
+        names = [r["name"] for r in stage2["results"]]
+        self.assertNotIn("architecture", names)
+        self.assertNotIn("decisions", names)
+        self.assertEqual(stage2["state"], "passed", stage2["results"])
+
     def test_reveal_to_a_character_who_already_knows_warns(self):
         self.write_world()
         chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],

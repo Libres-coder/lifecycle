@@ -47,6 +47,9 @@ task alive across context resets.
   escaping, only `_template.md` skipped, quote/comment parsing, detection,
   knowledge accumulation, timeline/thread ordering, scaffold errors, CJK word
   count. 135 tests; review note in `docs/reviews/`.
+- v1.4.2: packs may replace generic artifacts (story stands in for
+  architecture/decisions); stage 4 reads `evidence_tier` and warns when
+  verified requirements rest on guesses or untiered evidence. 138 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

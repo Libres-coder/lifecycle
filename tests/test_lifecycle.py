@@ -121,6 +121,42 @@ class StageTests(unittest.TestCase):
                 contract.run_json = original
             self.assertTrue(all(not r["required"] and not r["ok"] for r in results))
 
+    def test_verify_warns_when_verified_evidence_is_a_guess(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            original = contract.run_json
+
+            def fake(repo, tool, args):
+                if tool == "projtruth":
+                    return [{"id": "R1", "status": "verified",
+                             "evidence_tier": "measured"},
+                            {"id": "R2", "status": "verified",
+                             "evidence_tier": "guessed"}]
+                return {"metrics": {"severity": {"incorrect": 0}}}
+            contract.run_json = fake
+            try:
+                results = contract.check_verify(tmp)
+            finally:
+                contract.run_json = original
+            quality = [r for r in results if r["name"] == "evidence:quality"]
+            self.assertTrue(quality, results)
+            self.assertFalse(quality[0]["required"], "quality is advisory")
+            self.assertIn("R2", quality[0]["detail"])
+
+    def test_verify_ignores_a_projtruth_without_tiers(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            original = contract.run_json
+
+            def fake(repo, tool, args):
+                if tool == "projtruth":
+                    return [{"id": "R1", "status": "verified"}]   # pre-1.2.2 JSON
+                return {"metrics": {"severity": {"incorrect": 0}}}
+            contract.run_json = fake
+            try:
+                results = contract.check_verify(tmp)
+            finally:
+                contract.run_json = original
+            self.assertFalse([r for r in results if r["name"] == "evidence:quality"])
+
     def test_verify_blocks_on_unverified_requirement(self):
         with tempfile.TemporaryDirectory() as tmp:
             original = contract.run_json

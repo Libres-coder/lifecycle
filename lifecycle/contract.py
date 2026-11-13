@@ -54,6 +54,12 @@ def skip(name, why, fix):
             "required": False}
 
 
+def warn(name, detail, fix):
+    """Advisory: shown, never blocking. Taste and quality are not gates."""
+    return {"name": name, "ok": False, "detail": detail, "fix": fix,
+            "required": False}
+
+
 # -- helpers ---------------------------------------------------------------
 
 def read(repo, *candidates):
@@ -400,6 +406,20 @@ def check_verify(repo):
                         "then `projtruth report`"))
     else:
         out.append(ok("evidence", "%d requirement(s) verified" % len(data)))
+    weak = []
+    tiered = [r for r in data if isinstance(r, dict) and "evidence_tier" in r]
+    if tiered:
+        for r in tiered:
+            if r.get("status") != "verified":
+                continue
+            if r.get("evidence_tier") in (None, "none", "guessed"):
+                weak.append(str(r.get("id", "?")))
+    if weak:
+        out.append(warn("evidence:quality",
+                        "%d verified requirement(s) rest on guessed or untiered "
+                        "evidence: %s" % (len(weak), ", ".join(weak[:6])),
+                        "re-run the check and record the output with a tier - a "
+                        "guess is a note to yourself, not proof"))
     corpus = run_json(repo, "corpus", ["report", "--json"])
     if corpus is None:
         out.append(skip("docs", "corpus is not installed",
@@ -546,6 +566,12 @@ def evaluate(repo, pack="auto", skip=()):
             continue
         for check in stage["checks"]:
             results.extend(check(repo))
+        # A pack may stand in for a generic artifact: a novel has no
+        # architecture document, and forcing one would be theatre. The pack
+        # says which generic checks it replaces, by result name.
+        replaced = set((pack_def.get("replaces") or {}).get(stage["key"], []))
+        if replaced:
+            results = [r for r in results if r.get("name") not in replaced]
         for check in depthmod.DEPTH.get(stage["key"], []):
             results.extend(check(repo))
         if active:

@@ -403,6 +403,21 @@ def check_review(repo):
     return thread.check_review(repo)
 
 
+def check_plan(repo):
+    from . import thread
+    return thread.check_plan(repo)
+
+
+def check_thread_structure(repo):
+    from . import thread
+    return thread.check_thread_structure(repo)
+
+
+def check_cadence(repo):
+    from . import thread
+    return thread.check_cadence(repo)
+
+
 STAGES = [
     {"id": 0, "key": "discovery", "title": "Discovery",
      "question": "Why does this exist, and what will it not do?",
@@ -424,7 +439,8 @@ STAGES = [
      "checks": [check_release]},
     {"id": 6, "key": "sustain", "title": "Sustain",
      "question": "Does the work survive a context reset, and is it summarised?",
-     "checks": [check_sustain, check_review]},
+     "checks": [check_sustain, check_thread_structure, check_plan,
+                check_review, check_cadence]},
 ]
 
 

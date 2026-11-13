@@ -1,31 +1,40 @@
 """lifecycle thread: the artifacts that make work survive a context reset.
 
 A long task outlives the conversation it started in. When the context is
-compacted or a new session picks it up, three things decide whether the work
-continues or restarts:
+compacted or a new session picks it up, what decides whether the work continues
+or restarts is what was written down:
 
-    docs/work/current.md    where the work stands right now (goal, done, next,
-                            blockers, open questions) - the handoff
+    docs/work/current.md    where the work stands now: goal, done, next, blockers
+    docs/work/plan.md       milestones and tasks, so "how far along" is visible
     docs/work/log/*.md      what happened, one entry per working session
     docs/reports/*.md       periodic summaries: what was done, what was not
+    docs/reviews/*.md       what someone tried to break, and what broke
 
 None of these are generated for you. `lifecycle resume` reads them,
 `lifecycle report` drafts the periodic one from facts it can check, and the
 Sustain stage makes "the thread is up to date" a condition instead of a hope.
 """
 import os
+import re
 import time
 
-from .contract import SOURCE_EXT, fail, git, ok, read, walk_files
+from .contract import SOURCE_EXT, fail, git, headings, ok, read, walk_files
 
 WORK_DIR = "docs/work"
 CURRENT = "docs/work/current.md"
+PLAN = "docs/work/plan.md"
 LOG_DIR = "docs/work/log"
 REPORT_DIR = "docs/reports"
+REVIEW_DIR = "docs/reviews"
+SNAP_DIR = ".lifecycle/snapshots"
 DAY = 86400
 JOURNAL_DAYS = 14
 REPORT_DAYS = 30
+REVIEW_DAYS = 30
+MAX_SNAPSHOTS = 20
 CONTEXT_BUDGET_CHARS = 60000      # ~15k tokens of always-loaded project docs
+THREAD_SECTIONS = ("goal", "done", "next", "blockers")
+CHECKBOX_RE = re.compile(r"^\s*[-*]\s+\[([ xX])\]\s+(.+)$", re.MULTILINE)
 
 
 def warn(name, detail, fix):
@@ -51,6 +60,10 @@ def journal(repo):
 
 def reports(repo):
     return _files(repo, REPORT_DIR)
+
+
+def snapshots(repo):
+    return _files(repo, SNAP_DIR)
 
 
 def newest_source_mtime(repo):
@@ -88,8 +101,99 @@ def context_load(repo):
     return total, files
 
 
+def _section_body(text, name):
+    lines = text.splitlines()
+    start = None
+    for i, line in enumerate(lines):
+        m = re.match(r"^#{1,3}\s+(.+)$", line)
+        if m and m.group(1).strip().lower().startswith(name):
+            start = i + 1
+            continue
+        if start is not None and re.match(r"^#{1,3}\s+", line):
+            return "\n".join(lines[start:i])
+    return "\n".join(lines[start:]) if start is not None else ""
+
+
+def _bullets(text):
+    return [l for l in text.splitlines() if re.match(r"^\s*[-*]\s+\S", l)]
+
+
+# -- plan ------------------------------------------------------------------
+
+def parse_plan(repo):
+    """[{title, total, done}] from the checkboxes under each '## ' milestone."""
+    rel, text = read(repo, PLAN)
+    if not text:
+        return None
+    milestones = []
+    for part in re.split(r"^##\s+", text, flags=re.MULTILINE)[1:]:
+        lines = part.splitlines()
+        body = "\n".join(lines[1:])
+        boxes = CHECKBOX_RE.findall(body)
+        milestones.append({"title": lines[0].strip(), "total": len(boxes),
+                           "done": len([b for b in boxes if b[0].lower() == "x"])})
+    return milestones
+
+
+def plan_summary(repo):
+    ms = parse_plan(repo)
+    if not ms:
+        return None
+    return {"milestones": len(ms),
+            "milestones_done": len([m for m in ms if m["total"] and m["done"] == m["total"]]),
+            "tasks": sum(m["total"] for m in ms),
+            "tasks_done": sum(m["done"] for m in ms)}
+
+
+def check_plan(repo):
+    """Stage 6: is there a plan a fresh session can see progress against?"""
+    ms = parse_plan(repo)
+    if ms is None:
+        return [warn("plan", "no %s" % PLAN,
+                     "a long task needs milestones and checkboxes, or 'how far "
+                     "along' is an opinion")]
+    if not ms:
+        return [warn("plan", "the plan has no milestones",
+                     "one '## ' heading per milestone, '- [ ]' per task")]
+    out = [ok("plan", "%d milestone(s), %d task(s)"
+              % (len(ms), sum(m["total"] for m in ms)))]
+    empty = [m["title"] for m in ms if not m["total"]]
+    if empty:
+        out.append(warn("plan", "milestone(s) with no tasks: %s"
+                        % ", ".join(empty[:3]),
+                        "a milestone without tasks cannot be started or finished"))
+    summary = plan_summary(repo)
+    if summary and summary["tasks"] and summary["tasks_done"] == summary["tasks"]:
+        out.append(warn("plan", "every task is checked off",
+                        "release it or add the next milestone - an empty plan is "
+                        "how a long task quietly ends"))
+    return out
+
+
+# -- the handoff -----------------------------------------------------------
+
+def check_thread_structure(repo):
+    """Stage 6: the handoff must be usable, not merely present."""
+    rel, text = read(repo, CURRENT)
+    if not text or not text.strip():
+        return []
+    have = headings(text)
+    out = []
+    missing = [s for s in THREAD_SECTIONS
+               if not any(h.startswith(s) for h in have)]
+    if missing:
+        out.append(warn("thread:sections",
+                        "%s is missing %s" % (CURRENT, ", ".join(missing)),
+                        "a handoff without Next is a diary, not a handoff"))
+    nxt = _section_body(text, "next")
+    if nxt and not _bullets(nxt):
+        out.append(warn("thread:next", "the Next section has no concrete item",
+                        "name the next action, with a verb"))
+    return out
+
+
 def resume_text(repo, stages):
-    """The handoff view: state, recent log, and the blocking item."""
+    """The handoff view: state, last compaction, recent log."""
     lines = []
     rel, text = read(repo, CURRENT)
     if text and text.strip():
@@ -97,6 +201,14 @@ def resume_text(repo, stages):
     else:
         lines.append("No %s yet. Create it with Goal / Done / Next / Blockers - "
                      "it is what a fresh session reads first." % CURRENT)
+    summary = plan_summary(repo)
+    if summary:
+        lines.append("")
+        lines.append("## Plan")
+        lines.append("")
+        lines.append("%d/%d milestones, %d/%d tasks done."
+                     % (summary["milestones_done"], summary["milestones"],
+                        summary["tasks_done"], summary["tasks"]))
     path, snap = latest_snapshot(repo)
     if snap:
         lines.append("")
@@ -121,24 +233,28 @@ def resume_text(repo, stages):
 
 
 def report_text(repo, stages, requirements=None, corpus=None):
-    """A periodic summary drafted from what is checkable, with gaps left blank."""
+    """A periodic summary drafted from what is checkable, gaps left blank."""
     stamp = time.strftime("%Y-%m-%d")
     passed = len([s for s in stages if s["state"] == "passed"])
+    summary = plan_summary(repo)
     lines = ["# Status report - %s" % stamp, "",
-             "%d/%d stages pass." % (passed, len(stages)), "",
-             "## Stage state", ""]
+             "%d/%d stages pass." % (passed, len(stages))]
+    if summary:
+        lines.append("%d/%d milestones, %d/%d tasks done."
+                     % (summary["milestones_done"], summary["milestones"],
+                        summary["tasks_done"], summary["tasks"]))
+    lines += ["", "## Stage state", ""]
     for s in stages:
         lines.append("- **%s** - %s" % (s["title"], s["state"]))
-    if requirements is not None:
+    if requirements:
         lines += ["", "## Requirements", "",
                   "%d registered, %d verified."
                   % (len(requirements),
                      len([r for r in requirements if r.get("status") == "verified"]))]
-        bad = [r for r in requirements if r.get("status") != "verified"]
-        for r in bad[:10]:
+        for r in [r for r in requirements if r.get("status") != "verified"][:10]:
             lines.append("- %s (%s) %s" % (r.get("id"), r.get("status"),
                                            r.get("title", "")))
-    if corpus is not None:
+    if corpus:
         sev = (corpus.get("metrics") or {}).get("severity") or {}
         lines += ["", "## Documents", "",
                   "%d artifacts, %d incorrect, %d stale, %d noise."
@@ -163,11 +279,7 @@ def write_report(repo, text):
     return path
 
 
-SNAP_DIR = ".lifecycle/snapshots"
-MAX_SNAPSHOTS = 20
-REVIEW_DIR = "docs/reviews"
-REVIEW_DAYS = 30
-
+# -- compaction ------------------------------------------------------------
 
 def transcript_tokens(path):
     """Rough size of a session transcript, in tokens. The only window into the
@@ -192,11 +304,16 @@ def snapshot(repo, transcript=None, trigger=""):
     changed = len([l for l in status.splitlines() if l.strip()])
     commits = (git(repo, "log", "--oneline", "-3") or "").strip()
     tokens = transcript_tokens(transcript)
-    stamp = time.strftime("%Y-%m-%d %H:%M")
-    lines = ["# Snapshot %s%s" % (stamp, (" (%s)" % trigger) if trigger else ""), "",
+    lines = ["# Snapshot %s%s" % (time.strftime("%Y-%m-%d %H:%M"),
+                                 (" (%s)" % trigger) if trigger else ""), "",
              "- stages: %d/%d pass" % (passed, len(stages)),
              "- blocked: %s" % (", ".join(s["title"] for s in blocked) or "none"),
              "- working tree: %d changed file(s)" % changed]
+    summary = plan_summary(repo)
+    if summary:
+        lines.append("- plan: %d/%d milestones, %d/%d tasks"
+                     % (summary["milestones_done"], summary["milestones"],
+                        summary["tasks_done"], summary["tasks"]))
     if tokens:
         lines.append("- transcript: ~%dk tokens" % (tokens // 1000))
     if commits:
@@ -216,9 +333,8 @@ def snapshot(repo, transcript=None, trigger=""):
 
 
 def _prune(d):
-    """Keep the newest MAX_SNAPSHOTS by mtime - names sort by timestamp, but a
-    test or a copied file can break that, and deleting the file just written is
-    the one failure that matters."""
+    """Keep the newest MAX_SNAPSHOTS by mtime - deleting the file just written
+    is the one failure that matters."""
     try:
         files = [os.path.join(d, n) for n in os.listdir(d)]
         files.sort(key=os.path.getmtime)
@@ -232,13 +348,10 @@ def _prune(d):
 
 
 def latest_snapshot(repo):
-    d = os.path.join(repo, SNAP_DIR)
-    if not os.path.isdir(d):
+    snaps = snapshots(repo)
+    if not snaps:
         return None, None
-    files = sorted(os.listdir(d))
-    if not files:
-        return None, None
-    path = os.path.join(d, files[-1])
+    path = max(snaps, key=os.path.getmtime)
     try:
         with open(path, encoding="utf-8", errors="replace") as f:
             return path, f.read()
@@ -246,18 +359,39 @@ def latest_snapshot(repo):
         return None, None
 
 
-def check_review(repo):
-    """Stage 6: has anyone looked at this critically, recently?
+def cadence(repo):
+    """Compactions since the last written report: work running on memory."""
+    snaps = snapshots(repo)
+    reps = reports(repo)
+    if not snaps:
+        return 0
+    if not reps:
+        return len(snaps)
+    newest_report = max(os.path.getmtime(p) for p in reps)
+    return len([p for p in snaps if os.path.getmtime(p) > newest_report])
 
-    A review note cannot prove quality - but a project that never records one
-    has not looked, and a review with no findings on a first pass is a
-    rubber stamp. Both are checkable; the quality itself is not.
-    """
+
+def check_cadence(repo):
+    n = cadence(repo)
+    if n >= 3:
+        return [warn("cadence", "%d compaction(s) since the last status report" % n,
+                     "`lifecycle report` - what happened in those sessions is "
+                     "already gone")]
+    if n:
+        return [ok("cadence", "%d compaction(s) since the last report" % n)]
+    return []
+
+
+# -- stage 6 ---------------------------------------------------------------
+
+def check_review(repo):
+    """A review note cannot prove quality - but a project that never records one
+    has not looked, and a first review with no findings is a rubber stamp."""
     files = _files(repo, REVIEW_DIR)
     if not files:
         return [warn("review", "no review note in %s/" % REVIEW_DIR,
-                     "record an adversarial review per stage: what you tried to "
-                     "break, what broke, what you decided to live with")]
+                     "record an adversarial review: what you tried to break, what "
+                     "broke, what you decided to live with")]
     newest = max(files, key=os.path.getmtime)
     age = (time.time() - os.path.getmtime(newest)) / DAY
     if age > REVIEW_DAYS:
@@ -269,13 +403,13 @@ def check_review(repo):
             body = f.read()
     except OSError:
         body = ""
-    findings = [l for l in body.splitlines() if l.strip().startswith("- ")]
+    findings = _bullets(body)
     if not findings:
         return [warn("review", "the last review has no findings",
                      "a review that found nothing did not look; name at least one "
                      "thing you would change")]
-    return [ok("review", "%d finding(s) in %s" % (len(findings),
-                                                 os.path.relpath(newest, repo).replace("\\", "/")))]
+    return [ok("review", "%d finding(s) in %s"
+               % (len(findings), os.path.relpath(newest, repo).replace("\\", "/")))]
 
 
 def check_sustain(repo):
@@ -337,7 +471,7 @@ def check_sustain(repo):
         out.append(warn("thread:report", "no status report yet",
                         "`lifecycle report` writes one with the stage state and the "
                         "open questions"))
-    chars, files = context_load(repo)
+    chars, _ = context_load(repo)
     if chars > CONTEXT_BUDGET_CHARS:
         out.append(warn("thread:context",
                         "%d chars (~%dk tokens) load before any work starts"
@@ -347,3 +481,28 @@ def check_sustain(repo):
     else:
         out.append(ok("thread:context", "~%dk tokens of project docs" % (chars // 4000)))
     return out
+
+
+def scaffold(repo):
+    """Create the thread files a long task needs. Never overwrites."""
+    created = []
+    templates = {
+        CURRENT: ("# Current work\n\n## Goal\n\n\n## Done\n\n- \n\n"
+                  "## Next\n\n- \n\n## Blockers\n\nNone.\n"),
+        PLAN: ("# Plan\n\n## M1 - first milestone\n\n- [ ] first task\n"
+               "- [ ] second task\n"),
+    }
+    for rel, text in templates.items():
+        path = os.path.join(repo, rel)
+        if os.path.exists(path):
+            continue
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+        created.append(rel)
+    for d in (LOG_DIR, REPORT_DIR, REVIEW_DIR, SNAP_DIR):
+        path = os.path.join(repo, d)
+        if not os.path.isdir(path):
+            os.makedirs(path, exist_ok=True)
+            created.append(d + "/")
+    return created

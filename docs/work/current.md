@@ -12,13 +12,15 @@ task alive across context resets.
 - v0.4.0: PreCompact/SessionStart hooks (`lifecycle hook install`), snapshots
   that record the transcript size, a review-note check, and a per-stage toolbox
   in `guide`.
-- 61 tests; 7/7 stages on this repo; v0.4.0 tagged.
+- v1.0.0: plan artifact with milestone progress, `lifecycle init`, thread
+  structure checks, compaction cadence.
+- 71 tests; 10 requirements verified; 7/7 stages on this repo.
 
 ## Next
 
+- Independent review of 1.0, then publish with a release note.
 - Try the hooks in a real session: does `resume` after a compaction actually
   restore enough to continue, or is it noise?
-- Use `lifecycle resume` in the next session before touching code.
 - Publish to GitHub once the thread layer has survived one real handoff.
 - Game pack: timeline order and per-character knowledge (who knows what, when).
 

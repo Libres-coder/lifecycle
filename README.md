@@ -80,7 +80,8 @@ pip install ~/.claude/skills/lifecycle     # or PYTHONPATH=~/.claude/skills/life
 | `lifecycle check [--stage N]` | CI gate: exit 1 on a failing stage |
 | `lifecycle stages` | the contract: what each stage asks |
 | `lifecycle guide [stage]` | the playbook: questions to answer, what shallow looks like |
-| `lifecycle resume` | after a compaction or in a new session: the work thread, recent journal, next blocker |
+| `lifecycle init` | scaffold the work thread, plan, log/report/review directories |
+| `lifecycle resume` | after a compaction or in a new session: the work thread, plan progress, journal, next blocker |
 | `lifecycle report` | drafts `docs/reports/status-<date>.md` from facts it can check |
 | `lifecycle snapshot` | writes the state a compaction would lose |
 | `lifecycle hook install` | wires PreCompact + SessionStart into the project's `.claude/settings.json` |
@@ -120,7 +121,8 @@ only ones a fresh session can read:
 
 | file | what it holds |
 |---|---|
-| `docs/work/current.md` | Goal / Done / Next / Blockers - the handoff |
+| `docs/work/current.md` | Goal / Done / Next / Blockers - the handoff; the sections and a concrete Next are checked |
+| `docs/work/plan.md` | milestones with `- [ ]` tasks - how far along the work is |
 | `docs/work/log/<date>.md` | one entry per working session: what you tried, what happened |
 | `docs/reports/status-<date>.md` | a periodic summary; `lifecycle report` drafts it, you fill in what went well and what did not |
 

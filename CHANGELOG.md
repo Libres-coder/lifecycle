@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.0] - 2026-11-13
+
+The first release with a stable surface: seven stages, a work thread that
+survives a context reset, and hooks that make the thread automatic.
+
+### Added
+- **Plan artifact** (`docs/work/plan.md`): milestones with checkbox tasks, so
+  "how far along" is visible. `status` and `resume` show milestone and task
+  progress; a plan with no tasks, or with every task ticked, is reported.
+- **`lifecycle init`**: scaffolds `docs/work/current.md`, `plan.md`, and the
+  log / report / review directories. Never overwrites.
+- **Thread structure checks**: `current.md` must have Goal, Done, Next and
+  Blockers, and Next must contain a concrete item.
+- **Compaction cadence**: three snapshots since the last status report is
+  reported - work running on memory instead of notes.
+- `resume` includes plan progress and the last compaction snapshot.
+
+### Changed
+- Stage 6 now runs five checks: thread freshness, sections, plan, review note,
+  cadence. All of them are advisory until the first release, blocking after it.
+
 ## [0.4.0] - 2026-11-13
 
 ### Added

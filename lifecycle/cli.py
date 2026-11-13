@@ -50,6 +50,7 @@ def main(argv=None):
                     help="domain pack: auto (detect), game, or none")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
+    sub.add_parser("init")
     p = sub.add_parser("status")
     p.add_argument("--json", action="store_true")
     sub.add_parser("next")
@@ -76,6 +77,17 @@ def main(argv=None):
     if not os.path.isdir(repo):
         sys.stderr.write("lifecycle: --repo is not a directory: %s\n" % repo)
         return 2
+
+    if args.cmd == "init":
+        created = thread.scaffold(repo)
+        if created:
+            print("created: %s" % ", ".join(created))
+        else:
+            print("already initialized")
+        print("")
+        print("Next: fill docs/work/current.md (Goal / Done / Next / Blockers), "
+              "then `lifecycle hook install`.")
+        return 0
 
     try:
         stages = contract.evaluate(repo, args.pack)

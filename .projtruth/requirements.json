@@ -183,6 +183,26 @@
           "judge": "command"
         }
       ]
+    },
+    {
+      "id": "R10",
+      "title": "A plan makes progress visible",
+      "status": "pending",
+      "files": [
+        "lifecycle/thread.py"
+      ],
+      "criteria": [
+        {
+          "id": "R10.1",
+          "text": "milestones and checkbox counts are parsed and shown in status/resume",
+          "judge": "command"
+        },
+        {
+          "id": "R10.2",
+          "text": "a plan with no tasks, or with every task done, is reported",
+          "judge": "command"
+        }
+      ]
     }
   ]
 }

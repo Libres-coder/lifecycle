@@ -57,7 +57,8 @@ Commands:
 | `lifecycle check [--stage N]` | CI gate: exit 1 on a failing stage |
 | `lifecycle stages` | the contract: what each stage asks |
 | `lifecycle guide [stage]` | the playbook for a stage: questions to answer, what shallow looks like |
-| `lifecycle resume` | after a compaction or in a new session: the work thread, recent journal, next blocker |
+| `lifecycle init` | scaffold the work thread, plan, log/report/review directories |
+| `lifecycle resume` | after a compaction or in a new session: the work thread, plan progress, journal, next blocker |
 | `lifecycle report` | drafts `docs/reports/status-<date>.md` from facts it can check |
 | `lifecycle snapshot` | writes the state a compaction would lose (run by a hook) |
 | `lifecycle hook install` | wires PreCompact + SessionStart into `.claude/settings.json` |
@@ -95,7 +96,11 @@ description.
 A task that outlives one context window needs three artifacts, and they are the
 only ones a fresh session can read:
 
-- `docs/work/current.md` - Goal / Done / Next / Blockers. The handoff.
+- `docs/work/current.md` - Goal / Done / Next / Blockers. The handoff. Stage 6
+  checks the sections exist and that Next has a concrete item.
+- `docs/work/plan.md` - milestones (`## M1 ...`) with `- [ ]` tasks. It is what
+  makes "how far along" visible; a plan with no tasks or with every box ticked
+  is reported.
 - `docs/work/log/<date>.md` - one entry per working session: what you tried, what
   happened, what surprised you.
 - `docs/reports/status-<date>.md` - a periodic summary written by
@@ -113,7 +118,9 @@ The cadence, in one line each:
 - **when a stage ends** - `lifecycle report`, then fill in the three sections;
 - **when the context is compacted** - `lifecycle resume`;
 - **every couple of weeks** - `corpus report --noise` and `corpus find` before
-  writing anything new.
+  writing anything new;
+- **every few compactions** - `lifecycle report`; three snapshots since the last
+  report is reported as working from memory.
 
 What it cannot do: see your actual context window. The context check measures
 the documents the repository loads before work starts (CLAUDE.md, README, the

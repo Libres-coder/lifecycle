@@ -114,6 +114,14 @@ def main():
            ("printf '{\"trigger\":\"manual\"}' | python -m lifecycle snapshot   # exit %d"
             % rc12, snap)])
 
+    rc14, res2 = run(["resume"])
+    rc15, st2 = run(["status"])
+    write("R10-plan.md", "R10 a plan makes progress visible",
+          [tests("tests.test_plan"),
+           ("python -m lifecycle resume   # includes plan progress   # exit %d" % rc14,
+            res2[:800]),
+           ("python -m lifecycle status   # exit %d" % rc15, st2[:800])])
+
     rc13, _ = run(["check"])
     print("final check exit:", rc13)
 

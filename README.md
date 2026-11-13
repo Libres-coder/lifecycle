@@ -51,6 +51,7 @@ use.
 | 3 Build | source files and test files | file scan |
 | 4 Verify | every requirement `verified`; no incorrect document finding | `projtruth report --json`, `corpus report --json` |
 | 5 Release | CHANGELOG entry for the version, a matching git tag | file + `git tag` |
+| 6 Sustain | a work thread, a journal entry, a status report, a context budget | `docs/work/`, `docs/reports/` |
 
 When projtruth or corpus is not installed, stage 4 reports **WARN** with the
 install command instead of FAIL. A missing tool is not a missing product.
@@ -79,6 +80,30 @@ pip install ~/.claude/skills/lifecycle     # or PYTHONPATH=~/.claude/skills/life
 | `lifecycle check [--stage N]` | CI gate: exit 1 on a failing stage |
 | `lifecycle stages` | the contract: what each stage asks |
 | `lifecycle guide [stage]` | the playbook: questions to answer, what shallow looks like |
+| `lifecycle resume` | after a compaction or in a new session: the work thread, recent journal, next blocker |
+| `lifecycle report` | drafts `docs/reports/status-<date>.md` from facts it can check |
+
+## Long-running work
+
+A task that outlives one context window needs three artifacts, and they are the
+only ones a fresh session can read:
+
+| file | what it holds |
+|---|---|
+| `docs/work/current.md` | Goal / Done / Next / Blockers - the handoff |
+| `docs/work/log/<date>.md` | one entry per working session: what you tried, what happened |
+| `docs/reports/status-<date>.md` | a periodic summary; `lifecycle report` drafts it, you fill in what went well and what did not |
+
+Stage 6 makes these conditions: after the first release a missing or stale work
+thread fails the stage, and an old journal or report is reported. Before the
+first release they are warnings - a thread is good practice, not a promise you
+have made to a user.
+
+`lifecycle resume` is the command to run after a compaction or at the start of a
+new session: it prints the thread, the last journal entries and the one blocking
+item. What it cannot do is see your actual context window - the budget check
+measures the documents the repository loads (CLAUDE.md, README, vision,
+architecture, `current.md`), which is a proxy.
 
 ## Deep work, not just presence
 

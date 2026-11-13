@@ -1,13 +1,13 @@
 # R4 sibling tools compose, missing ones are advisory
 
-_Run at 2026-11-14 02:56:38_
+_Run at 2026-11-14 03:31:33_
 
 ```
 $ python -m unittest tests.test_lifecycle.StageTests.test_verify_skips_when_tools_missing -v   # exit 0
 test_verify_skips_when_tools_missing (tests.test_lifecycle.StageTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.007s
+Ran 1 test in 0.006s
 
 OK
 
@@ -19,7 +19,7 @@ test_verify_does_not_pass_without_requirements (tests.test_lifecycle.StageTests)
 No registry is stage 1's problem; stage 4 must not claim success. ... ok
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.006s
+Ran 1 test in 0.007s
 
 OK
 
@@ -28,14 +28,14 @@ OK
 ```
 $ python -m lifecycle status   # in an empty directory   # exit 0
 # lifecycle (C:\Users\LiuDing)
-1/7 stages pass  ·  pack: story
+0/7 stages pass  ·  pack: story
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
 | 0 | Discovery | **FAIL** | no product vision document |
 | 1 | Spec | **FAIL** | no requirement registry |
 | 2 | Design | **FAIL** | no architecture document |
-| 3 | Build | **PASS** | Does the code and its tests exist? |
+| 3 | Build | **FAIL** | no chapters written |
 | 4 | Verify | **WARN** | Is every promise backed by evidence that still holds? |
 | 5 | Release | **FAIL** | no CHANGELOG |
 | 6 | Sustain | **WARN** | Does the work survive a context reset, and is it summarised? |
@@ -54,6 +54,9 @@ $ python -m lifecycle status   # in an empty directory   # exit 0
   - projtruth decide "<choice>" --why "<reason>" for each non-obvious choice
 - story:characters:list: no characters declared
   - list them under `characters:`
+**Stage 3 Build**
+- story:draft: no chapters written
+  - write docs/story/chapters/<id>.md - a design without a draft is not a build
 **Stage 5 Release**
 - changelog: no CHANGELOG
   - write CHANGELOG.md - what changed, for whom
@@ -74,13 +77,13 @@ Stage 0 Discovery: **vision** - no product vision document
 - stage 6 Sustain: no docs/work/plan.md - a long task needs milestones and checkboxes, or 'how far along' is an opinion
 - stage 6 Sustain: no review note in docs/reviews/ - record an adversarial review: what you tried to break, what broke, what you decided to live with
 
-_2026-11-14 02:56_
+_2026-11-14 03:31_
 ```
 
 ```
 $ python -m lifecycle check --stage 4   # exit 1
 stage 4 Verify     FAIL
-  - evidence: 5 requirement(s) not verified: R6, R7, R9, R11, R12
+  - evidence: 4 requirement(s) not verified: R4, R6, R7, R12
     -> re-run each requirement's verification and write evidence, then `projtruth report`
 ```
 

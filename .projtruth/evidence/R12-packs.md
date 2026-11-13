@@ -1,9 +1,12 @@
 # R12 packs extend the stages for non-software work
 
-_Run at 2026-11-14 02:59:38_
+_Run at 2026-11-14 03:34:31_
 
 ```
 $ python -m unittest tests.test_packs.StoryPackTests -v   # exit 0
+test_auto_detection_keeps_source_and_tests (tests.test_packs.StoryPackTests) ... ok
+test_auto_detection_never_removes_a_generic_gate (tests.test_packs.StoryPackTests)
+A narrative folder in a software repo must not drop architecture. ... ok
 test_craft_flags_a_character_without_a_want (tests.test_packs.StoryPackTests) ... ok
 test_craft_flags_a_quest_without_stakes (tests.test_packs.StoryPackTests) ... ok
 test_craft_flags_a_summary_chapter (tests.test_packs.StoryPackTests) ... ok
@@ -11,7 +14,10 @@ test_detected_by_outline_not_an_empty_directory (tests.test_packs.StoryPackTests
 test_discovery_needs_an_outline (tests.test_packs.StoryPackTests) ... ok
 test_discovery_warns_without_threads (tests.test_packs.StoryPackTests) ... ok
 test_duplicate_order_blocks (tests.test_packs.StoryPackTests) ... ok
+test_explicit_story_pack_replaces_the_software_build_checks (tests.test_packs.StoryPackTests) ... ok
 test_reveal_to_a_character_who_already_knows_warns (tests.test_packs.StoryPackTests) ... ok
+test_story_build_needs_a_draft_and_counts_it (tests.test_packs.StoryPackTests) ... ok
+test_story_pack_replaces_the_generic_design_artifacts (tests.test_packs.StoryPackTests) ... ok
 test_story_packs_wiring_runs_both_checks (tests.test_packs.StoryPackTests) ... ok
 test_thread_resolved_before_its_last_advance_warns (tests.test_packs.StoryPackTests) ... ok
 test_undeclared_pov_blocks (tests.test_packs.StoryPackTests) ... ok
@@ -20,7 +26,7 @@ test_valid_story_passes (tests.test_packs.StoryPackTests) ... ok
 test_word_count_counts_kana_and_hangul (tests.test_packs.StoryPackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 14 tests in 0.155s
+Ran 19 tests in 1.440s
 
 OK
 
@@ -49,7 +55,7 @@ test_unknown_actor_blocks (tests.test_packs.GamePackTests) ... ok
 test_valid_world_passes (tests.test_packs.GamePackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 19 tests in 0.187s
+Ran 19 tests in 0.181s
 
 OK
 
@@ -67,12 +73,13 @@ Next: fill the TODOs, then `lifecycle check`. The checks read these files; they 
 ```
 $ python -m lifecycle pack list   # exit 0
 game   Open-world game    stages 0,2    
-story  Long-form story    stages 0,2    active
+story  Long-form story    stages 0,2,3  active
 ```
 
 ```
 $ two chapters both with order 10, then python -m lifecycle status   # exit 0
 - story:characters:list: no characters declared
+- story:draft: no chapters written
 ```
 
 measured

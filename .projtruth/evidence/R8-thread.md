@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-14 02:57:01_
+_Run at 2026-11-14 03:31:53_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 6.042s
+Ran 9 tests in 3.044s
 
 OK
 
@@ -24,7 +24,7 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 4 Verify - 3 requirement(s) not verified: R9, R11, R12
+Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R12
   fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
 # Current work
@@ -76,6 +76,15 @@ task alive across context resets.
   escaping, only `_template.md` skipped, quote/comment parsing, detection,
   knowledge accumulation, timeline/thread ordering, scaffold errors, CJK word
   count. 135 tests; review note in `docs/reviews/`.
+- v1.4.2: packs may replace generic artifacts (story stands in for
+  architecture/decisions); stage 4 reads `evidence_tier` and warns when
+  verified requirements rest on guesses or untiered evidence. 138 tests.
+- v1.4.3: replacement is explicit-only - auto-detected packs add checks and
+  never remove a gate, so a story folder in a software repo cannot weaken its
+  own architecture requirement. 139 tests.
+- v1.4.4: kinds of work are peers - a pack may replace checks at any stage;
+  story replaces stage 3's source/tests with `story:draft` (chapter and word
+  counts). 142 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
@@ -102,13 +111,13 @@ None.
 
 ## Last compaction snapshot
 
-- stages: 6/7 pass
+- stages: 5/7 pass
 - blocked: none
 - working tree: 11 changed file(s)
 - plan: 4/7 milestones, 22/25 tasks
+- f8580b3 lifecycle 1.4.1: fix the pack-layer review (2 P1, 6 P2)
+- 6843657 evidence: regenerate for 1.4.0
 - 71ebd91 lifecycle 1.4.0: packs carry a craft standard, not only structure
-- a850114 evidence: regenerate for 1.3.1
-- 585fa9c lifecycle 1.3.1: suggest names the active pack
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

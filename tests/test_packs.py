@@ -414,6 +414,21 @@ class StoryPackTests(unittest.TestCase):
         self.assertNotIn("decisions", names)
         self.assertEqual(stage2["state"], "passed", stage2["results"])
 
+    def test_auto_detection_never_removes_a_generic_gate(self):
+        """A narrative folder in a software repo must not drop architecture."""
+        from lifecycle import contract
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
+                resolves=["the-heir"])
+        chapter(self.repo, "two", "ch-02", order=20, pov="borin",
+                threads=["the-war"], resolves=["the-war"])
+        stages = contract.evaluate(self.repo)          # auto-detected story
+        stage2 = next(s for s in stages if s["id"] == 2)
+        names = [r["name"] for r in stage2["results"]]
+        self.assertIn("architecture", names)
+        self.assertIn("decisions", names)
+        self.assertEqual(stage2["state"], "failed", stage2["results"])
+
     def test_reveal_to_a_character_who_already_knows_warns(self):
         self.write_world()
         chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],

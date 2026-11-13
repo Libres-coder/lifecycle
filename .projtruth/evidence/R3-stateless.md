@@ -1,6 +1,6 @@
 # R3 no gate state is stored
 
-_Run at 2026-11-14 02:54:02_
+_Run at 2026-11-14 03:11:44_
 
 ```
 $ python -m unittest tests.test_lifecycle.ReportTests -v   # exit 0
@@ -25,11 +25,11 @@ identical: False (exit 0, 0)
 |---|---|---|---|
 | 0 | Discovery | **FAIL** | no product vision document |
 | 1 | Spec | **FAIL** | no requirement registry |
-| 2 | Design | **FAIL** | no architecture document |
+| 2 | Design | **FAIL** | no characters declared |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
 | 4 | Verify | **WARN** | Is every promise backed by evidence that still holds? |
 | 5 | Release | **FAIL** | no CHANGELOG |
-| 6 | Sustain | **WARN** | 
+| 6 | Sustain | **WARN** | Do
 ```
 
 ```
@@ -41,11 +41,11 @@ $ rm docs/product/vision.md && python -m lifecycle status   # exit 0
 |---|---|---|---|
 | 0 | Discovery | **FAIL** | no product vision document |
 | 1 | Spec | **FAIL** | no requirement registry |
-| 2 | Design | **FAIL** | no architecture document |
+| 2 | Design | **FAIL** | no characters declared |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
 | 4 | Verify | **WARN** | Is every promise backed by evidence that still holds? |
 | 5 | Release | **FAIL** | no CHANGELOG |
-| 6 | Sustain | **WARN** | 
+| 6 | Sustain | **WARN** | Do
 ```
 
 measured

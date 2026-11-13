@@ -50,6 +50,9 @@ task alive across context resets.
 - v1.4.2: packs may replace generic artifacts (story stands in for
   architecture/decisions); stage 4 reads `evidence_tier` and warns when
   verified requirements rest on guesses or untiered evidence. 138 tests.
+- v1.4.3: replacement is explicit-only - auto-detected packs add checks and
+  never remove a gate, so a story folder in a software repo cannot weaken its
+  own architecture requirement. 139 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

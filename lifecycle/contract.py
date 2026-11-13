@@ -554,6 +554,11 @@ def evaluate(repo, pack="auto", skip=()):
         active = None
     elif active not in packsmod.PACKS:
         raise ValueError("unknown pack: %s" % active)
+    # A pack may replace generic artifacts only when it is chosen explicitly.
+    # Auto-detection adds checks; it never removes a gate, so a narrative
+    # folder inside a software repository cannot silently drop the
+    # architecture/decision requirements.
+    explicit = pack not in ("auto", "none", "", None)
     pack_def = packsmod.PACKS.get(active or "", {})
     out = []
     for stage in STAGES:
@@ -569,7 +574,8 @@ def evaluate(repo, pack="auto", skip=()):
         # A pack may stand in for a generic artifact: a novel has no
         # architecture document, and forcing one would be theatre. The pack
         # says which generic checks it replaces, by result name.
-        replaced = set((pack_def.get("replaces") or {}).get(stage["key"], []))
+        replaced = set((pack_def.get("replaces") or {}).get(stage["key"], [])) \
+            if explicit else set()
         if replaced:
             results = [r for r in results if r.get("name") not in replaced]
         for check in depthmod.DEPTH.get(stage["key"], []):

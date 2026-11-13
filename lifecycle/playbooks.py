@@ -469,11 +469,12 @@ thread declared and forgotten, and a twist nobody planted.
 
 ## Exit
 
-`lifecycle check --stage 2` passes with the pack active. For this pack the
-story documents are the design stage: the generic architecture and recorded-
-decision checks are replaced, not skipped - the outline, cast and chapter
-checks are what stands in their place. Every chapter's order, POV, reveal and
-thread resolves against the two documents above.
+`lifecycle --pack story check --stage 2` passes. The pack has to be chosen
+explicitly for that command: auto-detection adds the story checks but never
+removes a generic gate. When it is chosen, the story documents are the design
+stage - the outline, cast and chapter checks stand in for the architecture and
+recorded-decision checks - and every chapter's order, POV, reveal and thread
+resolves against the two documents above.
 """
 
 SUSTAIN = """# Stage 6 - Sustain

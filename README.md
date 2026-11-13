@@ -259,7 +259,10 @@ template files (`_template.md`) are never read as data.
 A pack can also **replace** a generic artifact it makes no sense for. The
 story pack stands in for the architecture and decision checks at stage 2: a
 novel has no architecture document, and its outline, cast and chapters are the
-design. Software and game projects keep the generic checks.
+design. This applies **only when the pack is chosen explicitly**
+(`lifecycle --pack story check`); auto-detection adds checks and never removes
+a gate, so a narrative folder in a software project cannot drop its
+architecture requirement.
 
 ## Craft, not just structure
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.3] - 2026-11-14
+
+### Fixed
+- **A pack's `replaces` now applies only when the pack is chosen explicitly**
+  (`--pack story`). Auto-detection adds checks; it never removes a gate. Before
+  this, a repository that happened to contain `docs/story/` would silently stop
+  requiring an architecture document and recorded decisions - a narrative
+  folder in a software project could weaken its own design gate. Found while
+  answering the question "does story affect my other development?"; the answer
+  is now structurally no.
+
 ## [1.4.2] - 2026-11-14
 
 ### Added

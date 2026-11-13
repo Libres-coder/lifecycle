@@ -213,6 +213,10 @@ like, and what weak work looks like), advisory checks that make the empty case
 visible, and a scaffold that teaches the fields by existing. A pack may also
 **replace** a generic artifact it makes no sense for: the story pack stands in
 for the architecture and decision checks, because a novel has no architecture.
+That replacement applies **only when the pack is chosen explicitly**
+(`--pack story`); auto-detection adds checks but never removes a gate, so a
+narrative folder inside a software repository cannot weaken its own design
+stage.
 
 **game** (`docs/game/`) - pillars, a world bible with characters/factions/
 locations/facts, and quest files with `id`, `act`, `order`, `requires`,

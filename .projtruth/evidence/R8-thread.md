@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 21:42:33_
+_Run at 2026-11-13 21:49:36_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 6.089s
+Ran 9 tests in 5.926s
 
 OK
 
@@ -24,13 +24,13 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 4 Verify - 2 requirement(s) not verified: R9, R11
+Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R11
   fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
-context: 74% (as of 12 min ago - install the statusline hook to keep it current)
+context: 58% used
 
 
-last context reading was 12 min ago (74%); it is not live - the status line is what keeps it current
+Context at 58%: fine for the current step; run /compact before starting a new thread (auto-compact fires at 70%).
 # Current work
 
 ## Goal
@@ -56,17 +56,19 @@ task alive across context resets.
   session-start tokens; docs on why 74% does not compact.
 - v1.2.1: hook stays silent outside an initialized repo; `lifecycle suggest`
   names the tool and the compaction advice.
+- v1.2.2: the advice follows the real trigger - `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`
+  moves the nudge to trigger−15 and `/compact now` to trigger−5 (55/65 when the
+  trigger is 70). The machine override is installed at 70% in both
+  `~/.claude/settings.json` and the CC Switch provider. 88 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
 ## Next
 
-- Watch whether the status line actually fires in this desktop app; it did not
-  in a 20 s probe. The command is harmless where it does not.
-- Independent review of the 1.x surface (threads, statusline).
+- Independent review of the 1.x surface (threads, statusline, trigger advice).
 - Try the hooks in a real session: does `resume` after a compaction actually
   restore enough to continue, or is it noise?
-- Publish to GitHub once the thread layer has survived one real handoff.
+- Publish 1.2.2 once the trigger advice has been seen in a live session.
 - Game pack: timeline order and per-character knowledge (who knows what, when).
 
 ## Blockers
@@ -81,19 +83,18 @@ None.
 
 ## Plan
 
-4/5 milestones, 15/17 tasks done.
+4/6 milestones, 18/20 tasks done.
 
 ## Last compaction snapshot
 
-- stages: 6/7 pass
-- blocked: none
-- working tree: 0 changed file(s)
+- stages: 5/7 pass
+- blocked: Sustain
+- working tree: 10 changed file(s)
 - plan: 4/5 milestones, 15/17 tasks
-- transcript: ~6576k tokens
-- context: 74% used
+- context: 74% (as of 12 min ago - install the statusline hook to keep it current)
+- d2415a0 lifecycle 1.2.2: context advice follows the real compaction trigger
 - 8718453 lifecycle 1.2.1: quiet hook, suggest, context warning
 - 2c3e0d6 lifecycle 1.2.0: context readings
-- f984143 lifecycle 1.1.0: threads
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

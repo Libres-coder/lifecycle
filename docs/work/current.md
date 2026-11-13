@@ -26,7 +26,9 @@ task alive across context resets.
 - v1.2.2: the advice follows the real trigger - `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`
   moves the nudge to trigger−15 and `/compact now` to trigger−5 (55/65 when the
   trigger is 70). The machine override is installed at 70% in both
-  `~/.claude/settings.json` and the CC Switch provider. 88 tests.
+  `~/.claude/settings.json` and the CC Switch provider. 89 tests.
+- v1.2.3: the status line carries the advice (`74% ctx - /compact` within five
+  points of the trigger), so the always-visible surface asks for the compaction.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

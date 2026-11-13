@@ -1,6 +1,6 @@
 # R11 context usage is recorded when the harness exposes it
 
-_Run at 2026-11-13 21:42:53_
+_Run at 2026-11-13 21:49:56_
 
 ```
 $ python -m unittest tests.test_statusline -v   # exit 0
@@ -16,10 +16,11 @@ test_status_line_shows_thread_and_percent (tests.test_statusline.RenderTests) ..
 test_status_line_without_anything (tests.test_statusline.RenderTests) ... ok
 test_hint_follows_the_trigger (tests.test_statusline.TriggerTests) ... ok
 test_override_lowers_the_trigger (tests.test_statusline.TriggerTests) ... ok
+test_status_line_asks_for_a_compaction_before_the_trigger (tests.test_statusline.TriggerTests) ... ok
 test_unreadable_override_keeps_the_default (tests.test_statusline.TriggerTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 13 tests in 1.376s
+Ran 14 tests in 1.294s
 
 OK
 

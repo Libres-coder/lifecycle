@@ -336,6 +336,43 @@ documentation.
 code it describes, and there is a journal entry and a report from this cycle.
 """
 
+TOOLS = {
+    "discovery": [
+        ("superpowers:brainstorming", "interrogate the idea before it becomes a plan"),
+        ("corpus find", "is there already a document about this problem?"),
+    ],
+    "spec": [
+        ("projtruth", "requirements with acceptance criteria, and their evidence"),
+        ("mattpocock-skills:grilling", "stress the spec with questions before building"),
+    ],
+    "design": [
+        ("feature-dev:code-architect", "an architecture blueprint from the codebase"),
+        ("graphify", "what the code actually looks like, if it already exists"),
+        ("ui-ux-pro-max / tastemaker", "when the product has a screen"),
+        ("inkcheck", "if the narrative is written in Ink - branch and dead-end QA"),
+    ],
+    "build": [
+        ("superpowers:test-driven-development", "a failing test before the code"),
+        ("ds-verify-loop", "edit, run, read the error, fix - until green"),
+        ("code-simplifier", "after it works, before it ships"),
+    ],
+    "verify": [
+        ("verify-first", "the evidence pipeline this stage reads"),
+        ("chrome-devtools-mcp / playwright", "drive the real app in a browser"),
+        ("projtruth", "verified / stale / unverified per requirement"),
+    ],
+    "release": [
+        ("corpus", "no document finding that misleads a reader"),
+        ("commit-commands", "commit, push, PR"),
+        ("gh", "tag, release notes, CI"),
+    ],
+    "sustain": [
+        ("corpus", "documents rot silently; report and consolidate"),
+        ("lifecycle resume", "after every compaction"),
+        ("skill-audit", "the tool collection itself accumulates"),
+    ],
+}
+
 STAGES = {"discovery": DISCOVERY, "spec": SPEC, "design": DESIGN,
           "build": BUILD, "verify": VERIFY, "release": RELEASE,
           "sustain": SUSTAIN}

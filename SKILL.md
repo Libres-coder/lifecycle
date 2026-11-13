@@ -59,6 +59,36 @@ Commands:
 | `lifecycle guide [stage]` | the playbook for a stage: questions to answer, what shallow looks like |
 | `lifecycle resume` | after a compaction or in a new session: the work thread, recent journal, next blocker |
 | `lifecycle report` | drafts `docs/reports/status-<date>.md` from facts it can check |
+| `lifecycle snapshot` | writes the state a compaction would lose (run by a hook) |
+| `lifecycle hook install` | wires PreCompact + SessionStart into `.claude/settings.json` |
+
+## Make it automatic, not remembered
+
+An agent does not reliably choose a skill. Descriptions compete with the task in
+front of it, and "I will remember to update the thread" is not a mechanism. Two
+hooks are:
+
+```bash
+lifecycle hook install     # writes .claude/settings.json for this project
+lifecycle hook status
+```
+
+- **PreCompact** runs `lifecycle snapshot` before the context is compacted, so
+  the state is written while it still exists (it also records the transcript
+  size, the only window this tool has into the context it cannot see).
+- **SessionStart (compact|resume)** runs `lifecycle resume`, so the first thing
+  in a fresh context is the work thread, the last journal entries and the one
+  blocking item.
+
+The hooks live in the project's `.claude/settings.json`, not the global file:
+they belong to the project that has a thread, and they do not collide with
+whatever manages the global config. `lifecycle hook uninstall` removes only the
+entries it added.
+
+If a user asks why a skill never fires, this is the honest answer: skills are
+model-invoked, and a model under load does the task instead of choosing a tool.
+Anything that must happen every time belongs in a hook or a gate, not in a
+description.
 
 ## Long-running work
 
@@ -156,6 +186,18 @@ should not look like a missing product.
 Do not work around a gate by deleting the requirement or the changelog entry.
 If a check is wrong for this product, that is a conversation with the user, not
 an edit to the registry.
+
+## Quality, as far as it is checkable
+
+The checks can see that a review happened, not whether it was good:
+
+- `docs/reviews/*.md` - an adversarial review note. Stage 6 reports one that is
+  missing, older than 30 days, or that has no findings at all: a review that
+  found nothing on a first pass did not look.
+- Evidence tiers (`measured` / `inferred` / `guessed`) say how each proof was
+  obtained; a stage where nothing is `measured` is reported.
+- `lifecycle guide <stage>` prints what a shallow version of the stage looks
+  like - the judgement the checker cannot make.
 
 ## Limits, stated honestly
 

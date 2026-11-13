@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 20:03:27_
+_Run at 2026-11-13 20:17:10_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -15,7 +15,7 @@ test_resume_prints_state_and_journal (tests.test_thread.SustainTests) ... ok
 test_stale_thread_blocks_after_release (tests.test_thread.SustainTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 3.872s
+Ran 9 tests in 3.758s
 
 OK
 
@@ -34,6 +34,7 @@ task alive across context resets.
 
 - v0.2.1: six stages, depth checks, game pack, playbooks, review fixes.
 - v0.3.0: stage 6 Sustain - work thread, journal, status reports, context budget.
+- `lifecycle resume` / `report` implemented; 51 tests; 7/7 stages on this repo.
 - `lifecycle resume` and `lifecycle report` implemented and tested (51 tests).
 
 ## Next
@@ -52,10 +53,26 @@ None.
   real project crosses it.
 - Should the journal be required before the first release, or only after?
 
+## Last compaction snapshot
+
+- stages: 5/7 pass
+- blocked: Verify, Sustain
+- working tree: 5 changed file(s)
+- c29bc6a docs: long-running work in the README
+- 515e269 lifecycle 0.3.0: the long-running thread
+- b0a75a9 lifecycle 0.2.1: review fixes
+    # Current work
+    ## Goal
+    A checkable contract for shipping a product, plus the thread that keeps a long
+    task alive across context resets.
+    ## Done
+    - v0.2.1: six stages, depth checks, game pack, playbooks, review fixes.
+
 ## Recent journal
 - `docs/work/log/2026-11-13.md` - # 2026-11-13 / ## Did / - Built the contract, the playbooks, the depth checks and the game pack.
 
-Lifecycle: every stage passes.
+Lifecycle: stage 4 Verify - 2 requirement(s) not verified: R8, R9
+  fix: re-run each requirement's verification and write evidence, then `projtruth report`
 ```
 
 ```

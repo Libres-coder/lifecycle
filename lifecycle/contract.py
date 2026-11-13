@@ -397,6 +397,12 @@ def check_sustain(repo):
     return thread.check_sustain(repo)
 
 
+def check_review(repo):
+    """A review note is the only quality signal that is checkable at all."""
+    from . import thread
+    return thread.check_review(repo)
+
+
 STAGES = [
     {"id": 0, "key": "discovery", "title": "Discovery",
      "question": "Why does this exist, and what will it not do?",
@@ -418,7 +424,7 @@ STAGES = [
      "checks": [check_release]},
     {"id": 6, "key": "sustain", "title": "Sustain",
      "question": "Does the work survive a context reset, and is it summarised?",
-     "checks": [check_sustain]},
+     "checks": [check_sustain, check_review]},
 ]
 
 

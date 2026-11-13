@@ -162,6 +162,27 @@
           "judge": "command"
         }
       ]
+    },
+    {
+      "id": "R9",
+      "title": "Hooks make the thread automatic",
+      "status": "pending",
+      "files": [
+        "lifecycle/hooks.py",
+        "lifecycle/cli.py"
+      ],
+      "criteria": [
+        {
+          "id": "R9.1",
+          "text": "hook install merges into .claude/settings.json without duplicating or clobbering",
+          "judge": "command"
+        },
+        {
+          "id": "R9.2",
+          "text": "PreCompact writes a snapshot with the transcript size; the newest 20 are kept",
+          "judge": "command"
+        }
+      ]
     }
   ]
 }

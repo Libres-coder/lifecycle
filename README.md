@@ -82,6 +82,36 @@ pip install ~/.claude/skills/lifecycle     # or PYTHONPATH=~/.claude/skills/life
 | `lifecycle guide [stage]` | the playbook: questions to answer, what shallow looks like |
 | `lifecycle resume` | after a compaction or in a new session: the work thread, recent journal, next blocker |
 | `lifecycle report` | drafts `docs/reports/status-<date>.md` from facts it can check |
+| `lifecycle snapshot` | writes the state a compaction would lose |
+| `lifecycle hook install` | wires PreCompact + SessionStart into the project's `.claude/settings.json` |
+
+## Automatic, not remembered
+
+Skills are model-invoked: an agent under load does the task instead of choosing
+a tool, which is why installed skills can go unused for weeks. Anything that
+must happen every time belongs in a hook:
+
+```bash
+lifecycle hook install
+```
+
+- **PreCompact** → `lifecycle snapshot`: writes the stage state, the working
+  tree, the last commits, the head of the work thread, and the transcript size
+  (the only window into context size a subprocess gets).
+- **SessionStart (compact|resume)** → `lifecycle resume`: the work thread, the
+  last journal entries and the blocking item are the first thing in the new
+  context.
+
+Installed into the project's `.claude/settings.json`, uninstalled by the same
+command, and it refuses to touch a settings file it cannot parse.
+
+## Quality, as far as it is checkable
+
+- `docs/reviews/*.md` - an adversarial review note; stage 6 reports it missing,
+  stale, or with no findings (a first review that found nothing did not look).
+- Evidence tiers: a stage where no evidence is `measured` is reported.
+- `lifecycle guide` prints what a shallow stage looks like, which is the part a
+  checker cannot decide.
 
 ## Long-running work
 

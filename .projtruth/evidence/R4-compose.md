@@ -1,13 +1,13 @@
 # R4 sibling tools compose, missing ones are advisory
 
-_Run at 2026-11-13 20:03:16_
+_Run at 2026-11-13 20:16:58_
 
 ```
 $ python -m unittest tests.test_lifecycle.StageTests.test_verify_skips_when_tools_missing -v   # exit 0
 test_verify_skips_when_tools_missing (tests.test_lifecycle.StageTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.008s
+Ran 1 test in 0.006s
 
 OK
 
@@ -19,7 +19,7 @@ test_verify_does_not_pass_without_requirements (tests.test_lifecycle.StageTests)
 No registry is stage 1's problem; stage 4 must not claim success. ... ok
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.007s
+Ran 1 test in 0.005s
 
 OK
 
@@ -27,8 +27,8 @@ OK
 
 ```
 $ python -m lifecycle status   # in an empty directory   # exit 0
-# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmpsvjyco79)
-0/6 stages pass
+# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmpn886r97c)
+0/7 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -38,6 +38,7 @@ $ python -m lifecycle status   # in an empty directory   # exit 0
 | 3 | Build | **FAIL** | no source files found |
 | 4 | Verify | **WARN** | Is every promise backed by evidence that still holds? |
 | 5 | Release | **FAIL** | no CHANGELOG |
+| 6 | Sustain | **WARN** | Does the work survive a context reset, and is it summarised? |
 
 ## Blocked
 **Stage 0 Discovery**
@@ -68,14 +69,17 @@ Stage 0 Discovery: **vision** - no product vision document
 ## Not blocking
 - stage 4 Verify: no requirements registered - nothing to verify - stage 1 comes first: add requirements with criteria
 - stage 5 Release: not a git repository - git init and tag the release
+- stage 6 Sustain: no docs/work/current.md yet - create docs/work/current.md: Goal / Done / Next / Blockers
+- stage 6 Sustain: no journal entries - one file per working session in docs/work/log/: what you tried, what happened, what is next
+- stage 6 Sustain: no status report yet - `lifecycle report` writes one with the stage state and the open questions
 
-_2026-11-13 20:03_
+_2026-11-13 20:16_
 ```
 
 ```
 $ python -m lifecycle check --stage 4   # exit 1
 stage 4 Verify     FAIL
-  - evidence: 1 requirement(s) not verified: R7
+  - evidence: 4 requirement(s) not verified: R4, R7, R8, R9
     -> re-run each requirement's verification and write evidence, then `projtruth report`
 ```
 

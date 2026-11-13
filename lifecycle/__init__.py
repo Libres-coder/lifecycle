@@ -1,2 +1,2 @@
 """lifecycle - a checkable contract for each stage of shipping a product."""
-__version__ = "0.3.0"
+__version__ = "0.4.0"

@@ -97,6 +97,14 @@ def resume_text(repo, stages):
     else:
         lines.append("No %s yet. Create it with Goal / Done / Next / Blockers - "
                      "it is what a fresh session reads first." % CURRENT)
+    path, snap = latest_snapshot(repo)
+    if snap:
+        lines.append("")
+        lines.append("## Last compaction snapshot")
+        lines.append("")
+        for line in snap.splitlines():
+            if line.strip() and not line.startswith("#"):
+                lines.append(line)
     entries = journal(repo)
     if entries:
         lines.append("")
@@ -153,6 +161,121 @@ def write_report(repo, text):
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
     return path
+
+
+SNAP_DIR = ".lifecycle/snapshots"
+MAX_SNAPSHOTS = 20
+REVIEW_DIR = "docs/reviews"
+REVIEW_DAYS = 30
+
+
+def transcript_tokens(path):
+    """Rough size of a session transcript, in tokens. The only window into the
+    context the harness never shows a subprocess."""
+    try:
+        return max(1, os.path.getsize(path) // 4)
+    except (OSError, TypeError):
+        return 0
+
+
+def snapshot(repo, transcript=None, trigger=""):
+    """Write the state a compaction is about to destroy. Called by a hook.
+
+    Cheap by design: a compaction must never be delayed by bookkeeping.
+    """
+    from . import contract as contractmod
+
+    stages = contractmod.evaluate(repo)
+    blocked = [s for s in stages if s["state"] == "failed"]
+    passed = len([s for s in stages if s["state"] == "passed"])
+    status = git(repo, "status", "--porcelain") or ""
+    changed = len([l for l in status.splitlines() if l.strip()])
+    commits = (git(repo, "log", "--oneline", "-3") or "").strip()
+    tokens = transcript_tokens(transcript)
+    stamp = time.strftime("%Y-%m-%d %H:%M")
+    lines = ["# Snapshot %s%s" % (stamp, (" (%s)" % trigger) if trigger else ""), "",
+             "- stages: %d/%d pass" % (passed, len(stages)),
+             "- blocked: %s" % (", ".join(s["title"] for s in blocked) or "none"),
+             "- working tree: %d changed file(s)" % changed]
+    if tokens:
+        lines.append("- transcript: ~%dk tokens" % (tokens // 1000))
+    if commits:
+        lines += ["", "## Last commits", ""]
+        lines += ["- %s" % c for c in commits.splitlines()]
+    _, current = read(repo, CURRENT)
+    if current and current.strip():
+        head = [l for l in current.strip().splitlines() if l.strip()][:6]
+        lines += ["", "## Work thread (head)", ""] + ["    " + h for h in head]
+    d = os.path.join(repo, SNAP_DIR)
+    os.makedirs(d, exist_ok=True)
+    path = os.path.join(d, time.strftime("%Y-%m-%dT%H%M%S") + ".md")
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(lines) + "\n")
+    _prune(d)
+    return path
+
+
+def _prune(d):
+    """Keep the newest MAX_SNAPSHOTS by mtime - names sort by timestamp, but a
+    test or a copied file can break that, and deleting the file just written is
+    the one failure that matters."""
+    try:
+        files = [os.path.join(d, n) for n in os.listdir(d)]
+        files.sort(key=os.path.getmtime)
+    except OSError:
+        return
+    for path in files[:-MAX_SNAPSHOTS] if len(files) > MAX_SNAPSHOTS else []:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+
+
+def latest_snapshot(repo):
+    d = os.path.join(repo, SNAP_DIR)
+    if not os.path.isdir(d):
+        return None, None
+    files = sorted(os.listdir(d))
+    if not files:
+        return None, None
+    path = os.path.join(d, files[-1])
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            return path, f.read()
+    except OSError:
+        return None, None
+
+
+def check_review(repo):
+    """Stage 6: has anyone looked at this critically, recently?
+
+    A review note cannot prove quality - but a project that never records one
+    has not looked, and a review with no findings on a first pass is a
+    rubber stamp. Both are checkable; the quality itself is not.
+    """
+    files = _files(repo, REVIEW_DIR)
+    if not files:
+        return [warn("review", "no review note in %s/" % REVIEW_DIR,
+                     "record an adversarial review per stage: what you tried to "
+                     "break, what broke, what you decided to live with")]
+    newest = max(files, key=os.path.getmtime)
+    age = (time.time() - os.path.getmtime(newest)) / DAY
+    if age > REVIEW_DAYS:
+        return [warn("review", "the last review is %d days old" % int(age),
+                     "review the thing you have now, not the thing you had a "
+                     "month ago")]
+    try:
+        with open(newest, encoding="utf-8", errors="replace") as f:
+            body = f.read()
+    except OSError:
+        body = ""
+    findings = [l for l in body.splitlines() if l.strip().startswith("- ")]
+    if not findings:
+        return [warn("review", "the last review has no findings",
+                     "a review that found nothing did not look; name at least one "
+                     "thing you would change")]
+    return [ok("review", "%d finding(s) in %s" % (len(findings),
+                                                 os.path.relpath(newest, repo).replace("\\", "/")))]
 
 
 def check_sustain(repo):

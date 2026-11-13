@@ -12,7 +12,7 @@ import json
 import os
 import sys
 
-from . import contract, playbooks, report, thread
+from . import contract, hooks, playbooks, report, thread
 
 
 def _find_root(start):
@@ -60,6 +60,11 @@ def main(argv=None):
     sub.add_parser("stages")
     sub.add_parser("resume")
     sub.add_parser("report")
+    p = sub.add_parser("snapshot")
+    p.add_argument("--hook", action="store_true",
+                   help="read the hook payload from stdin and stay silent")
+    p = sub.add_parser("hook")
+    p.add_argument("action", choices=["install", "uninstall", "status"])
     p = sub.add_parser("guide")
     p.add_argument("stage", nargs="?",
                    help="stage number or name, or a pack name (game); default: "
@@ -118,6 +123,29 @@ def main(argv=None):
         print("wrote %s" % os.path.relpath(path, repo).replace("\\", "/"))
         return 0
 
+    if args.cmd == "snapshot":
+        transcript, trigger = None, ""
+        if args.hook:
+            try:
+                payload = json.loads(sys.stdin.read() or "{}")
+            except ValueError:
+                payload = {}
+            transcript = payload.get("transcript_path")
+            trigger = payload.get("trigger") or payload.get("source") or ""
+        path = thread.snapshot(repo, transcript=transcript, trigger=trigger)
+        if not args.hook:
+            print("wrote %s" % os.path.relpath(path, repo).replace("\\", "/"))
+        return 0
+
+    if args.cmd == "hook":
+        if args.action == "status":
+            print(hooks.status(repo))
+            return 0
+        ok, msg = (hooks.install(repo) if args.action == "install"
+                   else hooks.uninstall(repo))
+        print(msg)
+        return 0 if ok else 1
+
     if args.cmd == "guide":
         return _guide(stages, args)
 
@@ -159,6 +187,20 @@ def _guide(stages, args):
         sys.stderr.write("\n")
         return 2
     print(text)
+    tools = playbooks.TOOLS.get(chosen["key"]) or []
+    if tools:
+        print("")
+        print("## Tools that help (if installed)")
+        print("")
+        for name, why in tools:
+            print("- `%s` - %s" % (name, why))
+    pack_name = next((s.get("pack") for s in stages if s.get("pack")), None)
+    pack_text = playbooks.for_pack(pack_name) if pack_name else None
+    if pack_text:
+        print("")
+        print("---")
+        print("")
+        print(pack_text)
     return 0
 
 

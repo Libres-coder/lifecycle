@@ -3,56 +3,63 @@
     {
       "file": ".projtruth/evidence/R1-status.md",
       "tier": "measured",
-      "mtime": 1794571388.4999802
+      "mtime": 1794572208.6571975
     }
   ],
   "R2": [
     {
       "file": ".projtruth/evidence/R2-check.md",
       "tier": "measured",
-      "mtime": 1794571392.4200687
+      "mtime": 1794572213.7430308
     }
   ],
   "R3": [
     {
       "file": ".projtruth/evidence/R3-stateless.md",
       "tier": "measured",
-      "mtime": 1794571394.6007566
+      "mtime": 1794572216.105639
     }
   ],
   "R4": [
     {
       "file": ".projtruth/evidence/R4-compose.md",
       "tier": "measured",
-      "mtime": 1794571396.5899377
+      "mtime": 1794572218.5308416
     }
   ],
   "R5": [
     {
       "file": ".projtruth/evidence/R5-depth.md",
       "tier": "measured",
-      "mtime": 1794571397.951396
+      "mtime": 1794572220.1454182
     }
   ],
   "R6": [
     {
       "file": ".projtruth/evidence/R6-game-pack.md",
       "tier": "measured",
-      "mtime": 1794571398.3713598
+      "mtime": 1794572220.5948637
     }
   ],
   "R7": [
     {
       "file": ".projtruth/evidence/R7-guide.md",
       "tier": "measured",
-      "mtime": 1794571400.6720686
+      "mtime": 1794572223.2090337
     }
   ],
   "R8": [
     {
       "file": ".projtruth/evidence/R8-thread.md",
       "tier": "measured",
-      "mtime": 1794571407.945387
+      "mtime": 1794572230.6537719
+    }
+  ],
+  "R9": [
+    {
+      "file": ".projtruth/evidence/R9-hooks.md",
+      "tier": "measured",
+      "mtime": 1794572235.5895126
     }
   ]
 }

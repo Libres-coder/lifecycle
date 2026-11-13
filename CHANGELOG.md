@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.0] - 2026-11-13
+
+### Added
+- **Hooks** (`lifecycle hook install`): PreCompact runs `lifecycle snapshot`, so
+  the state is written before the context is compacted; SessionStart
+  (compact|resume) runs `lifecycle resume`, so the work thread is the first thing
+  in the new context. Written into the project's `.claude/settings.json`, merged
+  without clobbering, removed by `hook uninstall`.
+- `lifecycle snapshot` - stage state, working tree, last commits, the head of the
+  work thread, and the transcript size (the only window into context size a
+  subprocess has). Keeps the newest 20 by mtime.
+- **Review note check** (stage 6): `docs/reviews/*.md`, reported when missing,
+  older than 30 days, or with no findings at all.
+- **Toolbox per stage** in `lifecycle guide`: the tools that help there, marked
+  "if installed".
+
+### Fixed
+- Snapshot pruning sorted by filename; a file whose name did not start with a
+  timestamp could delete the snapshot just written.
+
 ## [0.3.0] - 2026-11-13
 
 ### Added

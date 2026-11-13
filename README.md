@@ -152,6 +152,19 @@ item. What it cannot do is see your actual context window - the budget check
 measures the documents the repository loads (CLAUDE.md, README, vision,
 architecture, `current.md`), which is a proxy.
 
+## What it can and cannot make an agent do
+
+lifecycle **cannot invoke a skill, a plugin or a slash command**. It names the
+right tool for the stage (`lifecycle guide <stage>`, `lifecycle suggest`) and
+the agent decides whether to use it; `/compact` and `/clear` are the user's
+keystrokes, not a tool call.
+
+That is deliberate, and it is why the hooks exist: anything that must happen
+every time - recording state before a compaction, restoring the thread after one
+- is a hook, and anything that needs judgement is a name in front of whoever
+reads it. A tool that pretends to drive other tools is the one that silently
+does nothing.
+
 ## More than one line of work
 
 ```bash

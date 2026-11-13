@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.1] - 2026-11-13
+
+### Fixed
+- The SessionStart hook printed the whole resume report in any folder the
+  session opened, including ones with no lifecycle setup. `resume --hook` is now
+  silent unless the repository has a work thread, a registry with requirements,
+  or a `.lifecycle/` directory.
+
+### Added
+- `lifecycle suggest`: the blocking item, the tools worth using for that stage,
+  and a context warning (`/compact` at 85% and above, a nudge at 70%).
+- A context reading older than ten minutes is labelled stale instead of live.
+- Documented what lifecycle cannot do: invoke a skill or a slash command.
+
 ## [1.2.0] - 2026-11-13
 
 ### Added

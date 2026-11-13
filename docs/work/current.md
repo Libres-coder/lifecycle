@@ -21,6 +21,8 @@ task alive across context resets.
   `resume --thread`, stale-claim and shared-owner warnings).
 - v1.2.0: context readings via the statusline payload; `resume --hook` records
   session-start tokens; docs on why 74% does not compact.
+- v1.2.1: hook stays silent outside an initialized repo; `lifecycle suggest`
+  names the tool and the compaction advice.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

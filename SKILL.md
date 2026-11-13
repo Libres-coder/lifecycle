@@ -115,6 +115,19 @@ model-invoked, and a model under load does the task instead of choosing a tool.
 Anything that must happen every time belongs in a hook or a gate, not in a
 description.
 
+## What it can and cannot make an agent do
+
+lifecycle **cannot invoke a skill, a plugin or a slash command**. It names the
+right tool for the stage (`lifecycle guide <stage>`, `lifecycle suggest`) and
+the agent decides whether to use it; `/compact` and `/clear` are the user's
+keystrokes, not a tool call.
+
+That is deliberate, and it is why the hooks exist: anything that must happen
+every time - recording state before a compaction, restoring the thread after one
+- is a hook, and anything that needs judgement is a name in front of whoever
+reads it. A tool that pretends to drive other tools is the one that silently
+does nothing.
+
 ## Long-running work
 
 A task that outlives one context window needs three artifacts, and they are the

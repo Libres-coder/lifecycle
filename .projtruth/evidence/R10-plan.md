@@ -1,6 +1,6 @@
 # R10 a plan makes progress visible
 
-_Run at 2026-11-13 21:10:36_
+_Run at 2026-11-13 21:30:10_
 
 ```
 $ python -m unittest tests.test_plan -v   # exit 0
@@ -20,7 +20,7 @@ test_shared_owner_warns (tests.test_plan.ThreadTests) ... ok
 test_slug_is_validated (tests.test_plan.ThreadTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 14 tests in 0.382s
+Ran 14 tests in 0.411s
 
 OK
 
@@ -28,11 +28,13 @@ OK
 
 ```
 $ python -m lifecycle resume   # includes plan progress   # exit 0
-Lifecycle: stage 4 Verify - 2 requirement(s) not verified: R10, R11
-  fix: re-run each requirement's verification and write evidence, then `projtruth report`
+Lifecycle: stage 5 Release - no tag matches version 1.2.1 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0)
+  fix: tag v1.2.1, or fix the version
 
 context: 74% used
 
+
+Context at 74%: fine to keep going; compact before you open a new thread.
 # Current work
 
 ## Goal
@@ -48,14 +50,13 @@ task alive across context resets.
   that record the transcript size, a review-note check, and a per-stage toolbox
   in `guide`.
 - v1.0.0: plan artifact with milestone progress, `lifecycle init`, thread
-  structure checks, compaction cadence.
-- 71 tests; 10 requirements verifi
+  structure ch
 ```
 
 ```
 $ python -m lifecycle status   # exit 0
 # lifecycle (D:\my_idea\lifecycle)
-5/7 stages pass  ·  context: 74% used
+6/7 stages pass  ·  context: 74% used
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -63,15 +64,13 @@ $ python -m lifecycle status   # exit 0
 | 1 | Spec | **PASS** | What exactly is promised, in a way a stranger can check? |
 | 2 | Design | **PASS** | How is it built, and why this way? |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
-| 4 | Verify | **FAIL** | 2 requirement(s) not verified: R10, R11 |
-| 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
-| 6 | Sustain | **FAIL** | code changed after docs/work/current.md |
+| 4 | Verify | **PASS** | Is every promise backed by evidence that still holds? |
+| 5 | Release | **FAIL** | no tag matches version 1.2.1 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0) |
+| 6 | Sustain | **PASS** | Does the work survive a context reset, and is it summarised? |
 
 ## Blocked
-**Stage 4 Verify**
-- evidence: 2 requirement(s) not verified: R10, R11
-  - re-run each requirement's verification and write evidence, then `projtruth report`
-
+**Stage 5 Release**
+- tag: no tag matches version 1.2.1 (tags: v0.1.0, v0.2.0, v0.2.1, v0.
 ```
 
 measured

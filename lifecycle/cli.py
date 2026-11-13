@@ -15,6 +15,41 @@ import sys
 from . import contract, hooks, playbooks, report, statusline, thread, threads
 
 
+def _context_hint(repo):
+    data, age = statusline.last(repo)
+    pct = (data or {}).get("used_percentage")
+    if pct is None:
+        return ""
+    if age is not None and age > statusline.FRESH_MINUTES * 60:
+        return ("last context reading was %d min ago (%d%%); it is not live - "
+                "the status line is what keeps it current" % (age // 60, pct))
+    if pct >= 85:
+        return ("Context at %d%%: run /compact before starting something new - "
+                "afterwards `lifecycle resume` brings the thread back." % pct)
+    if pct >= 70:
+        return ("Context at %d%%: fine to keep going; compact before you open a "
+                "new thread." % pct)
+    return ""
+
+
+def _initialized(repo):
+    """Has this repository actually been set up? A SessionStart hook runs in
+    whatever folder the session opened, and nagging there is noise. An empty
+    .projtruth/ left by a probe does not count."""
+    if os.path.exists(os.path.join(repo, "docs", "work")):
+        return True
+    if os.path.isdir(os.path.join(repo, ".lifecycle")):
+        return True
+    req = os.path.join(repo, ".projtruth", "requirements.json")
+    try:
+        import json as _json
+        with open(req, encoding="utf-8-sig") as f:
+            data = _json.load(f)
+        return bool(isinstance(data, dict) and data.get("requirements"))
+    except (OSError, ValueError):
+        return False
+
+
 def _find_root(start):
     """Running `lifecycle` from src/ should find the project, not fail on docs/."""
     path = os.path.abspath(start)
@@ -55,6 +90,7 @@ def main(argv=None):
     p = sub.add_parser("status")
     p.add_argument("--json", action="store_true")
     sub.add_parser("next")
+    sub.add_parser("suggest")
     p = sub.add_parser("check")
     p.add_argument("--stage", type=int, default=None,
                    help="assert one stage (default: every stage)")
@@ -125,10 +161,15 @@ def main(argv=None):
     if args.cmd == "check":
         return _check(stages, args)
 
+    if args.cmd == "suggest":
+        return _suggest(repo, stages)
+
     if args.cmd == "thread":
         return _thread(repo, args)
 
     if args.cmd == "resume":
+        if getattr(args, "hook", False) and not _initialized(repo):
+            return 0                    # a hook in an unrelated folder must be quiet
         if getattr(args, "hook", False):
             try:
                 payload = json.loads(sys.stdin.read() or "{}")
@@ -162,6 +203,10 @@ def main(argv=None):
         if ctx:
             print(ctx)
             print("")
+        hint = _context_hint(repo)
+        if hint:
+            print("")
+            print(hint)
         print(thread.resume_text(repo, stages))
         rows = threads.describe(repo)
         if rows:
@@ -221,6 +266,38 @@ def main(argv=None):
             print("%d  %-10s %s" % (s["id"], s["title"], s["question"]))
         return 0
     return 2
+
+
+def _suggest(repo, stages):
+    """The three things worth doing now: unblock, tool, and context hygiene.
+
+    Advice, not dispatch: lifecycle cannot call a skill or a slash command. It
+    can put the right name in front of whoever reads this.
+    """
+    out = []
+    stage, item = report.next_action(stages)
+    if stage is not None and item is not None:
+        out.append(("unblock", "stage %d %s: %s" % (stage["id"], stage["title"],
+                                                    item["detail"]), item["fix"]))
+    if stage is not None:
+        tools = playbooks.TOOLS.get(stage["key"]) or []
+        for name, why in tools[:2]:
+            out.append(("tool", "%s - %s" % (name, why),
+                        "use it if installed; `lifecycle guide %s` explains why" %
+                        stage["key"]))
+    hint = _context_hint(repo)
+    if hint:
+        out.append(("context", hint, "/compact"))
+    else:
+        out.append(("context",
+                    "no recent context reading; `lifecycle hook install` adds the "
+                    "status line that records it", "lifecycle hook install"))
+    print("What to do now")
+    for kind, what, how in out:
+        print("")
+        print("  [%s] %s" % (kind, what))
+        print("         %s" % how)
+    return 0
 
 
 def _thread(repo, args):

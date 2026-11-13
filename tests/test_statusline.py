@@ -78,6 +78,14 @@ class CliTests(unittest.TestCase):
         finally:
             sys.stdin, sys.stdout = old_in, old_out
 
+    def test_resume_hook_is_silent_in_an_uninitialized_folder(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            rc, out = self._run(["--repo", tmp, "resume", "--hook"],
+                                '{"source": "startup", "context_tokens": 1000}')
+            self.assertEqual(rc, 0)
+            self.assertEqual(out, "")
+            self.assertFalse(os.path.exists(os.path.join(tmp, ".lifecycle")))
+
     def test_statusline_command_records_and_prints(self):
         with tempfile.TemporaryDirectory() as tmp:
             rc, out = self._run(["--repo", tmp, "statusline"], json.dumps(PAYLOAD))
@@ -88,6 +96,7 @@ class CliTests(unittest.TestCase):
 
     def test_resume_hook_records_context_tokens(self):
         with tempfile.TemporaryDirectory() as tmp:
+            os.makedirs(os.path.join(tmp, "docs", "work"))   # an initialized repo
             rc, _ = self._run(["--repo", tmp, "resume", "--hook"],
                               '{"source": "compact", "context_tokens": 42000}')
             self.assertEqual(rc, 0)

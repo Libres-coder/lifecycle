@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 21:10:26_
+_Run at 2026-11-13 21:30:01_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 5.846s
+Ran 9 tests in 6.323s
 
 OK
 
@@ -24,11 +24,13 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 4 Verify - 4 requirement(s) not verified: R8, R9, R10, R11
-  fix: re-run each requirement's verification and write evidence, then `projtruth report`
+Lifecycle: stage 5 Release - no tag matches version 1.2.1 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0)
+  fix: tag v1.2.1, or fix the version
 
 context: 74% used
 
+
+Context at 74%: fine to keep going; compact before you open a new thread.
 # Current work
 
 ## Goal
@@ -50,12 +52,18 @@ task alive across context resets.
   freshness, hook command resolution, criteria validation, report overwrite.
 - v1.1.0: threads (per-thread handoff/plan/owner, portfolio table,
   `resume --thread`, stale-claim and shared-owner warnings).
+- v1.2.0: context readings via the statusline payload; `resume --hook` records
+  session-start tokens; docs on why 74% does not compact.
+- v1.2.1: hook stays silent outside an initialized repo; `lifecycle suggest`
+  names the tool and the compaction advice.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
 ## Next
 
-- Independent review of 1.0, then publish with a release note.
+- Watch whether the status line actually fires in this desktop app; it did not
+  in a 20 s probe. The command is harmless where it does not.
+- Independent review of the 1.x surface (threads, statusline).
 - Try the hooks in a real session: does `resume` after a compaction actually
   restore enough to continue, or is it noise?
 - Publish to GitHub once the thread layer has survived one real handoff.
@@ -78,12 +86,13 @@ None.
 ## Last compaction snapshot
 
 - stages: 5/7 pass
-- blocked: Release
-- working tree: 27 changed file(s)
+- blocked: Sustain
+- working tree: 12 changed file(s)
 - plan: 4/5 milestones, 15/17 tasks
+- context: 74% (as of 16 min ago - install the statusline hook to keep it current)
+- 2c3e0d6 lifecycle 1.2.0: context readings
+- f984143 lifecycle 1.1.0: threads
 - 11a9d0a 1.0.0: pre-release review fixes
-- d063740 1.0 hardening: light snapshots, module fallback for hooks
-- cddd690 docs: where things live, linked from CONTRIBUTING
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

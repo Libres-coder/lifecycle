@@ -66,7 +66,58 @@ def snapshots(repo):
     return _files(repo, SNAP_DIR)
 
 
-def newest_source_mtime(repo):
+def _is_git(repo):
+    out = git(repo, "rev-parse", "--is-inside-work-tree")
+    return bool(out and out.strip() == "true")
+
+
+def _git_time(repo, *pathspecs):
+    args = ["log", "-1", "--format=%ct"]
+    args += ["--"] + (list(pathspecs) or ["."])
+    out = git(repo, *args)
+    try:
+        return float(out.strip()) if out and out.strip() else 0.0
+    except ValueError:
+        return 0.0
+
+
+def _dirty(repo, paths=()):
+    args = ["status", "--porcelain"] + (["--"] + list(paths) if paths else [])
+    out = git(repo, *args)
+    return bool(out and out.strip())
+
+
+def file_change_time(repo, rel):
+    """When this file's *content* last changed: commit time in git, mtime outside.
+
+    mtimes are rewritten by every checkout, so a fresh clone made an up-to-date
+    thread look stale (and an abandoned one look fresh).
+    """
+    if _is_git(repo):
+        if _dirty(repo, (rel,)):
+            return time.time()
+        ts = _git_time(repo, rel)
+        if ts:
+            return ts
+    try:
+        return os.path.getmtime(os.path.join(repo, rel))
+    except OSError:
+        return 0.0
+
+
+def newest_source_change(repo):
+    """Newest change to code, ignoring docs and tool state."""
+    if _is_git(repo):
+        if _dirty(repo):
+            status = git(repo, "status", "--porcelain") or ""
+            for line in status.splitlines():
+                path = line[3:].strip().strip('"').replace("\\", "/")
+                if path.startswith(("docs/", ".lifecycle/", ".projtruth/", ".claude/")):
+                    continue
+                if os.path.splitext(path)[1].lower() in SOURCE_EXT:
+                    return time.time()
+        return _git_time(repo, ".", ":(exclude)docs", ":(exclude).lifecycle",
+                         ":(exclude).projtruth", ":(exclude).claude")
     newest = 0.0
     for rel in walk_files(repo):
         if os.path.splitext(rel)[1].lower() in SOURCE_EXT:
@@ -125,6 +176,7 @@ def parse_plan(repo):
     rel, text = read(repo, PLAN)
     if not text:
         return None
+    text = re.sub(r"```.*?```", " ", text, flags=re.DOTALL)
     milestones = []
     for part in re.split(r"^##\s+", text, flags=re.MULTILINE)[1:]:
         lines = part.splitlines()
@@ -429,11 +481,8 @@ def check_sustain(repo):
                    warn("thread", "no %s yet" % CURRENT,
                         "create docs/work/current.md: Goal / Done / Next / Blockers"))
     else:
-        changed = newest_source_mtime(repo)
-        try:
-            current_mtime = os.path.getmtime(os.path.join(repo, CURRENT))
-        except OSError:
-            current_mtime = 0
+        changed = newest_source_change(repo)
+        current_mtime = file_change_time(repo, CURRENT)
         if changed > current_mtime + 1:
             out.append(fail("thread:fresh", "code changed after %s" % CURRENT,
                             "update the work thread: what changed, what is next")

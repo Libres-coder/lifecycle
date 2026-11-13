@@ -15,6 +15,8 @@ task alive across context resets.
 - v1.0.0: plan artifact with milestone progress, `lifecycle init`, thread
   structure checks, compaction cadence.
 - 71 tests; 10 requirements verified; 7/7 stages on this repo.
+- Pre-release review fixed: tag matching, version discovery, commit-time
+  freshness, hook command resolution, criteria validation, report overwrite.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

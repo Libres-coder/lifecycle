@@ -23,15 +23,16 @@ A product is not "almost done". It is at a stage, and each stage has artifacts a
 stranger can check. `lifecycle` computes which stages this repository passes,
 what is blocking the next one, and the single command that unblocks it.
 
-It stores nothing. A stage passes because the repo says so right now, not
-because someone ran a command last week.
+No gate state is stored: a stage passes because the repo says so right now, not
+because someone ran a command last week. The thread files under `docs/work/` are
+the project's, and `init` creates them empty.
 
 ## Use it
 
 ```bash
 $ lifecycle --repo ../projtruth status
 # lifecycle (.../projtruth)
-4/6 stages pass
+4/7 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -41,6 +42,7 @@ $ lifecycle --repo ../projtruth status
 | 3 | Build | **PASS** | Does the code and its tests exist? |
 | 4 | Verify | **PASS** | Is every promise backed by evidence that still holds? |
 | 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
+| 6 | Sustain | **FAIL** | no docs/work/current.md |
 
 ## Next
 Stage 0 Discovery: **vision** - no product vision document

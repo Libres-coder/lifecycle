@@ -20,7 +20,10 @@ import sys
 
 IGNORE_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist",
                "build", "target", ".next", ".cache", ".corpus", ".lifecycle",
-               ".projtruth", ".claude", ".idea", "graphify-out"}
+               ".projtruth", ".claude", ".idea", "graphify-out",
+               # third-party trees that ship their own tests
+               "Library", "PackageCache", "Pods", ".dart_tool", "_build", "deps",
+               "vendor", "third_party"}
 SOURCE_EXT = {".py", ".js", ".ts", ".tsx", ".jsx", ".go", ".rs", ".java", ".rb",
               ".cs", ".cpp", ".cc", ".c", ".h", ".hpp", ".kt", ".kts", ".swift",
               ".php", ".lua", ".gd", ".dart", ".ex", ".exs", ".clj", ".scala",
@@ -66,9 +69,10 @@ def read(repo, *candidates):
 
 
 def normalize_heading(text):
-    """'2. The Problem' -> 'problem'. Numbering and articles are noise."""
+    """'2. The Problem' -> 'problem'. Numbering, articles and separators are noise."""
     t = HEADING_NUM_RE.sub("", text.strip().lower())
     t = HEADING_ARTICLE_RE.sub("", t)
+    t = re.sub(r"[-_\s]+", " ", t)
     return t.strip()
 
 
@@ -92,6 +96,20 @@ def _installed(tool):
         return False
 
 
+def _module_in_repo(repo, tool):
+    """True when the importable tool lives inside the repository under review."""
+    try:
+        import importlib.util
+        spec = importlib.util.find_spec(tool)
+    except (ImportError, ValueError):
+        return False
+    origin = getattr(spec, "origin", "") or ""
+    try:
+        return os.path.commonpath([os.path.abspath(repo), os.path.abspath(origin)])             == os.path.abspath(repo)
+    except ValueError:
+        return False
+
+
 def run_json(repo, tool, args):
     """Run an installed sibling tool and parse its JSON. None if unavailable.
 
@@ -102,8 +120,9 @@ def run_json(repo, tool, args):
     exe = shutil.which(tool)
     if exe:
         cmd = [exe]
-    elif _installed(tool):
-        cmd = [sys.executable, "-m", tool]
+    elif _installed(tool) and not _module_in_repo(repo, tool):
+        # -I: no cwd on sys.path, so a planted module cannot be executed.
+        cmd = [sys.executable, "-I", "-m", tool]
     else:
         return None
     try:
@@ -149,6 +168,26 @@ def project_version(repo):
             return str(json.loads(text).get("version") or "")
         except ValueError:
             pass
+    f, text = read(repo, "pubspec.yaml")          # Flutter / Dart
+    if text:
+        m = re.search(r"^version:\s*([^\s+#]+)", text, re.MULTILINE)
+        if m:
+            return m.group(1).strip().strip("'\"")
+    f, text = read(repo, "build.gradle", "build.gradle.kts")   # Android / JVM
+    if text:
+        m = re.search(r"^\s*version\s*=\s*['\"]([^'\"]+)['\"]", text, re.MULTILINE)
+        if m:
+            return m.group(1).strip()
+    f, text = read(repo, "setup.cfg")
+    if text:
+        m = re.search(r"^version\s*=\s*(\S+)", text, re.MULTILINE)
+        if m:
+            return m.group(1).strip()
+    f, text = read(repo, "project.godot")          # Godot
+    if text:
+        m = re.search(r"config/version\s*=\s*\"([^\"]+)\"", text)
+        if m:
+            return m.group(1).strip()
     f, text = read(repo, "VERSION")
     if text:
         return text.strip()
@@ -157,6 +196,18 @@ def project_version(repo):
 
 def _norm_version(v):
     return str(v or "").strip().lstrip("vV")
+
+
+def _tag_version(tag):
+    """'v1.0.0', 'pkg@1.2.3', 'pkg/1.2.3', 'release-1.0.0' -> the version part."""
+    t = str(tag).strip()
+    if "@" in t:
+        t = t.rsplit("@", 1)[1]
+    elif "/" in t:
+        t = t.rsplit("/", 1)[1]
+    t = t.lstrip("vV")
+    t = re.sub(r"^(release|rel)[-_]", "", t, flags=re.IGNORECASE)
+    return t
 
 
 # -- stage 0: discovery ----------------------------------------------------
@@ -169,7 +220,7 @@ def check_vision(repo):
     have = headings(text)
     out = [ok("vision", rel)]
     for needed, label in (("problem", "Problem"), ("audience", "Audience"),
-                          ("non-goal", "Non-goals")):
+                          ("non goal", "Non-goals")):
         if any(h.startswith(needed) for h in have):
             out.append(ok("vision:%s" % needed, "%s section present" % label))
         else:
@@ -198,8 +249,12 @@ def _load_registry(repo):
     for r in reqs:
         if not isinstance(r, dict):
             return None, "malformed"
-        if not isinstance(r.get("criteria", []), list):
+        crit = r.get("criteria", [])
+        if not isinstance(crit, list):
             return None, "malformed"
+        for c in crit:
+            if not isinstance(c, dict):
+                return None, "malformed"
     return data, None
 
 
@@ -323,7 +378,13 @@ def check_build(repo):
 def check_verify(repo):
     data = run_json(repo, "projtruth", ["report", "--json"])
     if data is None:
-        return [skip("projtruth", "projtruth is not installed",
+        has_registry = os.path.isfile(os.path.join(repo, ".projtruth",
+                                                   "requirements.json"))
+        return [fail("projtruth", "projtruth is not installed, so nothing can be "
+                                  "verified",
+                     "pip install git+https://github.com/Libres-coder/projtruth")
+                if has_registry else
+                skip("projtruth", "projtruth is not installed",
                      "pip install git+https://github.com/Libres-coder/projtruth")]
     if not isinstance(data, list) or not data:
         # No registry is stage 1's problem; claiming "verified" here would be a
@@ -367,27 +428,31 @@ def check_release(repo):
         out.append(skip("changelog", "no version file to match against",
                         "set a version in pyproject.toml, Cargo.toml, package.json "
                         "or VERSION"))
-    elif not re.search(r"\[\s*v?%s\s*\]|^#+\s*v?%s\s*$" % (re.escape(version),
-                                                           re.escape(version)),
+    elif not re.search(r"^#{1,6}\s*\[?\s*v?%s\s*\]?(\s*[-–—(:].*)?$" % re.escape(version),
                        changelog, re.MULTILINE):
         out.append(fail("changelog", "CHANGELOG has no entry for %s" % version,
                         "add a '## [%s]' section to %s" % (version, rel)))
     else:
         out.append(ok("changelog", rel))
-    tags = git(repo, "tag", "--sort=-v:refname")
+    tags = git(repo, "tag")
     if tags is None:
         out.append(skip("tag", "not a git repository", "git init and tag the release"))
-    elif not tags:
+    elif not tags.strip():
         out.append(fail("tag", "no release tag",
                         "git tag -a v%s -m \"release\"" % (version or "0.1.0")))
+    elif not version:
+        out.append(fail("tag", "no version to compare the tags against",
+                        "set a version in pyproject.toml, Cargo.toml, package.json, "
+                        "pubspec.yaml, build.gradle or VERSION"))
     else:
-        newest = tags.splitlines()[0]
-        if version and _norm_version(newest) != version:
-            out.append(fail("tag", "newest tag %s does not match version %s"
-                            % (newest, version),
-                            "bump the version or tag v%s" % version))
+        names = [t.strip() for t in tags.splitlines() if t.strip()]
+        match = [t for t in names if _tag_version(t) == version]
+        if not match:
+            out.append(fail("tag", "no tag matches version %s (tags: %s)"
+                            % (version, ", ".join(names[:5])),
+                            "tag v%s, or fix the version" % version))
         else:
-            out.append(ok("tag", newest))
+            out.append(ok("tag", match[0]))
     return out
 
 

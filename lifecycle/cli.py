@@ -116,15 +116,13 @@ def main(argv=None):
         return _check(stages, args)
 
     if args.cmd == "resume":
-        print(thread.resume_text(repo, stages))
         stage, item = report.next_action(stages)
-        print("")
-        if stage is None or item is None:
-            print("Lifecycle: every stage passes.")
-        else:
+        if stage is not None and item is not None:
             print("Lifecycle: stage %d %s - %s" % (stage["id"], stage["title"],
                                                    item["detail"]))
             print("  fix: %s" % item["fix"])
+            print("")
+        print(thread.resume_text(repo, stages))
         return 0
 
     if args.cmd == "report":

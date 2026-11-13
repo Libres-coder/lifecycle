@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 20:34:23_
+_Run at 2026-11-13 20:46:18_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -12,10 +12,11 @@ test_fresh_thread_passes (tests.test_thread.SustainTests) ... ok
 test_old_journal_warns (tests.test_thread.SustainTests) ... ok
 test_report_is_drafted_from_facts (tests.test_thread.SustainTests) ... ok
 test_resume_prints_state_and_journal (tests.test_thread.SustainTests) ... ok
-test_stale_thread_blocks_after_release (tests.test_thread.SustainTests) ... ok
+test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
+A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 3.894s
+Ran 9 tests in 6.279s
 
 OK
 
@@ -23,6 +24,9 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
+Lifecycle: stage 4 Verify - 3 requirement(s) not verified: R8, R9, R10
+  fix: re-run each requirement's verification and write evidence, then `projtruth report`
+
 # Current work
 
 ## Goal
@@ -69,11 +73,11 @@ None.
 
 - stages: 5/7 pass
 - blocked: Sustain
-- working tree: 4 changed file(s)
+- working tree: 6 changed file(s)
 - plan: 3/4 milestones, 9/13 tasks
+- d063740 1.0 hardening: light snapshots, module fallback for hooks
 - cddd690 docs: where things live, linked from CONTRIBUTING
 - d0bd1ce lifecycle 1.0.0: plan, init, thread structure, cadence
-- 23fae5f thread: record the 0.4.0 release
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long
@@ -83,9 +87,6 @@ None.
 
 ## Recent journal
 - `docs/work/log/2026-11-13.md` - # 2026-11-13 / ## Did / - Built the contract, the playbooks, the depth checks and the game pack.
-
-Lifecycle: stage 4 Verify - 3 requirement(s) not verified: R8, R9, R10
-  fix: re-run each requirement's verification and write evidence, then `projtruth report`
 ```
 
 ```

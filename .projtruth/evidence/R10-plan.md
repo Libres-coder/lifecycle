@@ -1,6 +1,6 @@
 # R10 a plan makes progress visible
 
-_Run at 2026-11-13 20:34:31_
+_Run at 2026-11-13 20:46:27_
 
 ```
 $ python -m unittest tests.test_plan -v   # exit 0
@@ -16,7 +16,7 @@ test_missing_sections_warn (tests.test_plan.ThreadStructureTests) ... ok
 test_next_needs_a_bullet (tests.test_plan.ThreadStructureTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 10 tests in 0.101s
+Ran 10 tests in 0.098s
 
 OK
 
@@ -24,6 +24,9 @@ OK
 
 ```
 $ python -m lifecycle resume   # includes plan progress   # exit 0
+Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R10
+  fix: re-run each requirement's verification and write evidence, then `projtruth report`
+
 # Current work
 
 ## Goal
@@ -40,15 +43,13 @@ task alive across context resets.
   in `guide`.
 - v1.0.0: plan artifact with milestone progress, `lifecycle init`, thread
   structure checks, compaction cadence.
-- 71 tests; 10 requirements verified; 7/7 stages on this repo.
-- Pre-release hardening: snapshots skip the heavy verify stage; hook commands
-  fall back to `python -m lifecycle` when the console script is absent.
+- 71 tests; 10 requirements verified; 7/7 stages on this r
 ```
 
 ```
 $ python -m lifecycle status   # exit 0
 # lifecycle (D:\my_idea\lifecycle)
-6/7 stages pass
+5/7 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -58,15 +59,14 @@ $ python -m lifecycle status   # exit 0
 | 3 | Build | **PASS** | Does the code and its tests exist? |
 | 4 | Verify | **FAIL** | 1 requirement(s) not verified: R10 |
 | 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
-| 6 | Sustain | **PASS** | Does the work survive a context reset, and is it summarised? |
+| 6 | Sustain | **FAIL** | code changed after docs/work/current.md |
 
 ## Blocked
 **Stage 4 Verify**
 - evidence: 1 requirement(s) not verified: R10
   - re-run each requirement's verification and write evidence, then `projtruth report`
-
-## Next
-St
+**Stage 6 Sustain**
+- thread:fre
 ```
 
 measured

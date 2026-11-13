@@ -17,9 +17,30 @@ survives a context reset, and hooks that make the thread automatic.
   reported - work running on memory instead of notes.
 - `resume` includes plan progress and the last compaction snapshot.
 
+### Fixed (pre-release review)
+- Release checks: any tag that normalises to the version passes (`v1.0.0`,
+  `pkg@1.0.0`, `release-1.0.0`); a retained `v1.0.0-rc.1` no longer wins the
+  comparison. Versions are read from `pyproject.toml`, `Cargo.toml`,
+  `package.json`, `pubspec.yaml`, `build.gradle`, `setup.cfg`, `project.godot`
+  and `VERSION`; with no version at all the tag check fails instead of passing.
+- Thread freshness uses git commit times, so a clone or a `git pull` no longer
+  makes an up-to-date thread look stale (or an abandoned one look fresh).
+- A registry whose `criteria` are strings is reported, not crashed on.
+- Hook commands are resolved against what actually runs: the console script when
+  it is on PATH, `python -m lifecycle` otherwise, and install refuses when
+  neither resolves. SessionStart now also fires on `startup`.
+- `check --stage 4` fails when a registry exists and projtruth is absent.
+- `report` no longer overwrites a same-day report that was edited.
+- `snapshot` skips the verify stage and no longer evaluates twice; `resume`
+  prints the blocker first, where bounded hook output cannot drop it.
+- `## Non Goals` and `## 1. The Problem` are recognised as headings.
+- Plan checkboxes inside fenced code are ignored.
+
 ### Changed
 - Stage 6 now runs five checks: thread freshness, sections, plan, review note,
-  cadence. All of them are advisory until the first release, blocking after it.
+  cadence. Only the work thread itself (present, fresher than the code) can fail
+  the stage, and only after a release; the other four are advisory - a plan, a
+  review note and a cadence are good practice, not a promise to a user.
 
 ## [0.4.0] - 2026-11-13
 

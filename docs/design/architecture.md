@@ -12,9 +12,10 @@ A check returns `{name, ok, detail, fix, required}`. A stage passes when no
 required check fails. Nothing is written to disk, so there is no gate record to
 go stale: re-running after an edit recomputes the answer.
 
-Sibling tools (projtruth, corpus) are invoked as subprocesses with `--json` and
-`PYTHONPATH` set to the scanned repo, so a checkout works as well as an
-installed package. When they are absent the check is advisory, not a failure.
+Sibling tools (projtruth, corpus) are invoked as subprocesses with `--json`,
+only when they are installed: the scanned repository is never put on
+`PYTHONPATH`, so auditing a repository cannot execute its code. When a tool is
+absent the check is advisory, not a failure.
 
 ## Trade-offs
 
@@ -22,5 +23,5 @@ installed package. When they are absent the check is advisory, not a failure.
   from reality.
 - **Opinionated stages over configurable ones.** Six generic stages cover a
   product; a project that needs different gates forks the contract.
-- **Read-only.** It never creates the artifacts it asks for, so it cannot
-  manufacture a pass.
+- **It cannot manufacture a pass.** `init` writes empty templates and `report`
+  drafts a summary; nothing fills in a vision, a test or an evidence file.

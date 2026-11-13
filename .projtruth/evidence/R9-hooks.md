@@ -1,6 +1,6 @@
 # R9 hooks make the thread automatic
 
-_Run at 2026-11-13 20:34:27_
+_Run at 2026-11-13 20:46:23_
 
 ```
 $ python -m unittest tests.test_hooks -v   # exit 0
@@ -29,7 +29,7 @@ PreCompact: on, SessionStart: on (.claude\settings.json)
 
 ```
 $ printf '{"trigger":"manual"}' | python -m lifecycle snapshot   # exit 0
-wrote .lifecycle/snapshots/2026-11-13T203426.md
+wrote .lifecycle/snapshots/2026-11-13T204622.md
 ```
 
 measured

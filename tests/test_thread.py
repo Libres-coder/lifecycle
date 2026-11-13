@@ -37,12 +37,15 @@ class SustainTests(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
-    def _git(self, *args):
+    def _git(self, *args, **kw):
         env = dict(os.environ)
         env.setdefault("GIT_AUTHOR_NAME", "t")
         env.setdefault("GIT_AUTHOR_EMAIL", "t@example.com")
         env.setdefault("GIT_COMMITTER_NAME", "t")
         env.setdefault("GIT_COMMITTER_EMAIL", "t@example.com")
+        date = kw.get("date")
+        if date:
+            env["GIT_AUTHOR_DATE"] = env["GIT_COMMITTER_DATE"] = date
         subprocess.run(["git", "-C", self.repo] + list(args), check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, env=env)
 
@@ -65,11 +68,14 @@ class SustainTests(unittest.TestCase):
         self.assertTrue(thread_res["required"], thread_res)
 
     def test_stale_thread_blocks_after_release(self):
+        """A commit that changes code after the thread's last commit is drift."""
         self._release()
-        now = time.time()
-        mk(os.path.join(self.repo, "docs", "work", "current.md"), "# c\n",
-           mtime=now - 2 * DAY)
-        os.utime(os.path.join(self.repo, "app.py"), (now, now))
+        mk(os.path.join(self.repo, "docs", "work", "current.md"), "# c\n")
+        self._git("add", "-A")
+        self._git("commit", "-m", "thread", date="2026-01-01T00:00:00+0000")
+        mk(os.path.join(self.repo, "app.py"), "x = 2\n")
+        self._git("add", "-A")
+        self._git("commit", "-m", "code moves on", date="2026-01-02T00:00:00+0000")
         results = thread.check_sustain(self.repo)
         fresh = by_name(results, "thread:fresh")
         self.assertTrue(fresh["required"])

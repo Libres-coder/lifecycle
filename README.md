@@ -9,7 +9,7 @@ projects:
 ```
 $ lifecycle --repo ../projtruth status
 # lifecycle (.../projtruth)
-4/6 stages pass
+4/7 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -19,6 +19,7 @@ $ lifecycle --repo ../projtruth status
 | 3 | Build | **PASS** | Does the code and its tests exist? |
 | 4 | Verify | **PASS** | Is every promise backed by evidence that still holds? |
 | 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
+| 6 | Sustain | **FAIL** | no docs/work/current.md |
 
 ## Next
 Stage 0 Discovery: **vision** - no product vision document
@@ -204,10 +205,12 @@ the bible never establishes, an actor used but never declared.
 
 ## Design notes
 
-- **No stored state.** A stage passes because the repository says so right now.
-  A pass record that can go stale is a gate people stop trusting.
-- **Read-only.** It never creates the artifacts it asks for, so it cannot
-  manufacture a pass.
+- **No gate state.** A stage passes because the repository says so right now -
+  there is no "passed" record to go stale. The thread files (`docs/work/`,
+  `docs/reports/`, `docs/reviews/`) are yours; `init` creates them empty and
+  `report` drafts one.
+- **It cannot fake a pass.** `init` scaffolds empty files and `report` drafts a
+  summary, but no command fills in a vision, a test or an evidence file.
 - **Composes instead of replacing.** projtruth and corpus are called through
   their JSON output; either can be missing.
 - **Opinionated and forkable.** Six generic stages cover a product. A game or a

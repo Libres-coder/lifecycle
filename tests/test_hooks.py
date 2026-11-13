@@ -29,7 +29,7 @@ class HookTests(unittest.TestCase):
             pre = data["hooks"]["PreCompact"]
             self.assertEqual(len(pre), 1)
             cmds = [h["command"] for e in pre for h in e["hooks"]]
-            self.assertEqual(cmds.count(hooks.SNAPSHOT_CMD), 1)
+            self.assertEqual(len([c for c in cmds if "snapshot" in c]), 1)
 
     def test_install_preserves_existing_settings(self):
         with tempfile.TemporaryDirectory() as tmp:

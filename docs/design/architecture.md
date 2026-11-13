@@ -4,8 +4,12 @@ Three layers, no state.
 
 ```
 contract.py   stage definitions; each check reads the repo and returns results
-report.py     the stage table, the blockers, the one next action
-cli.py        status / next / check / stages
+thread.py     the handoff: current.md, plan, journal, reports, reviews, snapshots
+threads.py    more than one line of work: per-thread handoff, plan, owner
+depth.py      advisory checks for shallow artifacts
+packs.py      domain checks (game) attached to existing stages
+report.py     the stage table, the threads table, the blockers, the next action
+cli.py        status / next / check / stages / resume / report / snapshot / hook
 ```
 
 A check returns `{name, ok, detail, fix, required}`. A stage passes when no

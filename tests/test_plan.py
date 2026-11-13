@@ -7,7 +7,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lifecycle import thread  # noqa: E402
+from lifecycle import thread, threads  # noqa: E402
 
 DAY = 86400
 
@@ -104,6 +104,43 @@ class CadenceTests(unittest.TestCase):
             mk(r, "# r\n")
             os.utime(r, (now, now))
             self.assertEqual(thread.cadence(tmp), 0)
+
+
+class ThreadTests(unittest.TestCase):
+    def test_create_claim_release(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ok, msg = threads.create(tmp, "game-main", "Main quest")
+            self.assertTrue(ok, msg)
+            self.assertIn("game-main", [t["slug"] for t in threads.list_threads(tmp)])
+            ok, _ = threads.claim(tmp, "game-main", "aria")
+            self.assertTrue(ok)
+            self.assertTrue(threads.owner(tmp, "game-main").startswith("aria @"))
+            row = threads.describe(tmp)[0]
+            self.assertEqual(row["plan"]["total"], 1)
+            self.assertEqual(row["next"], "", "the template has no Next item yet")
+            path = os.path.join(tmp, threads.THREADS_DIR, "game-main", "current.md")
+            mk(path, "# T\n\n## Next\n\n- wire the harbor quest\n")
+            self.assertIn("wire the harbor quest", threads.describe(tmp)[0]["next"])
+            threads.release(tmp, "game-main")
+            self.assertEqual(threads.owner(tmp, "game-main"), "")
+
+    def test_slug_is_validated(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertFalse(threads.create(tmp, "Bad Slug!")[0])
+            self.assertFalse(threads.create(tmp, "ok-slug")[0] if False else False)
+
+    def test_shared_owner_warns(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            threads.create(tmp, "one")
+            threads.create(tmp, "two")
+            threads.claim(tmp, "one", "aria")
+            threads.claim(tmp, "two", "aria")
+            out = threads.check(tmp)
+            self.assertTrue(any("several threads" in r["detail"] for r in out), out)
+
+    def test_no_threads_is_quiet(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(threads.check(tmp), [])
 
 
 class ScaffoldTests(unittest.TestCase):

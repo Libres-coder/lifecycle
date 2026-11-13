@@ -27,7 +27,7 @@ def next_action(stages):
     return None, None
 
 
-def render(repo, stages):
+def render(repo, stages, threads=None):
     passed, total = summary(stages)
     pack = next((s.get("pack") for s in stages if s.get("pack")), None)
     lines = ["# lifecycle (%s)" % repo,
@@ -42,6 +42,19 @@ def render(repo, stages):
             detail = bad[0]["detail"]
         lines.append("| %d | %s | **%s** | %s |"
                      % (s["id"], s["title"], STATE_MARK[s["state"]], detail))
+    if threads:
+        lines.append("")
+        lines.append("## Threads")
+        lines.append("")
+        lines.append("| thread | owner | plan | next | handoff |")
+        lines.append("|---|---|---|---|---|")
+        for t in threads:
+            plan = ("%d/%d" % (t["plan"]["done"], t["plan"]["total"])
+                    if t["plan"] else "-")
+            lines.append("| %s | %s | %s | %s | %s |"
+                         % (t["slug"], (t["owner"].split(" @ ")[0] or "-"), plan,
+                            (t["next"] or "-")[:40],
+                            "current" if t["fresh"] else "STALE"))
     blocked = [s for s in stages if s["state"] == "failed"]
     if blocked:
         lines.append("")

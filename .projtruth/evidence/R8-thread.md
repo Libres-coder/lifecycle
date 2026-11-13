@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 20:46:18_
+_Run at 2026-11-13 21:04:28_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 6.279s
+Ran 9 tests in 6.044s
 
 OK
 
@@ -24,8 +24,8 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 4 Verify - 3 requirement(s) not verified: R8, R9, R10
-  fix: re-run each requirement's verification and write evidence, then `projtruth report`
+Lifecycle: stage 5 Release - no tag matches version 1.1.0 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0)
+  fix: tag v1.1.0, or fix the version
 
 # Current work
 
@@ -44,6 +44,10 @@ task alive across context resets.
 - v1.0.0: plan artifact with milestone progress, `lifecycle init`, thread
   structure checks, compaction cadence.
 - 71 tests; 10 requirements verified; 7/7 stages on this repo.
+- Pre-release review fixed: tag matching, version discovery, commit-time
+  freshness, hook command resolution, criteria validation, report overwrite.
+- v1.1.0: threads (per-thread handoff/plan/owner, portfolio table,
+  `resume --thread`, stale-claim and shared-owner warnings).
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
@@ -67,17 +71,17 @@ None.
 
 ## Plan
 
-3/4 milestones, 9/13 tasks done.
+4/5 milestones, 15/17 tasks done.
 
 ## Last compaction snapshot
 
-- stages: 5/7 pass
-- blocked: Sustain
-- working tree: 6 changed file(s)
-- plan: 3/4 milestones, 9/13 tasks
+- stages: 6/7 pass
+- blocked: none
+- working tree: 20 changed file(s)
+- plan: 4/5 milestones, 15/17 tasks
+- 11a9d0a 1.0.0: pre-release review fixes
 - d063740 1.0 hardening: light snapshots, module fallback for hooks
 - cddd690 docs: where things live, linked from CONTRIBUTING
-- d0bd1ce lifecycle 1.0.0: plan, init, thread structure, cadence
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

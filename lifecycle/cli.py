@@ -12,7 +12,7 @@ import json
 import os
 import sys
 
-from . import contract, hooks, playbooks, report, thread
+from . import contract, hooks, playbooks, report, thread, threads
 
 
 def _find_root(start):
@@ -59,7 +59,13 @@ def main(argv=None):
                    help="assert one stage (default: every stage)")
     p.add_argument("--json", action="store_true")
     sub.add_parser("stages")
-    sub.add_parser("resume")
+    p = sub.add_parser("resume")
+    p.add_argument("--thread", default=None, help="resume one named thread")
+    p = sub.add_parser("thread")
+    p.add_argument("action", choices=["new", "claim", "release", "list"])
+    p.add_argument("slug", nargs="?")
+    p.add_argument("--title", default="")
+    p.add_argument("--as", dest="who", default="")
     sub.add_parser("report")
     p = sub.add_parser("snapshot")
     p.add_argument("--hook", action="store_true",
@@ -100,7 +106,7 @@ def main(argv=None):
         if args.json:
             print(json.dumps(report.as_json(stages), ensure_ascii=False, indent=2))
         else:
-            print(report.render(repo, stages))
+            print(report.render(repo, stages, threads=threads.describe(repo)))
         return 0
 
     if args.cmd == "next":
@@ -115,7 +121,20 @@ def main(argv=None):
     if args.cmd == "check":
         return _check(stages, args)
 
+    if args.cmd == "thread":
+        return _thread(repo, args)
+
     if args.cmd == "resume":
+        if getattr(args, "thread", None):
+            t = threads._find(repo, args.thread)
+            if t is None:
+                sys.stderr.write("lifecycle: no thread %r" % args.thread)
+                sys.stderr.write(chr(10))
+                return 2
+            rel = os.path.relpath(t["current"], repo).replace("\\", "/")
+            _, text = thread.read(repo, rel)
+            print(text.strip() if text else "(%s is empty)" % rel)
+            return 0
         stage, item = report.next_action(stages)
         if stage is not None and item is not None:
             print("Lifecycle: stage %d %s - %s" % (stage["id"], stage["title"],
@@ -123,6 +142,16 @@ def main(argv=None):
             print("  fix: %s" % item["fix"])
             print("")
         print(thread.resume_text(repo, stages))
+        rows = threads.describe(repo)
+        if rows:
+            print("")
+            print("## Threads")
+            for t in rows:
+                plan = ("%d/%d tasks" % (t["plan"]["done"], t["plan"]["total"])
+                        if t["plan"] else "no plan")
+                print("- **%s** (%s) - %s - next: %s"
+                      % (t["slug"], t["owner"].split(" @ ")[0] or "unclaimed",
+                         plan, t["next"] or "nothing named"))
         return 0
 
     if args.cmd == "report":
@@ -164,6 +193,37 @@ def main(argv=None):
             print("%d  %-10s %s" % (s["id"], s["title"], s["question"]))
         return 0
     return 2
+
+
+def _thread(repo, args):
+    if args.action == "list":
+        rows = threads.describe(repo)
+        if not rows:
+            print("No threads. `lifecycle thread new <slug>` starts one.")
+            return 0
+        for t in rows:
+            plan = ("%d/%d" % (t["plan"]["done"], t["plan"]["total"])
+                    if t["plan"] else "-")
+            print("%-20s owner=%-12s plan=%-6s %s  %s"
+                  % (t["slug"], (t["owner"].split(" @ ")[0] or "-"), plan,
+                     "current" if t["fresh"] else "STALE", t["next"]))
+        return 0
+    if not args.slug:
+        sys.stderr.write("lifecycle: thread %s needs a slug" % args.action)
+        sys.stderr.write(chr(10))
+        return 2
+    if args.action == "new":
+        ok, msg = threads.create(repo, args.slug, args.title)
+    elif args.action == "claim":
+        if not args.who:
+            sys.stderr.write("lifecycle: claim needs --as <name>")
+            sys.stderr.write(chr(10))
+            return 2
+        ok, msg = threads.claim(repo, args.slug, args.who)
+    else:
+        ok, msg = threads.release(repo, args.slug)
+    print(msg)
+    return 0 if ok else 1
 
 
 def _guide(stages, args):

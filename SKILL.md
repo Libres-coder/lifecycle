@@ -88,6 +88,28 @@ they belong to the project that has a thread, and they do not collide with
 whatever manages the global config. `lifecycle hook uninstall` removes only the
 entries it added.
 
+## More than one line of work
+
+A project with two workstreams - the game and its tooling, a feature and a
+migration - gets one thread per stream instead of one handoff trying to hold
+both:
+
+```bash
+lifecycle thread new game-main --title "Main quest"
+lifecycle thread claim game-main --as aria
+lifecycle thread list
+lifecycle resume --thread game-main
+```
+
+`docs/work/threads/<slug>/` holds that thread's `current.md`, `plan.md` and
+`owner`. `lifecycle status` prints a portfolio table: owner, plan progress, next
+item, and whether the handoff is still current. The flat `docs/work/current.md`
+stays the portfolio - what the effort as a whole is doing now.
+
+The checks report two things a team hits first: one owner whose claim is older
+than a day (the thread looks busy but is not), and one owner on several threads
+(nobody keeps two handoffs current). Both are warnings; a thread is not a gate.
+
 If a user asks why a skill never fires, this is the honest answer: skills are
 model-invoked, and a model under load does the task instead of choosing a tool.
 Anything that must happen every time belongs in a hook or a gate, not in a

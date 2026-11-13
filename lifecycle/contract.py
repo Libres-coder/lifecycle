@@ -478,6 +478,11 @@ def check_plan(repo):
     return thread.check_plan(repo)
 
 
+def check_threads(repo):
+    from . import threads
+    return threads.check(repo)
+
+
 def check_thread_structure(repo):
     from . import thread
     return thread.check_thread_structure(repo)
@@ -510,7 +515,7 @@ STAGES = [
     {"id": 6, "key": "sustain", "title": "Sustain",
      "question": "Does the work survive a context reset, and is it summarised?",
      "checks": [check_sustain, check_thread_structure, check_plan,
-                check_review, check_cadence]},
+                check_review, check_cadence, check_threads]},
 ]
 
 

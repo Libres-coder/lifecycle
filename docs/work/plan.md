@@ -20,7 +20,14 @@
 
 ## M4 - 1.0
 
-- [ ] `lifecycle init` verified on an empty repository
-- [ ] docs match the code (README, SKILL, playbooks)
-- [ ] independent review of 1.0
-- [ ] published with a release note
+- [x] `lifecycle init` verified on an empty repository
+- [x] docs match the code (README, SKILL, playbooks)
+- [x] independent review of 1.0, five P0s fixed
+- [x] published with a release note
+
+## M5 - multi-thread work
+
+- [x] threads: per-thread handoff, plan and owner
+- [x] portfolio table in status, `resume --thread`
+- [ ] claims that warn when an owner goes quiet
+- [ ] docs for running a team

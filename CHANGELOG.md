@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.0] - 2026-11-13
+
+### Added
+- **Threads**: more than one line of work in one repository.
+  `docs/work/threads/<slug>/` holds that thread's `current.md`, `plan.md` and
+  `owner`; `lifecycle thread new|claim|release|list` manages them,
+  `lifecycle resume --thread` opens one, and `status` prints a portfolio table
+  (owner, plan progress, next item, handoff current or STALE).
+- Two team-shaped warnings: one owner claiming several threads, and a claim
+  older than 24 hours (the thread looks busy but is not).
+
 ## [1.0.0] - 2026-11-13
 
 The first release with a stable surface: seven stages, a work thread that

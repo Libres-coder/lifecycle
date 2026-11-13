@@ -152,6 +152,19 @@ item. What it cannot do is see your actual context window - the budget check
 measures the documents the repository loads (CLAUDE.md, README, vision,
 architecture, `current.md`), which is a proxy.
 
+## More than one line of work
+
+```bash
+lifecycle thread new game-main --title "Main quest"
+lifecycle thread claim game-main --as aria
+lifecycle thread list
+```
+
+Each thread is a directory with its own `current.md`, `plan.md` and `owner`;
+`status` shows the portfolio (owner, plan progress, next item, handoff current
+or STALE) and `resume --thread` opens one. The flat `docs/work/current.md` stays
+the portfolio for the effort as a whole.
+
 ## Deep work, not just presence
 
 Presence is cheap to fake. `lifecycle guide` prints the questions that separate a

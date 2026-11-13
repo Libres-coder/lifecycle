@@ -1,6 +1,6 @@
 # R10 a plan makes progress visible
 
-_Run at 2026-11-13 20:46:27_
+_Run at 2026-11-13 21:04:37_
 
 ```
 $ python -m unittest tests.test_plan -v   # exit 0
@@ -14,9 +14,13 @@ test_creates_thread_files_and_never_overwrites (tests.test_plan.ScaffoldTests) .
 test_good_thread_is_quiet (tests.test_plan.ThreadStructureTests) ... ok
 test_missing_sections_warn (tests.test_plan.ThreadStructureTests) ... ok
 test_next_needs_a_bullet (tests.test_plan.ThreadStructureTests) ... ok
+test_create_claim_release (tests.test_plan.ThreadTests) ... ok
+test_no_threads_is_quiet (tests.test_plan.ThreadTests) ... ok
+test_shared_owner_warns (tests.test_plan.ThreadTests) ... ok
+test_slug_is_validated (tests.test_plan.ThreadTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 10 tests in 0.098s
+Ran 14 tests in 0.424s
 
 OK
 
@@ -24,8 +28,8 @@ OK
 
 ```
 $ python -m lifecycle resume   # includes plan progress   # exit 0
-Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R10
-  fix: re-run each requirement's verification and write evidence, then `projtruth report`
+Lifecycle: stage 5 Release - no tag matches version 1.1.0 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0)
+  fix: tag v1.1.0, or fix the version
 
 # Current work
 
@@ -43,13 +47,14 @@ task alive across context resets.
   in `guide`.
 - v1.0.0: plan artifact with milestone progress, `lifecycle init`, thread
   structure checks, compaction cadence.
-- 71 tests; 10 requirements verified; 7/7 stages on this r
+- 71 tests; 10 requirements verified; 7/7 stages on this repo.
+- Pre
 ```
 
 ```
 $ python -m lifecycle status   # exit 0
 # lifecycle (D:\my_idea\lifecycle)
-5/7 stages pass
+6/7 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -57,16 +62,14 @@ $ python -m lifecycle status   # exit 0
 | 1 | Spec | **PASS** | What exactly is promised, in a way a stranger can check? |
 | 2 | Design | **PASS** | How is it built, and why this way? |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
-| 4 | Verify | **FAIL** | 1 requirement(s) not verified: R10 |
-| 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
-| 6 | Sustain | **FAIL** | code changed after docs/work/current.md |
+| 4 | Verify | **PASS** | Is every promise backed by evidence that still holds? |
+| 5 | Release | **FAIL** | no tag matches version 1.1.0 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0) |
+| 6 | Sustain | **PASS** | Does the work survive a context reset, and is it summarised? |
 
 ## Blocked
-**Stage 4 Verify**
-- evidence: 1 requirement(s) not verified: R10
-  - re-run each requirement's verification and write evidence, then `projtruth report`
-**Stage 6 Sustain**
-- thread:fre
+**Stage 5 Release**
+- tag: no tag matches version 1.1.0 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0)
+  - tag v
 ```
 
 measured

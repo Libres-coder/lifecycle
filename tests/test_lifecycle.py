@@ -228,6 +228,33 @@ class ReportTests(unittest.TestCase):
         self.assertIn("Every stage passes", report.render("/tmp/x", stages))
 
 
+class RootFindingTests(unittest.TestCase):
+    def _proj(self, tmp):
+        proj = os.path.join(tmp, "proj")
+        os.makedirs(proj)
+        return proj
+
+    def test_a_stray_projtruth_does_not_hijack_a_subdirectory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, ".projtruth", "evidence-index.json"), "{}")
+            proj = self._proj(tmp)
+            self.assertEqual(cli._find_root(proj), proj)
+
+    def test_a_registry_marks_the_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, ".projtruth", "requirements.json"), "{}")
+            proj = self._proj(tmp)
+            self.assertEqual(cli._find_root(proj), tmp)
+
+    def test_a_lone_context_reading_is_not_a_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, ".lifecycle", "context.json"), "{}")
+            proj = self._proj(tmp)
+            self.assertEqual(cli._find_root(proj), proj)
+            os.makedirs(os.path.join(tmp, ".lifecycle", "snapshots"))
+            self.assertEqual(cli._find_root(proj), tmp)
+
+
 class CliTests(unittest.TestCase):
     def _run(self, argv):
         buf = io.StringIO()

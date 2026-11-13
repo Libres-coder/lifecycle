@@ -57,7 +57,9 @@ task alive across context resets.
   story replaces stage 3's source/tests with `story:draft` (chapter and word
   counts). End-to-end contract test with the installed siblings pins the JSON
   lifecycle reads; `references/writing-a-pack.md` documents how to add a type.
-  144 tests.
+- v1.4.5: fixed root finding - a stray `.projtruth/` or `.lifecycle/` in an
+  ancestor hijacked subdirectories (found in a game dry run); home and drive
+  root are never roots now. README.zh-CN brought up to 1.4.x. 147 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

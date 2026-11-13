@@ -63,15 +63,33 @@ def _initialized(repo):
 
 
 def _find_root(start):
-    """Running `lifecycle` from src/ should find the project, not fail on docs/."""
-    path = os.path.abspath(start)
+    """Running `lifecycle` from src/ should find the project, not fail on docs/.
+
+    A bare `.projtruth/` or `.lifecycle/` is not a project marker: the first is
+    a cache left by an experiment, the second can be one status-line reading.
+    Either would otherwise hijack every folder under it - a stray
+    `.projtruth/` in a home directory made a demo project write into it.
+
+    The home directory and the drive root are never project roots, whatever
+    markers they hold; a project is a folder you chose, not the place your
+    shell happens to start.
+    """
+    start = os.path.abspath(start)
+    home = os.path.abspath(os.path.expanduser("~"))
+    drive_root = os.path.splitdrive(start)[0] + os.sep
+    path = start
     while True:
-        if any(os.path.exists(os.path.join(path, m))
-               for m in (".git", ".projtruth", ".lifecycle")):
+        if path == home or path == drive_root:
+            return start
+        if os.path.exists(os.path.join(path, ".git")):
+            return path
+        if os.path.isfile(os.path.join(path, ".projtruth", "requirements.json")):
+            return path
+        if os.path.isdir(os.path.join(path, ".lifecycle", "snapshots")):
             return path
         parent = os.path.dirname(path)
         if parent == path:
-            return os.path.abspath(start)
+            return start
         path = parent
 
 

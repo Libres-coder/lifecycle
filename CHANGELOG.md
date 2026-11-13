@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.5] - 2026-11-14
+
+### Fixed
+- **A stray `.projtruth/` or `.lifecycle/` in an ancestor hijacked every
+  folder under it.** Found in a dry run: a cache in a workspace root made
+  `lifecycle init` and `pack init game` write into the workspace instead of
+  the project. Only `.git`, a real registry (`.projtruth/requirements.json`)
+  or a snapshot history (`.lifecycle/snapshots/`) marks a root now, and the
+  home directory and drive root are never roots, whatever they contain.
+
+### Docs
+- `README.zh-CN.md` brought up to 1.4.x: packs and the peer model, craft
+  standards, work thread and hooks, context readings, the full command table.
+
 ## [1.4.4] - 2026-11-14
 
 ### Added

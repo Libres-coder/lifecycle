@@ -178,6 +178,101 @@ def _knowledge_checks(prefix, ids, knows, items):
     return [ok("%s:knows" % prefix, "knowledge state is consistent")]
 
 
+# -- craft: the checkable shadow of the standard ---------------------------
+#
+# Structure checks say "the graph is consistent". These say "the work is
+# concrete": every scene declares a want, an obstacle and a turn, every quest
+# declares a stake, and neither is a synopsis of itself. They are advisory -
+# craft is not a gate - but a chapter that cannot state these is a summary
+# wearing a scene's clothes, and the warning names it.
+
+MIN_CHAPTER_WORDS = 200
+MIN_QUEST_WORDS = 40
+
+
+def _body(text):
+    if text.startswith("---"):
+        end = text.find("\n---", 3)
+        if end >= 0:
+            text = text[end + 4:]
+    return text
+
+
+def _word_count(text):
+    """Words for alphabetic text, characters for CJK - both are units of writing."""
+    return len(re.findall(r"[A-Za-z0-9']+|[一-鿿]", _body(text)))
+
+
+def game_craft(repo):
+    no_stakes, short = [], []
+    for rel, name, fm, text in _frontmatter_files(repo, GAME_DIR, "quests/**/*.md"):
+        qid = str(fm.get("id") or name)
+        if not str(fm.get("stakes") or "").strip():
+            no_stakes.append(qid)
+        words = _word_count(text)
+        if words < MIN_QUEST_WORDS:
+            short.append("%s (%d words)" % (qid, words))
+    out = []
+    if no_stakes:
+        out.append(warn("game:craft-stakes",
+                        "quest(s) with no stake: %s" % ", ".join(no_stakes[:5]),
+                        "add `stakes:` - what the player loses if they fail or "
+                        "refuse. 'The city is in danger' is a premise; 'the fisher "
+                        "who hid you loses the boat' is a stake"))
+    if short:
+        out.append(warn("game:craft-thin",
+                        "quest(s) too short to be a quest: %s" % ", ".join(short[:5]),
+                        "say what the player does, what it costs and what changes; "
+                        "fetch-verbs without a decision are structure, not content"))
+    if out:
+        return out
+    return [ok("game:craft", "every quest declares a stake")]
+
+
+def story_craft(repo):
+    out = []
+    rel, text = read(repo, "docs/story/characters.md")
+    fm = frontmatter(text or "")
+    chars = _as_list(fm.get("characters"))
+    if chars:
+        wants = set(_pairs(fm.get("want")))
+        obstacles = set(_pairs(fm.get("obstacle")))
+        flaws = set(_pairs(fm.get("flaw")))
+        thin = [c for c in chars
+                if c not in wants or c not in obstacles or c not in flaws]
+        if thin:
+            out.append(warn("story:craft-character",
+                            "character(s) with no declared want/obstacle/flaw: %s"
+                            % ", ".join(thin[:5]),
+                            "add want/obstacle/flaw lines to characters.md - a "
+                            "character is a want meeting an obstacle, and the flaw "
+                            "is why the obstacle wins for a while"))
+    vague, short = [], []
+    for _rel, name, cfm, text in _frontmatter_files(repo, STORY_DIR,
+                                                    "chapters/**/*.md"):
+        cid = str(cfm.get("id") or name)
+        if not (cfm.get("want") and cfm.get("obstacle") and cfm.get("turn")):
+            vague.append(cid)
+        words = _word_count(text)
+        if words < MIN_CHAPTER_WORDS:
+            short.append("%s (%d words)" % (cid, words))
+    if vague:
+        out.append(warn("story:craft-scene",
+                        "chapter(s) that never say what the POV wants, what "
+                        "blocks them, or what changes: %s" % ", ".join(vague[:5]),
+                        "add `want:`, `obstacle:` and `turn:` to the frontmatter - "
+                        "a chapter without them is a summary wearing a scene's "
+                        "clothes"))
+    if short:
+        out.append(warn("story:craft-thin",
+                        "chapter(s) too short to be a scene: %s" % ", ".join(short[:5]),
+                        "write the moment instead of noting it; if it is not a "
+                        "scene, merge it into the one that carries it"))
+    if out:
+        return out
+    return [ok("story:craft", "every chapter declares a want, an obstacle and a turn")]
+
+
 # -- game ------------------------------------------------------------------
 
 GAME_DIR = "docs/game"
@@ -506,9 +601,10 @@ characters: []
 factions: []
 reveals_to: []
   # - aria: war-started
+stakes: TODO - what the player loses if they fail or refuse
 ---
 
-What the player does, what they learn, what changes. Copy this file to
+What the player does, what it costs, what changes. Copy this file to
 `<id>.md`; files starting with `_` are templates and are not checked.
 """
 
@@ -532,24 +628,34 @@ characters: []
 facts: []
 knows: []
   # - aria: war-started
+want:
+  # - aria: to reclaim the harbor her father lost
+obstacle:
+  # - aria: the guild holds the deed and the law is on its side
+flaw:
+  # - aria: trusts the wrong people when she is afraid
 ---
 
 # Characters
 
-One line each: what they want, what they hide, and what changes for them.
+One line each: what they want, what stands in the way, what is wrong with them.
 """
 
 CHAPTER_TEMPLATE = """---
 id: ch-01
 order: 10
 pov: aria
+want: TODO - what the POV wants in this scene, in this moment
+obstacle: TODO - what stands in the way, concretely
+turn: TODO - what changes by the end, even if only for the POV
 reveals: []
 threads: []
 resolves: []
 reveals_to: []
 ---
 
-What happens in this chapter, from the POV's eyes.
+What happens in this chapter, from the POV's eyes. A scene, not a summary:
+place, bodies, what is said and what is not.
 """
 
 TEMPLATES = {
@@ -581,10 +687,10 @@ def scaffold(repo, name):
 
 
 PACKS = {
-    "game": {"discovery": [game_discovery], "design": [game_design],
+    "game": {"discovery": [game_discovery], "design": [game_design, game_craft],
              "title": "Open-world game",
              "stages": (0, 2), "playbook": "game.md"},
-    "story": {"discovery": [story_discovery], "design": [story_design],
+    "story": {"discovery": [story_discovery], "design": [story_design, story_craft],
               "title": "Long-form story",
               "stages": (0, 2), "playbook": "story.md"},
 }

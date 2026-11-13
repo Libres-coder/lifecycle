@@ -283,6 +283,44 @@ quest before the one it needs, whatever the graph says.
 already knows it is reported: either the reveal is redundant or the starting
 state is wrong, and both are cheap to fix now.
 
+## The craft standard (what "good" means here)
+
+A quest is a verb with a cost. The checks can see the graph; they cannot see
+whether the quest is worth playing. This is the difference.
+
+1. **The player does, not watches.** Every quest states the verb the player
+   performs and the choice they make. "Learn about the guild" is a lecture;
+   "decide who to sell the ledger to" is a quest.
+2. **A choice has a cost.** If both options are fine, it is a menu, not a
+   decision. Say what each choice takes away.
+3. **Stakes are concrete and local.** "The city is in danger" is a premise;
+   "the fisher who hid you loses the boat" is a stake.
+4. **The world answers back.** Factions remember what the player did, and say
+   so. A world that does not remember is a backdrop.
+5. **No filler verbs.** Fetch, kill-ten and walk-here are structure; if the
+   quest is only that, cut it or wrap it around a decision the player cares
+   about.
+6. **Show the lore through action.** A fact revealed while the player is doing
+   something they care about lands; a fact delivered by a lore dump does not.
+7. **Difficult material is not softened.** War, cruelty, grief and desire are
+   part of the world: write them as consequences with names and bodies, not as
+   set dressing and not as something the camera avoids. The limit is the rating
+   and the law, not discomfort.
+8. **Every quest changes the world state.** A door, a faction, a fact, a
+   relationship - if nothing changes, the quest is a detour.
+
+### Weak quest looks like
+
+- a fetch with no decision in it;
+- a stake nobody in the scene can lose;
+- the same "talk to X, then Y" shape as the last four quests;
+- lore delivered in a monologue, not in the middle of trouble;
+- the world unchanged when it is over.
+
+The advisory checks read the shadow of this standard: a quest with no `stakes`,
+a quest under 40 words. They do not grade design. They make the empty case
+visible.
+
 ## What the checks catch
 
 - a quest requiring a quest that does not exist;
@@ -367,6 +405,53 @@ reveals_to:
   - borin: king-dead
 ---
 ```
+
+## The craft standard (what "good" means here)
+
+The checks above keep the structure honest. They cannot make a scene worth
+reading; this section is the standard they stand in for.
+
+1. **Concrete, always.** A scene happens somewhere, to a body, at a time.
+   "The council discussed the war" is a summary; "the chancellor's pen ran dry
+   halfway through the sentence that would have ended it" is a scene. If a
+   chapter can be replaced by its own `want`/`obstacle` line, it is not written
+   yet.
+2. **Conflict is the engine, not a topic.** Every chapter says what the POV
+   wants in this moment and what stands in the way. If nothing opposes them,
+   cut the chapter or find the opposition. Never resolve the tension in the
+   beat that creates it.
+3. **Do not look away.** Evasion looks like cutting at the moment of violence
+   or intimacy, naming the emotion instead of staging it, "passed away",
+   vagueness where the story demands a specific act. Write the difficult thing
+   the story is about, with the weight it deserves. Mature material - violence,
+   grief, desire, sex - is written plainly and consequentially, never as a wink
+   and never as decoration. The limits are the law and the audience rating, not
+   the writer's comfort; inside them, evasion is a craft failure.
+4. **Stakes are specific and personal.** "The kingdom falls" is a premise until
+   someone the reader knows loses something they can name.
+5. **Characters are contradictions.** Each wants something, something blocks
+   them, and their flaw is why the block holds. A character who only reacts is
+   furniture. They change, or they refuse to, and the refusal costs.
+6. **Dialogue does two things.** It moves the scene and hides what the speaker
+   will not say. A line that can be replaced by its literal meaning is
+   exposition.
+7. **Every scene turns or reveals.** If it does neither, it is atmosphere -
+   seasoning, not the meal.
+8. **Read it aloud.** A line passes if a person would say it and the reader
+   hears the silence around it.
+
+### Weak chapter looks like
+
+- it summarises the argument instead of staging it;
+- the POV wants nothing in the moment, and the prose drifts;
+- the hard scene is skipped with "later that night";
+- every character speaks in the author's voice;
+- it ends where it began, with more words.
+
+The advisory checks read the shadow of this standard: a chapter without
+`want`/`obstacle`/`turn`, a chapter under 200 words, a character without a
+declared want, obstacle or flaw. They do not grade prose. They make the empty
+case visible.
 
 ## What the checks catch
 

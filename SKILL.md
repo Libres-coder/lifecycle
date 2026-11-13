@@ -206,7 +206,10 @@ lifecycle pack guide story   # the playbook for that kind of work
 ```
 
 Packs are opt-in by presence, and the first match wins (`--pack story` says
-which one the checks follow).
+which one the checks follow). **Each pack is a complete tool**: structure
+checks, a craft standard (what an excellent deliverable in that domain looks
+like, and what weak work looks like), advisory checks that make the empty case
+visible, and a scaffold that teaches the fields by existing.
 
 **game** (`docs/game/`) - pillars, a world bible with characters/factions/
 locations/facts, and quest files with `id`, `act`, `order`, `requires`,
@@ -225,6 +228,14 @@ Both are narrative structure that has to stay consistent while scenes are
 written out of order - which is why the checks are graph checks, not
 spell-check. `lifecycle guide <pack>` prints the full playbook; the shared
 `pack init` templates are named `_template.md` and are never read as data.
+
+The playbook is also the **craft standard**: for story, a scene happens to a
+body in a place, conflict is the engine, difficult material is written with
+weight instead of avoided, stakes are personal and specific, characters are
+wants meeting obstacles. For game, a quest is a verb with a cost, choices take
+something away, and the world remembers. Advisory checks read the declared
+shadow of that standard - a chapter without `want`/`obstacle`/`turn` or under
+200 words, a quest without `stakes` - and never fail a stage.
 
 ## The contract
 

@@ -39,6 +39,10 @@ task alive across context resets.
 - v1.3.1: `suggest` names the active pack at stages 0/2; corpus 0.1.3 skips
   `_template.md` scaffold files so the two tools agree on what a document is.
   118 tests.
+- v1.4.0: packs carry a craft standard, not only structure - story (concrete
+  scenes, conflict engine, no evasion, stakes, contradictions) and game (verb
+  with a cost, choices, a world that remembers), plus advisory craft checks on
+  declared `want`/`obstacle`/`turn`/`stakes` and length. 121 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

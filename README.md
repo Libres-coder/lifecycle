@@ -254,6 +254,25 @@ are written out of order; that is why the checks are graph checks, not
 spell-check. `lifecycle guide <pack>` prints the full playbook, and the
 template files (`_template.md`) are never read as data.
 
+## Craft, not just structure
+
+Each pack is a complete tool, not a checklist: structure checks, a **craft
+standard**, advisory checks that make weak work visible, and a scaffold that
+teaches the fields by existing.
+
+The story standard says what a good chapter is: a scene happens somewhere, to
+a body; the POV wants something in this moment and something opposes them; a
+hard scene is written with weight instead of skipped; mature material is
+written plainly and consequentially rather than softened; stakes are personal
+and specific; characters are wants meeting obstacles; every scene turns or
+reveals. The game standard is the same idea in quest form: a verb with a cost,
+a choice that takes something away, a world that remembers, no filler verbs.
+
+The advisory checks read the declared shadow of that standard - a chapter
+without `want`/`obstacle`/`turn`, a chapter under 200 words, a character with
+no flaw, a quest with no `stakes`. They never fail a stage. They make the
+empty case visible in `lifecycle status`.
+
 ## Design notes
 
 - **No gate state.** A stage passes because the repository says so right now -

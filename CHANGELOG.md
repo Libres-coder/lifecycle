@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.4.0] - 2026-11-14
+
+### Added
+- **Packs are now craft standards, not only structure checks.** `lifecycle
+  pack guide story|game` prints what an excellent deliverable in that domain
+  looks like and what weak work looks like:
+  - story: concrete scenes (not summaries), conflict as the engine, difficult
+    material written with weight instead of avoided, personal stakes,
+    characters as wants meeting obstacles, every scene turns or reveals;
+  - game: a verb with a cost, choices that take something away, a world that
+    remembers, no filler verbs, lore shown through action.
+- Advisory craft checks that read the declared shadow of the standard:
+  a chapter without `want`/`obstacle`/`turn`, a chapter under 200 words, a
+  character without a declared want/obstacle/flaw, a quest without `stakes`,
+  a quest under 40 words. None of them fails a stage.
+- `pack init` templates now carry those fields, so the scaffold teaches the
+  standard by existing.
+
 ## [1.3.1] - 2026-11-13
 
 ### Added

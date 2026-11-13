@@ -28,26 +28,42 @@ BIBLE_KNOWS = BIBLE.replace("facts: [war-started, king-dead]",
                             "facts: [war-started, king-dead]\nknows:\n  - aria: war-started")
 
 
+QUEST_BODY = ("the player argues with the harbormaster, pays a price, and the "
+              "harbor remembers it. ") * 5
+CHAPTER_BODY = ("the harbor smelled of tar and rain and the pen ran dry. ") * 30
+
+
 def quest(repo, name, qid, requires=(), reveals=(), characters=(), factions=(),
-          act=1, order=10, reveals_to=()):
+          act=1, order=10, reveals_to=(),
+          stakes="the fisher who hid you loses the boat"):
     lines = ["---", "id: %s" % qid, "act: %s" % act, "order: %s" % order,
              "requires: [%s]" % ", ".join(requires),
              "reveals: [%s]" % ", ".join(reveals),
              "characters: [%s]" % ", ".join(characters),
              "factions: [%s]" % ", ".join(factions)]
+    if stakes:
+        lines.append("stakes: %s" % stakes)
     if reveals_to:
         lines.append("reveals_to:")
         lines.extend("  - %s" % item for item in reveals_to)
     lines.append("---")
     mk(os.path.join(repo, "docs", "game", "quests", name + ".md"),
-       "\n".join(lines) + "\n\n# %s\n" % qid)
+       "\n".join(lines) + "\n\n# %s\n\n%s\n" % (qid, QUEST_BODY))
 
 
 def chapter(repo, name, cid, order=10, pov="aria", reveals=(), threads=(),
-            resolves=(), reveals_to=()):
+            resolves=(), reveals_to=(), want="to get the boat back",
+            obstacle="the harbormaster holds the writ",
+            turn="she learns who signed it"):
     lines = ["---", "id: %s" % cid, "order: %s" % order]
     if pov:
         lines.append("pov: %s" % pov)
+    if want:
+        lines.append("want: %s" % want)
+    if obstacle:
+        lines.append("obstacle: %s" % obstacle)
+    if turn:
+        lines.append("turn: %s" % turn)
     lines += ["reveals: [%s]" % ", ".join(reveals),
               "threads: [%s]" % ", ".join(threads),
               "resolves: [%s]" % ", ".join(resolves)]
@@ -56,7 +72,7 @@ def chapter(repo, name, cid, order=10, pov="aria", reveals=(), threads=(),
         lines.extend("  - %s" % item for item in reveals_to)
     lines.append("---")
     mk(os.path.join(repo, "docs", "story", "chapters", name + ".md"),
-       "\n".join(lines) + "\n\nprose\n")
+       "\n".join(lines) + "\n\n%s\n" % CHAPTER_BODY)
 
 
 STORY_CHARS = """---
@@ -223,6 +239,33 @@ class StoryPackTests(unittest.TestCase):
            "---\nacts: [one, two]\n---\n")
         out = packs.story_discovery(self.repo)
         self.assertTrue(any(r["name"] == "story:threads" for r in out), out)
+
+    def test_craft_flags_a_summary_chapter(self):
+        self.write_world()
+        mk(os.path.join(self.repo, "docs", "story", "chapters", "thin.md"),
+           "---\nid: ch-09\norder: 90\npov: aria\n---\n\nthey argued.\n")
+        out = packs.story_craft(self.repo)
+        names = {r["name"] for r in out if not r["ok"]}
+        self.assertIn("story:craft-scene", names)
+        self.assertIn("story:craft-thin", names)
+        self.assertTrue(all(not r["required"] for r in out), "craft is advisory")
+
+    def test_craft_flags_a_character_without_a_want(self):
+        mk(os.path.join(self.repo, "docs", "story", "characters.md"),
+           "---\ncharacters: [aria, borin]\nfacts: []\n"
+           "want:\n  - aria: the boat\n"
+           "obstacle:\n  - aria: the writ\n"
+           "flaw:\n  - aria: trust\n---\n")
+        out = packs.story_craft(self.repo)
+        warned = [r for r in out if r["name"] == "story:craft-character"][0]
+        self.assertIn("borin", warned["detail"])
+
+    def test_craft_flags_a_quest_without_stakes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, "docs", "game", "world-bible.md"), BIBLE)
+            quest(tmp, "q1", "q1", stakes="")
+            out = packs.game_craft(tmp)
+            self.assertTrue(any(r["name"] == "game:craft-stakes" for r in out), out)
 
     def test_valid_story_passes(self):
         self.write_world()

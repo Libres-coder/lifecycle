@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.4.1] - 2026-11-14
+
+An adversarial review of the pack layer (v1.3.0-1.4.0) found 2 P1 and 6 P2;
+all fixed, 121 -> 135 tests.
+
+### Fixed
+- **A repository path containing glob characters** (`Game [WIP]`) made every
+  quest and chapter invisible: the glob treated `[WIP]` as a character class,
+  the graph checks never ran, and the stage passed. The root is escaped now.
+- **Only `_template.md` is skipped.** The code skipped every `_`-prefixed file,
+  so a real `_prologue.md` disappeared - and a quest requiring it reported a
+  false "requires a quest that does not exist".
+- **Frontmatter quotes and comments** are parsed properly: a comment after a
+  value with an apostrophe (`facts: [a, b]  # the king's death`) no longer
+  becomes data, `title: "Chapter #1"` keeps its text, `threads: ["a, b"]` is
+  one item, and `- "aria": "war-started"` keeps both sides intact.
+- **An empty `quests/` or `chapters/` directory no longer opts a pack in** -
+  and an empty `docs/game/quests/` no longer wins auto-detection over a
+  complete `docs/story/`.
+- **Knowledge accumulates in story order**: a second reveal of the same fact
+  is reported, and `knows:` naming an undeclared character or fact fails
+  instead of silently disabling the check.
+- **Timeline**: a missing `act:` is warned about (a cross-act inversion used to
+  be compared as if it were act 1); **threads**: a thread resolved before its
+  last appearance is warned about.
+- **`pack init`** refuses a path conflict before writing anything, reports a
+  directory named like a file instead of "kept", and never raises.
+- **Word count** includes kana and Hangul; a 300-character Japanese chapter is
+  no longer "0 words".
+- The story playbook's Exit now says the generic design checks still apply.
+
 ## [1.4.0] - 2026-11-14
 
 ### Added

@@ -39,35 +39,73 @@ def frontmatter(text):
         if m:
             k, v = m.group(1).lower(), _strip_comment(m.group(2).strip())
             if v.startswith("["):
-                data[k] = [x.strip().strip("'\"") for x in v.strip("[]").split(",") if x.strip()]
+                data[k] = _split_items(v.strip("[]"))
                 key = None
             elif v:
-                data[k] = v.strip("'\"")
+                data[k] = _clean_quotes(v)
                 key = None
             else:
                 data[k] = []
                 key = k
         elif key and line.strip().startswith("- "):
             item = _strip_comment(line.strip()[2:].strip())
-            data[key].append(item.strip("'\""))
+            data[key].append(_clean_quotes(item))
     return data
 
 
 def _strip_comment(value):
-    """Drop a trailing `  # note` unless it is inside quotes."""
-    if "#" not in value:
-        return value
-    quote = value.count('"') % 2 == 0 and value.count("'") % 2 == 0
-    if quote:
-        return value.split(" #", 1)[0].strip()
+    """Drop a trailing `  # note` only when the `#` is outside quotes."""
+    quote = None
+    for i, ch in enumerate(value):
+        if quote:
+            if ch == quote:
+                quote = None
+        elif ch in ('"', "'"):
+            quote = ch
+        elif ch == "#" and (i == 0 or value[i - 1].isspace()):
+            return value[:i].strip()
+    return value.strip()
+
+
+def _clean_quotes(value):
+    """Strip one pair of quotes only when they wrap the whole value.
+
+    `"aria": "war-started"` has quotes around each side; stripping the outer
+    two would leave `aria": "war-started`.
+    """
+    value = value.strip()
+    if len(value) >= 2 and value[0] in "'\"":
+        end = value.find(value[0], 1)
+        if end == len(value) - 1:
+            return value[1:-1]
     return value
+
+
+def _split_items(raw):
+    """Split an inline list on commas that are not inside quotes."""
+    items, buf, quote = [], [], None
+    for ch in raw:
+        if quote:
+            buf.append(ch)
+            if ch == quote:
+                quote = None
+        elif ch in ('"', "'"):
+            quote = ch
+            buf.append(ch)
+        elif ch == ",":
+            items.append("".join(buf))
+            buf = []
+        else:
+            buf.append(ch)
+    items.append("".join(buf))
+    return [_clean_quotes(x) for x in items if x.strip()]
 
 
 def _as_list(value):
     if isinstance(value, list):
-        return [str(v).strip() for v in value if str(v).strip()]
+        return [_clean_quotes(str(v)) for v in value if str(v).strip()]
     if isinstance(value, str) and value.strip():
-        return [value.strip()]
+        return [_clean_quotes(value)]
     return []
 
 
@@ -83,8 +121,11 @@ def _pairs(value):
     out = {}
     for item in _as_list(value):
         who, sep, fact = item.partition(":")
-        if sep and who.strip() and fact.strip():
-            out.setdefault(who.strip(), []).append(fact.strip())
+        if sep:
+            who = _clean_quotes(who)
+            fact = _clean_quotes(fact)
+        if sep and who and fact:
+            out.setdefault(who, []).append(fact)
     return out
 
 
@@ -92,9 +133,12 @@ def _frontmatter_files(repo, sub, pattern="**/*.md"):
     """(rel_path, name, frontmatter, text) for files that are not templates."""
     out = []
     root = os.path.join(repo, *sub.split("/"))
-    for path in sorted(glob.glob(os.path.join(root, pattern), recursive=True)):
-        if os.path.basename(path).startswith("_"):
-            continue                       # `_template.md` is a scaffold, not data
+    # glob treats [ ] * ? in a directory name as syntax; a repo called
+    # "Game [WIP]" must still be scanned.
+    for path in sorted(glob.glob(os.path.join(glob.escape(root), pattern),
+                                 recursive=True)):
+        if os.path.basename(path) == "_template.md":
+            continue                       # the scaffold: a template, not data
         try:
             with open(path, encoding="utf-8-sig", errors="replace") as f:
                 text = f.read()
@@ -108,6 +152,17 @@ def _frontmatter_files(repo, sub, pattern="**/*.md"):
 
 # -- detection -------------------------------------------------------------
 
+def _has_data_file(path):
+    """A directory opts a pack in only when it holds a real file, not a template."""
+    if not os.path.isdir(path):
+        return False
+    for _root, _dirs, files in os.walk(path):
+        for name in files:
+            if name.endswith(".md") and name != "_template.md":
+                return True
+    return False
+
+
 def detect(repo):
     """A pack applies when its artifacts exist, not when an empty directory does.
 
@@ -118,13 +173,13 @@ def detect(repo):
     if os.path.isdir(game) and (
             os.path.isfile(os.path.join(game, "pillars.md"))
             or os.path.isfile(os.path.join(game, "world-bible.md"))
-            or os.path.isdir(os.path.join(game, "quests"))):
+            or _has_data_file(os.path.join(game, "quests"))):
         return "game"
     story = os.path.join(repo, "docs", "story")
     if os.path.isdir(story) and (
             os.path.isfile(os.path.join(story, "outline.md"))
             or os.path.isfile(os.path.join(story, "characters.md"))
-            or os.path.isdir(os.path.join(story, "chapters"))):
+            or _has_data_file(os.path.join(story, "chapters"))):
         return "story"
     return None
 
@@ -144,19 +199,37 @@ def _start_knowledge(fm):
 
 
 def _knowledge_checks(prefix, ids, knows, items):
-    """items: dicts with id, path, reveals_to {character: [fact]}."""
-    unknown_actor, unknown_fact, redundant = [], [], []
-    for item in items:
+    """Knowledge accumulates in story order: a reveal updates the character's
+    state, so a second reveal of the same fact is caught, not just a reveal
+    against the starting set. `knows:` is validated too - a typo there used to
+    disable the warning silently."""
+    unknown_actor, unknown_fact, redundant, bad_state = [], [], [], []
+    for who, facts in knows.items():
+        if who not in ids["characters"]:
+            bad_state.append("%s (unknown character)" % who)
+        for fact in facts:
+            if fact not in ids["facts"]:
+                bad_state.append("%s: %s (unknown fact)" % (who, fact))
+    state = dict((who, set(facts)) for who, facts in knows.items())
+    for item in _ordered(items):
         for who, facts in (item.get("reveals_to") or {}).items():
             if who not in ids["characters"]:
                 unknown_actor.append("%s -> %s" % (item["id"], who))
             for fact in facts:
                 if fact not in ids["facts"]:
                     unknown_fact.append("%s -> %s" % (item["id"], fact))
-                elif fact in knows.get(who, set()):
+                elif fact in state.get(who, set()):
                     redundant.append("%s -> %s already knows %s"
                                      % (item["id"], who, fact))
+                else:
+                    state.setdefault(who, set()).add(fact)
     out = []
+    if bad_state:
+        out.append(fail("%s:knows-state" % prefix,
+                        "`knows:` names something undeclared: %s"
+                        % ", ".join(bad_state[:5]),
+                        "a starting state that points at an undeclared character "
+                        "or fact silently disables the reveal checks"))
     if unknown_actor:
         out.append(fail("%s:knows-actor" % prefix,
                         "reveal to undeclared character(s): %s"
@@ -171,11 +244,22 @@ def _knowledge_checks(prefix, ids, knows, items):
         out.append(warn("%s:knows-redundant" % prefix,
                         "a reveal tells a character what they already know: %s"
                         % ", ".join(redundant[:5]),
-                        "cut the reveal, or remove the fact from `knows:` if the "
+                        "cut the reveal, or move the fact from `knows:` if the "
                         "character learns it here for the first time"))
     if out:
         return out
     return [ok("%s:knows" % prefix, "knowledge state is consistent")]
+
+
+def _ordered(items):
+    """Story order: act (default 1), then order (unordered last), then id."""
+    def key(item):
+        act = item.get("act")
+        order = item.get("order")
+        return (act if act is not None else 1,
+                order if order is not None else 10 ** 9,
+                item["id"])
+    return sorted(items, key=key)
 
 
 # -- craft: the checkable shadow of the standard ---------------------------
@@ -199,8 +283,13 @@ def _body(text):
 
 
 def _word_count(text):
-    """Words for alphabetic text, characters for CJK - both are units of writing."""
-    return len(re.findall(r"[A-Za-z0-9']+|[一-鿿]", _body(text)))
+    """Words for alphabetic text, characters for CJK - both are units of writing.
+
+    Kana and Hangul count too: a 300-character Japanese chapter is not 0 words.
+    """
+    return len(re.findall(
+        r"[A-Za-z0-9']+|[぀-ヿ㐀-䶿一-鿿가-힯]",
+        _body(text)))
 
 
 def game_craft(repo):
@@ -348,6 +437,7 @@ def _timeline(quests):
                      "give each quest `act:` and `order:` numbers so the graph can "
                      "be checked against the timeline the player experiences")]
     missing = [q["id"] for q in quests if q["order"] is None]
+    missing_act = [q["id"] for q in dated if q["act"] is None]
     by_id = dict((q["id"], q) for q in quests)
     inverted = []
     for q in dated:
@@ -368,6 +458,12 @@ def _timeline(quests):
                         % "; ".join(inverted[:3]),
                         "swap the order numbers, or cut the requirement - the "
                         "player cannot finish a quest before the one it needs"))
+    if missing_act:
+        out.append(warn("game:timeline-act",
+                        "quest(s) without an act: %s" % ", ".join(missing_act[:5]),
+                        "add `act:` - without it a cross-act inversion cannot be "
+                        "told from a correct one, and the check has to assume "
+                        "act 1"))
     if missing:
         out.append(warn("game:timeline-missing",
                         "quest(s) without an order: %s" % ", ".join(missing[:5]),
@@ -563,6 +659,28 @@ def story_design(repo):
     else:
         out.append(ok("story:threads", "every thread is resolved"))
 
+    ordered = sorted(chapters, key=lambda c: (c["order"] if c["order"] is not None
+                                              else 10 ** 9, c["id"]))
+    last_advance, first_resolve = {}, {}
+    for c in ordered:
+        if c["order"] is None:
+            continue
+        for t in c["threads"]:
+            last_advance[t] = c["order"]
+        for t in c["resolves"]:
+            if t in threads:
+                first_resolve.setdefault(t, c["order"])
+    backwards = ["%s resolved at order %s, advanced at order %s"
+                 % (t, r, last_advance[t])
+                 for t, r in first_resolve.items()
+                 if t in last_advance and last_advance[t] > r]
+    if backwards:
+        out.append(warn("story:threads-order",
+                        "thread(s) resolved before their last appearance: %s"
+                        % "; ".join(backwards[:5]),
+                        "move the resolution after the last chapter that advances "
+                        "the thread, or drop the late mention"))
+
     out.extend(_knowledge_checks("story", ids, knows, chapters))
     return out
 
@@ -674,14 +792,30 @@ def scaffold(repo, name):
     if files is None:
         return None, "unknown pack %r (have: %s)" % (name, ", ".join(sorted(PACKS)))
     created, kept = [], []
+    for rel in files:
+        path = os.path.join(repo, *rel.split("/"))
+        parent = os.path.dirname(path)
+        while parent and os.path.abspath(parent) != os.path.abspath(repo):
+            if os.path.exists(parent) and not os.path.isdir(parent):
+                return None, ("%s exists and is not a directory; move it first "
+                              "(nothing was changed unless listed above)"
+                              % os.path.relpath(parent, repo))
+            parent = os.path.dirname(parent)
     for rel, text in files.items():
         path = os.path.join(repo, *rel.split("/"))
         if os.path.exists(path):
-            kept.append(rel)
-            continue
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8", newline="\n") as f:
-            f.write(text)
+            if os.path.isfile(path):
+                kept.append(rel)
+                continue
+            return None, ("%s exists and is not a regular file; move it first "
+                          "(nothing was changed unless listed above)" % rel)
+        try:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "w", encoding="utf-8", newline="\n") as f:
+                f.write(text)
+        except OSError as exc:
+            return None, ("could not write %s: %s (files written before it were "
+                          "kept: %s)" % (rel, exc, ", ".join(created) or "none"))
         created.append(rel)
     return {"created": created, "kept": kept}, None
 

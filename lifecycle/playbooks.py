@@ -469,8 +469,11 @@ thread declared and forgotten, and a twist nobody planted.
 
 ## Exit
 
-`lifecycle check --stage 2` passes with the pack active, and every chapter's
-order, POV, reveal and thread resolves against the two documents above.
+`lifecycle check --stage 2` passes with the pack active - which means the
+generic design checks as well (an architecture document and a recorded
+decision; a pack adds checks, it does not replace the stage) - and every
+chapter's order, POV, reveal and thread resolves against the two documents
+above.
 """
 
 SUSTAIN = """# Stage 6 - Sustain

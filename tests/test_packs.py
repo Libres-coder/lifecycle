@@ -80,6 +80,15 @@ characters: [aria, borin]
 facts: [war-started, king-dead]
 knows:
   - aria: war-started
+want:
+  - aria: to reclaim the harbor
+  - borin: to keep the guild's ledger
+obstacle:
+  - aria: the guild holds the deed
+  - borin: the guild owns him
+flaw:
+  - aria: trusts the wrong people
+  - borin: cannot lie to his father
 ---
 """
 
@@ -101,6 +110,21 @@ class FrontmatterTests(unittest.TestCase):
 
     def test_no_frontmatter(self):
         self.assertEqual(packs.frontmatter("# nothing\n"), {})
+
+    def test_comments_are_stripped_only_outside_quotes(self):
+        text = ("---\nfacts: [a, b]  # the king's death\n"
+                'title: "Chapter #1"\n---\n')
+        fm = packs.frontmatter(text)
+        self.assertEqual(fm["facts"], ["a", "b"])
+        self.assertEqual(fm["title"], "Chapter #1")
+
+    def test_quoted_list_items_keep_inner_commas(self):
+        fm = packs.frontmatter('---\nthreads: ["a, b", c]\n---\n')
+        self.assertEqual(fm["threads"], ["a, b", "c"])
+
+    def test_quoted_pair_sides(self):
+        fm = packs.frontmatter('---\nknows:\n  - "aria": "war-started"\n---\n')
+        self.assertEqual(packs._start_knowledge(fm), {"aria": {"war-started"}})
 
 
 class GamePackTests(unittest.TestCase):
@@ -163,6 +187,59 @@ class GamePackTests(unittest.TestCase):
             quest(tmp, "two", "same")
             bad = [r for r in packs.game_design(tmp) if not r["ok"] and r["required"]]
             self.assertTrue(any(r["name"] == "game:quest-id" for r in bad), bad)
+
+    def test_repo_path_with_glob_characters_is_still_scanned(self):
+        with tempfile.TemporaryDirectory() as base:
+            repo = os.path.join(base, "Game [WIP]")
+            mk(os.path.join(repo, "docs", "game", "world-bible.md"), BIBLE)
+            quest(repo, "q1", "q1", requires=["ghost"])
+            bad = [r for r in packs.game_design(repo) if not r["ok"] and r["required"]]
+            self.assertTrue(any("ghost" in r["detail"] for r in bad), bad)
+
+    def test_underscore_prefixed_real_file_is_data(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, "docs", "game", "world-bible.md"), BIBLE)
+            mk(os.path.join(tmp, "docs", "game", "quests", "_prologue.md"),
+               "---\nid: q-prologue\nact: 1\norder: 1\n---\n\n" + QUEST_BODY)
+            quest(tmp, "q2", "q2", requires=["q-prologue"], order=20)
+            bad = [r for r in packs.game_design(tmp) if not r["ok"] and r["required"]]
+            self.assertFalse(bad, bad)
+            self.assertIn("q-prologue", [q["id"] for q in packs._quests(tmp)])
+
+    def test_empty_artifact_directory_does_not_opt_in(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            os.makedirs(os.path.join(tmp, "docs", "story", "chapters"))
+            self.assertIsNone(packs.detect(tmp))
+            os.makedirs(os.path.join(tmp, "docs", "game", "quests"))
+            self.assertIsNone(packs.detect(tmp))
+
+    def test_knowledge_accumulates_across_quests(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, "docs", "game", "world-bible.md"), BIBLE)
+            quest(tmp, "q1", "q1", order=10, reveals_to=["aria:war-started"])
+            quest(tmp, "q2", "q2", order=20, reveals_to=["aria:war-started"])
+            out = packs.game_design(tmp)
+            hit = [r for r in out if r["name"] == "game:knows-redundant"]
+            self.assertTrue(hit, out)
+            self.assertIn("q2", hit[0]["detail"])
+
+    def test_knows_naming_undeclared_things_blocks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, "docs", "game", "world-bible.md"),
+               BIBLE.replace("facts: [war-started, king-dead]",
+                             "facts: [war-started, king-dead]\nknows:\n"
+                             "  - ghost: war-started"))
+            quest(tmp, "q1", "q1")
+            bad = [r for r in packs.game_design(tmp) if not r["ok"] and r["required"]]
+            self.assertTrue(any(r["name"] == "game:knows-state" for r in bad), bad)
+
+    def test_quest_without_an_act_warns(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, "docs", "game", "world-bible.md"), BIBLE)
+            mk(os.path.join(tmp, "docs", "game", "quests", "q.md"),
+               "---\nid: q\norder: 10\n---\n\n" + QUEST_BODY)
+            out = packs.game_design(tmp)
+            self.assertTrue(any(r["name"] == "game:timeline-act" for r in out), out)
 
     def test_timeline_inversion_blocks(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -299,6 +376,30 @@ class StoryPackTests(unittest.TestCase):
         open_thread = [r for r in out if r["name"] == "story:threads-open"][0]
         self.assertFalse(open_thread["required"])
 
+    def test_thread_resolved_before_its_last_advance_warns(self):
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
+                resolves=["the-heir"])
+        chapter(self.repo, "two", "ch-02", order=20, threads=["the-heir"])
+        out = packs.story_design(self.repo)
+        self.assertTrue(any(r["name"] == "story:threads-order" for r in out), out)
+
+    def test_word_count_counts_kana_and_hangul(self):
+        self.assertGreater(packs._word_count("あ" * 300), 250)
+        self.assertGreater(packs._word_count("가" * 300), 250)
+        self.assertEqual(packs._word_count("---\nid: x\n---\n"), 0)
+
+    def test_story_packs_wiring_runs_both_checks(self):
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
+                resolves=["the-heir"])
+        chapter(self.repo, "two", "ch-02", order=20, threads=["the-war"],
+                resolves=["the-war"])
+        results = []
+        for check in packs.PACKS["story"]["design"]:
+            results.extend(check(self.repo))
+        self.assertTrue(all(r["ok"] for r in results), results)
+
     def test_reveal_to_a_character_who_already_knows_warns(self):
         self.write_world()
         chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
@@ -325,6 +426,29 @@ class ScaffoldTests(unittest.TestCase):
             self.assertEqual(packs._quests(tmp), [])
             out = packs.game_design(tmp)
             self.assertTrue(any(r["name"] == "game:quests" for r in out), out)
+
+    def test_scaffold_reports_a_path_conflict_instead_of_raising(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, "docs", "story", "chapters"), "not a directory\n")
+            result, err = packs.scaffold(tmp, "story")
+            self.assertIsNone(result)
+            self.assertIn("not a directory", err)
+            self.assertFalse(os.path.exists(os.path.join(tmp, "docs", "story",
+                                                          "outline.md")))
+
+    def test_cli_pack_commands_ignore_a_bogus_pack_flag(self):
+        from lifecycle import cli
+        import io
+        with tempfile.TemporaryDirectory() as tmp:
+            old = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                rc_list = cli.main(["--repo", tmp, "--pack", "bogus", "pack", "list"])
+                rc_status = cli.main(["--repo", tmp, "--pack", "bogus", "status"])
+            finally:
+                sys.stdout = old
+            self.assertEqual(rc_list, 0, "listing must not depend on --pack")
+            self.assertEqual(rc_status, 2)
 
     def test_unknown_pack_is_refused(self):
         with tempfile.TemporaryDirectory() as tmp:

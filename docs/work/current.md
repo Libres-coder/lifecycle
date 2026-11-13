@@ -43,6 +43,10 @@ task alive across context resets.
   scenes, conflict engine, no evasion, stakes, contradictions) and game (verb
   with a cost, choices, a world that remembers), plus advisory craft checks on
   declared `want`/`obstacle`/`turn`/`stakes` and length. 121 tests.
+- v1.4.1: independent review of the pack layer (2 P1, 6 P2, all fixed) - glob
+  escaping, only `_template.md` skipped, quote/comment parsing, detection,
+  knowledge accumulation, timeline/thread ordering, scaffold errors, CJK word
+  count. 135 tests; review note in `docs/reviews/`.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

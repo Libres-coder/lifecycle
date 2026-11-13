@@ -149,6 +149,11 @@ def main(argv=None):
               "then `lifecycle hook install`.")
         return 0
 
+    if args.cmd == "pack":
+        # Before evaluation: `pack list` must work even when --pack names a pack
+        # that does not exist - listing is how you find that out.
+        return _pack(repo, args)
+
     try:
         stages = contract.evaluate(repo, args.pack)
     except ValueError as e:
@@ -278,9 +283,6 @@ def main(argv=None):
                    else hooks.uninstall(repo))
         print(msg)
         return 0 if ok else 1
-
-    if args.cmd == "pack":
-        return _pack(repo, args)
 
     if args.cmd == "guide":
         return _guide(stages, args)

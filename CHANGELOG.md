@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.6] - 2026-11-14
+
+### Added
+- **`--with <pack>`: a project can be more than one kind of work.** The named
+  pack's checks are added without its replacements, so a game keeps its
+  architecture, source and test gates while also checking its narrative:
+  `lifecycle --pack game --with story check`. The stage table shows
+  `pack: game+story`, and `guide` prints both playbooks. Replacement stays
+  with the explicitly chosen primary pack - a secondary pack can add a check,
+  never remove one.
+
+### Changed
+- CI installs projtruth and corpus on Linux/Python 3.11, so the cross-tool
+  contract test runs there instead of skipping, and the dogfood step checks
+  stage 4 (evidence) rather than stage 5, whose tag does not exist on a pull
+  request.
+
 ## [1.4.5] - 2026-11-14
 
 ### Fixed

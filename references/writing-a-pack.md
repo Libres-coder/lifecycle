@@ -29,6 +29,10 @@ A narrative folder in a software repository must not weaken its architecture
 requirement, and this is a test, not a promise (`test_auto_detection_never_
 removes_a_generic_gate`).
 
+A project can also be more than one kind: `--with <pack>` adds the second
+pack's checks with its replacements disabled. A game that also has a written
+narrative uses `--pack game --with story` - quests and architecture at once.
+
 ## What a pack contains
 
 ```python

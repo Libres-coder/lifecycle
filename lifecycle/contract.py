@@ -539,8 +539,13 @@ STAGES = [
 ]
 
 
-def evaluate(repo, pack="auto", skip=()):
+def evaluate(repo, pack="auto", skip=(), also=()):
     """Run every stage's checks: structural, then depth, then the active pack.
+
+    `also` names packs whose checks are added without their replacements - a
+    game project keeps its architecture gate and still gets the story checks
+    for its narrative. Replacements apply only to an explicitly chosen primary
+    pack.
 
     Returns [stage dict + results + state]. Depth checks are advisory; pack
     checks may be blocking, because a quest that requires a quest that does not
@@ -554,12 +559,23 @@ def evaluate(repo, pack="auto", skip=()):
         active = None
     elif active not in packsmod.PACKS:
         raise ValueError("unknown pack: %s" % active)
+    extras = []
+    for name in also or ():
+        name = str(name).strip()
+        if not name or name in ("none", "auto"):
+            continue
+        if name not in packsmod.PACKS:
+            raise ValueError("unknown pack: %s" % name)
+        if name != active and name not in extras:
+            extras.append(name)
     # A pack may replace generic artifacts only when it is chosen explicitly.
     # Auto-detection adds checks; it never removes a gate, so a narrative
     # folder inside a software repository cannot silently drop the
     # architecture/decision requirements.
     explicit = pack not in ("auto", "none", "", None)
     pack_def = packsmod.PACKS.get(active or "", {})
+    names = ([active] if active else []) + extras
+    label = "+".join(names) if names else None
     out = []
     for stage in STAGES:
         results = []
@@ -567,7 +583,7 @@ def evaluate(repo, pack="auto", skip=()):
             out.append({"id": stage["id"], "key": stage["key"], "title": stage["title"],
                         "question": stage["question"],
                         "results": [skip_result(stage["key"])],
-                        "state": "skipped", "pack": active})
+                        "state": "skipped", "pack": label})
             continue
         for check in stage["checks"]:
             results.extend(check(repo))
@@ -580,13 +596,13 @@ def evaluate(repo, pack="auto", skip=()):
             results = [r for r in results if r.get("name") not in replaced]
         for check in depthmod.DEPTH.get(stage["key"], []):
             results.extend(check(repo))
-        if active:
-            for check in pack_def.get(stage["key"], []):
+        for name in names:
+            for check in packsmod.PACKS[name].get(stage["key"], []):
                 results.extend(check(repo))
         blocking = [r for r in results if r["required"] and not r["ok"]]
         flagged = [r for r in results if not r["required"] and not r["ok"]]
         state = "failed" if blocking else ("flagged" if flagged else "passed")
         out.append({"id": stage["id"], "key": stage["key"], "title": stage["title"],
                     "question": stage["question"], "results": results,
-                    "state": state, "pack": active})
+                    "state": state, "pack": label})
     return out

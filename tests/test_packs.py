@@ -431,6 +431,29 @@ class StoryPackTests(unittest.TestCase):
         self.assertIn("tests", names)
         self.assertEqual(stage3["state"], "failed", stage3["results"])
 
+    def test_with_adds_checks_without_replacing_the_gate(self):
+        from lifecycle import contract
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
+                resolves=["the-heir"])
+        chapter(self.repo, "two", "ch-02", order=20, pov="borin",
+                threads=["the-war"], resolves=["the-war"])
+        mk(os.path.join(self.repo, "docs", "game", "pillars.md"),
+           "# Pillars\n\n- a\n- b\n- c\n")
+        mk(os.path.join(self.repo, "docs", "game", "world-bible.md"), BIBLE)
+        quest(self.repo, "q1", "q1")
+        stages = contract.evaluate(self.repo, pack="game", also=["story"])
+        stage2 = next(s for s in stages if s["id"] == 2)
+        names = [r["name"] for r in stage2["results"]]
+        self.assertIn("game:bible", names)
+        self.assertIn("story:characters", names)
+        self.assertIn("architecture", names, "a secondary pack must not replace")
+        self.assertEqual(stage2["pack"], "game+story")
+        stage3 = next(s for s in stages if s["id"] == 3)
+        names3 = [r["name"] for r in stage3["results"]]
+        self.assertIn("story:draft", names3)
+        self.assertIn("source", names3, "the software build gate stays")
+
     def test_story_pack_replaces_the_generic_design_artifacts(self):
         from lifecycle import contract
         self.write_world()

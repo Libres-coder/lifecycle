@@ -60,15 +60,21 @@ task alive across context resets.
 - v1.4.5: fixed root finding - a stray `.projtruth/` or `.lifecycle/` in an
   ancestor hijacked subdirectories (found in a game dry run); home and drive
   root are never roots now. README.zh-CN brought up to 1.4.x. 147 tests.
+- v1.4.6: `--with <pack>` - a project can be more than one kind of work (a game
+  with a written narrative keeps architecture, source and tests while its story
+  checks run); the secondary pack adds, never replaces. CI installs the sibling
+  tools so the cross-tool contract runs on Linux, and dogfoods stage 4. 148
+  tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
 ## Next
 
-- Try the hooks in a real session: does `resume` after a compaction actually
-  restore enough to continue, or is it noise?
-- Push 1.2.2-1.2.4 (the trigger advice needs one live session to confirm).
-- Game pack: timeline order and per-character knowledge (who knows what, when).
+- Use it on a real long task (not a demo) and see whether `resume` after a
+  compaction restores enough to continue, and whether `--with` matches how the
+  work actually spans kinds (game + its tooling, app + its docs).
+- Calibrate the 60k context budget against that real project.
+- Add a pack only when a real project needs it (service, film, site).
 
 ## Blockers
 

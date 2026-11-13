@@ -20,11 +20,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install sibling tools (cross-tool contract)
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        run: |
+          python -m pip install git+https://github.com/Libres-coder/projtruth git+https://github.com/Libres-coder/corpus
       - name: Run tests
         run: python -m unittest discover -s tests -v
       - name: Dogfood (this repo's own contract)
         run: |
           python -m lifecycle status
-          python -m lifecycle check --stage 5
+          python -m lifecycle check --stage 4
         shell: bash
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'

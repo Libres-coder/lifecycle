@@ -269,6 +269,16 @@ word counts reported). This applies **only when the pack is chosen explicitly**
 a gate, so a narrative folder in a software project cannot drop its
 architecture requirement.
 
+A project can be more than one kind of work. `--with` adds a second pack's
+checks without its replacements:
+
+```bash
+lifecycle --pack game --with story check   # quests AND architecture
+```
+
+The stage table shows `pack: game+story`; the architecture, source and test
+gates stay, because the secondary pack only adds.
+
 To add a type of your own - service, film, site - see
 [references/writing-a-pack.md](references/writing-a-pack.md).
 

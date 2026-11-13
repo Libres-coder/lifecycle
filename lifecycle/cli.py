@@ -113,6 +113,9 @@ def main(argv=None):
                          ".projtruth, else cwd)")
     ap.add_argument("--pack", default="auto",
                     help="domain pack: auto (detect), game, story, or none")
+    ap.add_argument("--with", dest="also", default="",
+                    help="add another pack's checks without its replacements, "
+                         "comma-separated (e.g. --pack game --with story)")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("init")
@@ -173,7 +176,8 @@ def main(argv=None):
         return _pack(repo, args)
 
     try:
-        stages = contract.evaluate(repo, args.pack)
+        stages = contract.evaluate(repo, args.pack,
+                                   also=[s for s in args.also.split(",") if s.strip()])
     except ValueError as e:
         sys.stderr.write("lifecycle: %s" % e)
         sys.stderr.write("\n")
@@ -460,12 +464,14 @@ def _guide(stages, args):
         for name, why in tools:
             print("- `%s` - %s" % (name, why))
     pack_name = next((s.get("pack") for s in stages if s.get("pack")), None)
-    pack_text = playbooks.for_pack(pack_name) if pack_name else None
-    if pack_text:
-        print("")
-        print("---")
-        print("")
-        print(pack_text)
+    if pack_name:
+        for name in str(pack_name).split("+"):
+            pack_text = playbooks.for_pack(name)
+            if pack_text:
+                print("")
+                print("---")
+                print("")
+                print(pack_text)
     return 0
 
 

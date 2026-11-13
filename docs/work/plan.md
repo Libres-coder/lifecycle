@@ -36,4 +36,5 @@
 
 - [x] statusline reading of the live context percentage
 - [x] advice follows `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` instead of fixed 70/85
-- [ ] confirm in a live session that the 55% nudge arrives before the 70% trigger
+- [x] independent review of the advice, hooks and threads; 100 tests
+- [ ] confirm in a live session that the 45% nudge arrives before the 60% trigger

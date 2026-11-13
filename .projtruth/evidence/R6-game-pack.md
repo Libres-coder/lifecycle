@@ -1,6 +1,6 @@
 # R6 the game pack checks world consistency
 
-_Run at 2026-11-13 21:49:19_
+_Run at 2026-11-13 22:35:50_
 
 ```
 $ python -m unittest tests.test_packs.GamePackTests -v   # exit 0
@@ -15,7 +15,7 @@ test_unknown_actor_blocks (tests.test_packs.GamePackTests) ... ok
 test_valid_world_passes (tests.test_packs.GamePackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 0.097s
+Ran 9 tests in 0.083s
 
 OK
 
@@ -27,7 +27,7 @@ test_comments_in_frontmatter_are_stripped (tests.test_review2.GamePackDetectionT
 test_nested_quest_directory_is_scanned (tests.test_review2.GamePackDetectionTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.021s
+Ran 2 tests in 0.010s
 
 OK
 

@@ -1,6 +1,6 @@
 # R10 a plan makes progress visible
 
-_Run at 2026-11-13 21:49:48_
+_Run at 2026-11-13 22:36:19_
 
 ```
 $ python -m unittest tests.test_plan -v   # exit 0
@@ -15,12 +15,13 @@ test_good_thread_is_quiet (tests.test_plan.ThreadStructureTests) ... ok
 test_missing_sections_warn (tests.test_plan.ThreadStructureTests) ... ok
 test_next_needs_a_bullet (tests.test_plan.ThreadStructureTests) ... ok
 test_create_claim_release (tests.test_plan.ThreadTests) ... ok
+test_lookups_normalize_case_and_space (tests.test_plan.ThreadTests) ... ok
 test_no_threads_is_quiet (tests.test_plan.ThreadTests) ... ok
 test_shared_owner_warns (tests.test_plan.ThreadTests) ... ok
 test_slug_is_validated (tests.test_plan.ThreadTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 14 tests in 0.376s
+Ran 15 tests in 0.408s
 
 OK
 
@@ -31,10 +32,10 @@ $ python -m lifecycle resume   # includes plan progress   # exit 0
 Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R11
   fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
-context: 58% used
+context: 74% (as of 46 min ago - install the statusline hook to keep it current)
 
 
-Context at 58%: fine for the current step; run /compact before starting a new thread (auto-compact fires at 70%).
+last context reading was 46 min ago (74%); it is not live - the status line is what keeps it current
 # Current work
 
 ## Goal
@@ -48,14 +49,13 @@ task alive across context resets.
 - v0.3.0: stage 6 Sustain - work thread, journal, status reports, context budget.
 - v0.4.0: PreCompact/SessionStart hooks (`lifecycle hook install`), snapshots
   that record the transcript size, a review-note check, and a per-stage toolbox
-  in `guide`.
-- v1.0.0: plan artifact with milestone
+  
 ```
 
 ```
 $ python -m lifecycle status   # exit 0
 # lifecycle (D:\my_idea\lifecycle)
-5/7 stages pass  ·  context: 58% used
+5/7 stages pass  ·  context: 74% (as of 46 min ago - install the statusline hook to keep it current)
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -70,8 +70,7 @@ $ python -m lifecycle status   # exit 0
 ## Blocked
 **Stage 4 Verify**
 - evidence: 1 requirement(s) not verified: R11
-  - re-run each requirement's verification and write evidence, then `projtruth report`
-**Stage 6 
+  - re-run each requirement's veri
 ```
 
 measured

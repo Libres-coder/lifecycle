@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 21:49:36_
+_Run at 2026-11-13 22:36:07_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 5.926s
+Ran 9 tests in 5.777s
 
 OK
 
@@ -24,13 +24,13 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R11
+Lifecycle: stage 4 Verify - 2 requirement(s) not verified: R9, R11
   fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
-context: 58% used
+context: 74% (as of 46 min ago - install the statusline hook to keep it current)
 
 
-Context at 58%: fine for the current step; run /compact before starting a new thread (auto-compact fires at 70%).
+last context reading was 46 min ago (74%); it is not live - the status line is what keeps it current
 # Current work
 
 ## Goal
@@ -59,7 +59,9 @@ task alive across context resets.
 - v1.2.2: the advice follows the real trigger - `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`
   moves the nudge to trigger−15 and `/compact now` to trigger−5 (55/65 when the
   trigger is 70). The machine override is installed at 70% in both
-  `~/.claude/settings.json` and the CC Switch provider. 88 tests.
+  `~/.claude/settings.json` and the CC Switch provider. 89 tests.
+- v1.2.3: the status line carries the advice (`74% ctx - /compact` within five
+  points of the trigger), so the always-visible surface asks for the compaction.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
@@ -90,11 +92,11 @@ None.
 - stages: 5/7 pass
 - blocked: Sustain
 - working tree: 10 changed file(s)
-- plan: 4/5 milestones, 15/17 tasks
-- context: 74% (as of 12 min ago - install the statusline hook to keep it current)
+- plan: 4/6 milestones, 18/20 tasks
+- context: 58% used
+- 3b78b5b lifecycle 1.2.3: the status line asks for a compaction
+- 9163f3e evidence: regenerate for 1.2.2; thread records the earlier compaction work
 - d2415a0 lifecycle 1.2.2: context advice follows the real compaction trigger
-- 8718453 lifecycle 1.2.1: quiet hook, suggest, context warning
-- 2c3e0d6 lifecycle 1.2.0: context readings
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

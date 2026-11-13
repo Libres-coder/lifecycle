@@ -29,15 +29,18 @@ task alive across context resets.
   `~/.claude/settings.json` and the CC Switch provider. 89 tests.
 - v1.2.3: the status line carries the advice (`74% ctx - /compact` within five
   points of the trigger), so the always-visible surface asks for the compaction.
+- v1.2.4: independent review of the 1.2.x surface (1 P1, 7 P2, all fixed) -
+  context readings sanitized on read, `hook install` reports instead of
+  silently skipping, legacy hooks upgraded, no stale percentage after resume,
+  thread slugs normalized. 100 tests; review note in `docs/reviews/`.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
 ## Next
 
-- Independent review of the 1.x surface (threads, statusline, trigger advice).
 - Try the hooks in a real session: does `resume` after a compaction actually
   restore enough to continue, or is it noise?
-- Publish 1.2.2 once the trigger advice has been seen in a live session.
+- Push 1.2.2-1.2.4 (the trigger advice needs one live session to confirm).
 - Game pack: timeline order and per-character knowledge (who knows what, when).
 
 ## Blockers

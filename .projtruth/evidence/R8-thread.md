@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 22:36:07_
+_Run at 2026-11-13 23:38:03_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 5.777s
+Ran 9 tests in 6.460s
 
 OK
 
@@ -24,13 +24,9 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 4 Verify - 2 requirement(s) not verified: R9, R11
+Lifecycle: stage 4 Verify - 3 requirement(s) not verified: R9, R11, R12
   fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
-context: 74% (as of 46 min ago - install the statusline hook to keep it current)
-
-
-last context reading was 46 min ago (74%); it is not live - the status line is what keeps it current
 # Current work
 
 ## Goal
@@ -62,15 +58,21 @@ task alive across context resets.
   `~/.claude/settings.json` and the CC Switch provider. 89 tests.
 - v1.2.3: the status line carries the advice (`74% ctx - /compact` within five
   points of the trigger), so the always-visible surface asks for the compaction.
+- v1.2.4: independent review of the 1.2.x surface (1 P1, 7 P2, all fixed) -
+  context readings sanitized on read, `hook install` reports instead of
+  silently skipping, legacy hooks upgraded, no stale percentage after resume,
+  thread slugs normalized. 100 tests; review note in `docs/reviews/`.
+- v1.3.0: packs for work that is not software - story (outline/cast/chapters,
+  POV, thread resolution) and the game pack extended with act/order timelines
+  and per-character knowledge; `lifecycle pack list|init|guide`. 117 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
 ## Next
 
-- Independent review of the 1.x surface (threads, statusline, trigger advice).
 - Try the hooks in a real session: does `resume` after a compaction actually
   restore enough to continue, or is it noise?
-- Publish 1.2.2 once the trigger advice has been seen in a live session.
+- Push 1.2.2-1.2.4 (the trigger advice needs one live session to confirm).
 - Game pack: timeline order and per-character knowledge (who knows what, when).
 
 ## Blockers
@@ -85,7 +87,7 @@ None.
 
 ## Plan
 
-4/6 milestones, 18/20 tasks done.
+4/7 milestones, 22/25 tasks done.
 
 ## Last compaction snapshot
 
@@ -93,10 +95,10 @@ None.
 - blocked: Sustain
 - working tree: 10 changed file(s)
 - plan: 4/6 milestones, 18/20 tasks
-- context: 58% used
+- context: 74% (as of 46 min ago - install the statusline hook to keep it current)
+- 1545066 lifecycle 1.2.4: fix the independent review of the 1.2.x surface
+- 1f37d41 evidence: regenerate for 1.2.3; thread records the status-line advice
 - 3b78b5b lifecycle 1.2.3: the status line asks for a compaction
-- 9163f3e evidence: regenerate for 1.2.2; thread records the earlier compaction work
-- d2415a0 lifecycle 1.2.2: context advice follows the real compaction trigger
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

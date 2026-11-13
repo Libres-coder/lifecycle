@@ -3,77 +3,84 @@
     {
       "file": ".projtruth/evidence/R1-status.md",
       "tier": "measured",
-      "mtime": 1794580533.59534
+      "mtime": 1794584244.4066381
     }
   ],
   "R10": [
     {
       "file": ".projtruth/evidence/R10-plan.md",
       "tier": "measured",
-      "mtime": 1794580579.1558666
+      "mtime": 1794584297.343707
     }
   ],
   "R11": [
     {
       "file": ".projtruth/evidence/R11-context.md",
       "tier": "measured",
-      "mtime": 1794580587.7384837
+      "mtime": 1794584307.5466502
+    }
+  ],
+  "R12": [
+    {
+      "file": ".projtruth/evidence/R12-packs.md",
+      "tier": "measured",
+      "mtime": 1794584310.0304964
     }
   ],
   "R2": [
     {
       "file": ".projtruth/evidence/R2-check.md",
       "tier": "measured",
-      "mtime": 1794580540.8681018
+      "mtime": 1794584252.6918013
     }
   ],
   "R3": [
     {
       "file": ".projtruth/evidence/R3-stateless.md",
       "tier": "measured",
-      "mtime": 1794580543.7668216
+      "mtime": 1794584255.664111
     }
   ],
   "R4": [
     {
       "file": ".projtruth/evidence/R4-compose.md",
       "tier": "measured",
-      "mtime": 1794580547.3547883
+      "mtime": 1794584259.9744773
     }
   ],
   "R5": [
     {
       "file": ".projtruth/evidence/R5-depth.md",
       "tier": "measured",
-      "mtime": 1794580550.0902922
+      "mtime": 1794584263.2802565
     }
   ],
   "R6": [
     {
       "file": ".projtruth/evidence/R6-game-pack.md",
       "tier": "measured",
-      "mtime": 1794580550.4353259
+      "mtime": 1794584263.7800057
     }
   ],
   "R7": [
     {
       "file": ".projtruth/evidence/R7-guide.md",
       "tier": "measured",
-      "mtime": 1794580555.065873
+      "mtime": 1794584269.7300355
     }
   ],
   "R8": [
     {
       "file": ".projtruth/evidence/R8-thread.md",
       "tier": "measured",
-      "mtime": 1794580567.546906
+      "mtime": 1794584283.9879763
     }
   ],
   "R9": [
     {
       "file": ".projtruth/evidence/R9-hooks.md",
       "tier": "measured",
-      "mtime": 1794580573.9837606
+      "mtime": 1794584291.340604
     }
   ]
 }

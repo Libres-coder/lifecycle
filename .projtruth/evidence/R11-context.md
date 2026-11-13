@@ -1,6 +1,6 @@
 # R11 context usage is recorded when the harness exposes it
 
-_Run at 2026-11-13 22:36:27_
+_Run at 2026-11-13 23:38:27_
 
 ```
 $ python -m unittest tests.test_statusline -v   # exit 0
@@ -8,6 +8,7 @@ test_numeric_strings_are_accepted (tests.test_statusline.BadStateTests) ... ok
 test_wrong_type_does_not_crash_any_consumer (tests.test_statusline.BadStateTests) ... ok
 test_resume_hook_does_not_keep_a_stale_percentage (tests.test_statusline.CliTests) ... ok
 test_resume_hook_is_silent_in_an_uninitialized_folder (tests.test_statusline.CliTests) ... ok
+test_resume_hook_is_silent_when_only_a_context_reading_exists (tests.test_statusline.CliTests) ... ok
 test_resume_hook_records_context_tokens (tests.test_statusline.CliTests) ... ok
 test_statusline_command_records_and_prints (tests.test_statusline.CliTests) ... ok
 test_bad_payloads_do_not_raise (tests.test_statusline.ParseTests) ... ok
@@ -27,7 +28,7 @@ test_status_line_asks_for_a_compaction_before_the_trigger (tests.test_statusline
 test_unreadable_override_keeps_the_default (tests.test_statusline.TriggerTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 21 tests in 1.703s
+Ran 22 tests in 2.366s
 
 OK
 
@@ -40,7 +41,7 @@ recorded; status now prints: []
 
 ```
 $ printf '{"source":"compact","context_tokens":42000}' | python -m lifecycle resume --hook   # exit 0
-Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R11
+Lifecycle: stage 4 Verify - 2 requirement(s) not verified: R11, R12
 ```
 
 measured

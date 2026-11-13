@@ -78,6 +78,58 @@ pip install ~/.claude/skills/lifecycle     # or PYTHONPATH=~/.claude/skills/life
 | `lifecycle next` | one blocking item, with its fix |
 | `lifecycle check [--stage N]` | CI gate: exit 1 on a failing stage |
 | `lifecycle stages` | the contract: what each stage asks |
+| `lifecycle guide [stage]` | the playbook: questions to answer, what shallow looks like |
+
+## Deep work, not just presence
+
+Presence is cheap to fake. `lifecycle guide` prints the questions that separate a
+real stage from a filled-in template - the purpose of the stage, what you must
+answer before producing anything, what to write, **what shallow looks like**, and
+what done means.
+
+```bash
+lifecycle guide            # the stage that is blocking right now
+lifecycle guide design
+```
+
+Some checks are **advisory** and never fail a stage: a vision under 100 words,
+fewer than two non-goals, criteria too vague to test, a decision recorded without
+a reason, an architecture that never mentions a trade-off or a failure, evidence
+marked `guessed`. They are reported with the sentence that says what a shallow
+version looks like, because taste is not a gate.
+
+## Game pack
+
+An open-world game's design is not an architecture document. When `docs/game/`
+exists, a pack adds checks to stages 0 and 2: pillars, a world bible with
+characters/factions/locations/facts, and quest files with
+`id`/`requires`/`reveals`.
+
+Real output on a game-shaped demo repository (the missing prerequisite is
+deliberate):
+
+```
+$ lifecycle --repo ../game-demo status
+0/6 stages pass  ·  pack: game
+
+| 0 | Discovery | **WARN** | Why does this exist, and what will it not do? |
+| 1 | Spec      | **FAIL** | no requirement registry |
+| 2 | Design    | **FAIL** | no architecture document |
+| 3 | Build     | **FAIL** | no source files found |
+| 4 | Verify    | **WARN** | no requirements registered - nothing to verify |
+| 5 | Release   | **FAIL** | no CHANGELOG |
+
+## Blocked
+**Stage 2 Design**
+- architecture: no architecture document
+- decisions: no recorded decision
+- game:requires: quest(s) require a quest that does not exist: q-keep -> q-missing
+  - fix the id or add the missing quest file
+```
+
+The checks are the ones a wiki cannot do: a prerequisite loop, a reveal of a fact
+the bible never establishes, an actor used but never declared.
+`lifecycle guide game` prints the full playbook.
 
 ## Design notes
 

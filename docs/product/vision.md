@@ -12,6 +12,13 @@ which of them exist.
 A solo developer working with an agent, shipping a small product, who wants the
 gaps named before a user finds them.
 
+## Success metric
+
+A repository using this tool can answer "which stage are we in, and what is
+blocking it" in one command, and the answer changes when the artifacts change.
+Measured by running `lifecycle status` on four real repositories in this
+workspace and comparing the reported stage against a manual reading.
+
 ## Non-goals
 
 - Not a project tracker: no tickets, no assignments, no estimates.

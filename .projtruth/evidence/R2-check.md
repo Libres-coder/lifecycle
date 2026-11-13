@@ -13,15 +13,15 @@ test_repo_must_exist (tests.test_lifecycle.CliTests) ... lifecycle: --repo is no
 ok
 
 ----------------------------------------------------------------------
-Ran 4 tests in 3.160s
+Ran 4 tests in 1.432s
 
 OK
 
 ```
 
 ```
-$ python -m lifecycle --repo . check --stage 2   # exit 0
-python -m lifecycle --repo . check --stage 9   # exit 2
+$ python -m lifecycle check --stage 2   # exit 0
+python -m lifecycle check --stage 9   # exit 2
 stage 2 Design     PASSED
 lifecycle: no stage 9 (0-5)
 ```

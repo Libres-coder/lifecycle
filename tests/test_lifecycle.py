@@ -110,6 +110,17 @@ class StageTests(unittest.TestCase):
                 contract.run_json = original
             self.assertTrue(all(r.get("skipped") and not r["required"] for r in results))
 
+    def test_verify_does_not_pass_without_requirements(self):
+        """No registry is stage 1's problem; stage 4 must not claim success."""
+        with tempfile.TemporaryDirectory() as tmp:
+            original = contract.run_json
+            contract.run_json = lambda repo, tool, args: [] if tool == "projtruth" else None
+            try:
+                results = contract.check_verify(tmp)
+            finally:
+                contract.run_json = original
+            self.assertTrue(all(not r["required"] and not r["ok"] for r in results))
+
     def test_verify_blocks_on_unverified_requirement(self):
         with tempfile.TemporaryDirectory() as tmp:
             original = contract.run_json

@@ -28,8 +28,10 @@ def next_action(stages):
 
 def render(repo, stages):
     passed, total = summary(stages)
+    pack = next((s.get("pack") for s in stages if s.get("pack")), None)
     lines = ["# lifecycle (%s)" % repo,
-             "%d/%d stages pass" % (passed, total), "",
+             "%d/%d stages pass%s" % (passed, total,
+                                      ("  ·  pack: %s" % pack) if pack else ""), "",
              "| # | stage | state | what the stage asks |",
              "|---|---|---|---|"]
     for s in stages:
@@ -39,6 +41,17 @@ def render(repo, stages):
             detail = bad[0]["detail"]
         lines.append("| %d | %s | **%s** | %s |"
                      % (s["id"], s["title"], STATE_MARK[s["state"]], detail))
+    blocked = [s for s in stages if s["state"] == "failed"]
+    if blocked:
+        lines.append("")
+        lines.append("## Blocked")
+        for s in blocked:
+            lines.append("**Stage %d %s**" % (s["id"], s["title"]))
+            for r in blockers(s)[:4]:
+                lines.append("- %s: %s" % (r["name"], r["detail"]))
+                lines.append("  - %s" % r["fix"])
+            if len(blockers(s)) > 4:
+                lines.append("- ... and %d more" % (len(blockers(s)) - 4))
     stage, item = next_action(stages)
     lines.append("")
     if stage is None or item is None:

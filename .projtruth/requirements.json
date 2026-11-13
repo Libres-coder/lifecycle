@@ -81,6 +81,67 @@
           "judge": "command"
         }
       ]
+    },
+    {
+      "id": "R5",
+      "title": "Depth checks flag shallow artifacts without blocking",
+      "status": "pending",
+      "files": [
+        "lifecycle/depth.py"
+      ],
+      "criteria": [
+        {
+          "id": "R5.1",
+          "text": "a vague criterion or a decision without a why produces a WARN",
+          "judge": "command"
+        },
+        {
+          "id": "R5.2",
+          "text": "no depth check can fail a stage",
+          "judge": "command"
+        }
+      ]
+    },
+    {
+      "id": "R6",
+      "title": "The game pack checks world consistency",
+      "status": "pending",
+      "files": [
+        "lifecycle/packs.py"
+      ],
+      "criteria": [
+        {
+          "id": "R6.1",
+          "text": "a missing prerequisite, an unestablished reveal and a prerequisite loop each block",
+          "judge": "command"
+        },
+        {
+          "id": "R6.2",
+          "text": "the pack applies only when docs/game exists",
+          "judge": "command"
+        }
+      ]
+    },
+    {
+      "id": "R7",
+      "title": "guide prints the playbook for the blocking stage",
+      "status": "pending",
+      "files": [
+        "lifecycle/playbooks.py",
+        "lifecycle/cli.py"
+      ],
+      "criteria": [
+        {
+          "id": "R7.1",
+          "text": "guide with no argument prints the first failing stage's playbook",
+          "judge": "command"
+        },
+        {
+          "id": "R7.2",
+          "text": "guide game prints the pack playbook",
+          "judge": "command"
+        }
+      ]
     }
   ]
 }

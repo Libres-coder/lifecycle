@@ -231,6 +231,11 @@ def check_verify(repo):
     if data is None:
         return [skip("projtruth", "projtruth is not installed",
                      "pip install git+https://github.com/Libres-coder/projtruth")]
+    if not data:
+        # No registry is stage 1's problem; claiming "verified" here would be a
+        # false pass on a repository that has promised nothing.
+        return [skip("evidence", "no requirements registered - nothing to verify",
+                     "stage 1 comes first: add requirements with criteria")]
     out = []
     bad = [r for r in data if r.get("status") != "verified"]
     if bad:
@@ -307,17 +312,34 @@ STAGES = [
 ]
 
 
-def evaluate(repo):
-    """Run every stage's checks. Returns [stage dict + results + state]."""
+def evaluate(repo, pack="auto"):
+    """Run every stage's checks: structural, then depth, then the active pack.
+
+    Returns [stage dict + results + state]. Depth checks are advisory; pack
+    checks may be blocking, because a quest that requires a quest that does not
+    exist is wrong, not merely shallow.
+    """
+    from . import depth as depthmod
+    from . import packs as packsmod
+
+    active = packsmod.detect(repo) if pack == "auto" else pack
+    if active in ("none", "", None):
+        active = None
+    pack_def = packsmod.PACKS.get(active or "", {})
     out = []
     for stage in STAGES:
         results = []
         for check in stage["checks"]:
             results.extend(check(repo))
+        for check in depthmod.DEPTH.get(stage["key"], []):
+            results.extend(check(repo))
+        if active:
+            for check in pack_def.get(stage["key"], []):
+                results.extend(check(repo))
         blocking = [r for r in results if r["required"] and not r["ok"]]
         flagged = [r for r in results if not r["required"] and not r["ok"]]
         state = "failed" if blocking else ("flagged" if flagged else "passed")
         out.append({"id": stage["id"], "key": stage["key"], "title": stage["title"],
                     "question": stage["question"], "results": results,
-                    "state": state})
+                    "state": state, "pack": active})
     return out

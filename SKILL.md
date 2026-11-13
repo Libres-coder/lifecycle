@@ -54,6 +54,49 @@ Commands:
 | `lifecycle next` | one blocking item, with its fix |
 | `lifecycle check [--stage N]` | CI gate: exit 1 on a failing stage |
 | `lifecycle stages` | the contract: what each stage asks |
+| `lifecycle guide [stage]` | the playbook for a stage: questions to answer, what shallow looks like |
+
+## Deep work, not just presence
+
+Presence is cheap to fake. `lifecycle guide` prints the questions that separate a
+real stage from a filled-in template - run it when you *start* a stage:
+
+```bash
+lifecycle guide            # the stage that is currently blocking
+lifecycle guide design     # or a named one
+```
+
+Each playbook has the same shape: the purpose of the stage, the questions you
+must answer before producing anything, what to write, what shallow looks like,
+and what "done" means. Read the "shallow looks like" section first - it is the
+one that catches you.
+
+The `guide` is advice; the checks are the gate. They disagree on purpose: the
+guide asks for thinking, the checks can only see artifacts.
+
+## Advisory checks
+
+Some checks are advisory (WARN): a vision under 100 words, fewer than two
+non-goals, criteria too vague to test ("works"), a decision recorded without a
+reason, architecture that never mentions a trade-off or a failure, evidence
+marked `guessed`. They never fail a stage - taste is not a gate - but they are
+printed with what a shallow version looks like.
+
+## Game pack
+
+An open-world game's design is not an architecture document. With
+`docs/game/` present, a pack adds checks to stages 0 and 2:
+
+- `docs/game/pillars.md` - three pillars;
+- `docs/game/world-bible.md` - frontmatter lists of characters, factions,
+  locations and facts;
+- `docs/game/quests/<id>.md` - frontmatter `id`, `requires`, `reveals`,
+  `characters`, `factions`.
+
+The checks are the ones a wiki cannot do: a quest requiring a quest that does
+not exist, a prerequisite loop, a reveal of a fact the bible never establishes,
+an actor used but never declared. `lifecycle guide game` prints the full
+playbook.
 
 ## The contract
 

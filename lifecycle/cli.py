@@ -12,7 +12,7 @@ import json
 import os
 import sys
 
-from . import contract, report
+from . import contract, playbooks, report
 
 
 def _utf8():
@@ -32,6 +32,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser(prog="lifecycle")
     ap.add_argument("--repo", default=os.getcwd(),
                     help="project root (default: cwd)")
+    ap.add_argument("--pack", default="auto",
+                    help="domain pack: auto (detect), game, or none")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p = sub.add_parser("status")
@@ -42,6 +44,10 @@ def main(argv=None):
                    help="assert one stage (default: every stage)")
     p.add_argument("--json", action="store_true")
     sub.add_parser("stages")
+    p = sub.add_parser("guide")
+    p.add_argument("stage", nargs="?",
+                   help="stage number or name, or a pack name (game); default: "
+                        "the stage that is blocking")
 
     args = ap.parse_args(argv)
     _utf8()
@@ -50,7 +56,7 @@ def main(argv=None):
         sys.stderr.write("lifecycle: --repo is not a directory: %s\n" % repo)
         return 2
 
-    stages = _stages(repo)
+    stages = contract.evaluate(repo, args.pack)
 
     if args.cmd == "status":
         if args.json:
@@ -71,11 +77,48 @@ def main(argv=None):
     if args.cmd == "check":
         return _check(stages, args)
 
+    if args.cmd == "guide":
+        return _guide(stages, args)
+
     if args.cmd == "stages":
         for s in contract.STAGES:
             print("%d  %-10s %s" % (s["id"], s["title"], s["question"]))
         return 0
     return 2
+
+
+def _guide(stages, args):
+    want = (args.stage or "").strip().lower()
+    pack = playbooks.for_pack(want)
+    if pack:
+        print(pack)
+        return 0
+    if want:
+        chosen = None
+        for s in stages:
+            if want == s["key"] or want == str(s["id"]):
+                chosen = s
+        if chosen is None:
+            sys.stderr.write("lifecycle: no stage or pack named %r" % want)
+            sys.stderr.write("\n")
+            return 2
+    else:
+        chosen = None
+        for s in stages:
+            if s["state"] == "failed":
+                chosen = s
+                break
+        if chosen is None:
+            print("Every stage passes. `lifecycle guide <stage>` reads any stage's "
+                  "playbook; `lifecycle stages` lists them.")
+            return 0
+    text = playbooks.for_stage(chosen["key"])
+    if not text:
+        sys.stderr.write("lifecycle: no playbook for %s" % chosen["key"])
+        sys.stderr.write("\n")
+        return 2
+    print(text)
+    return 0
 
 
 def _check(stages, args):

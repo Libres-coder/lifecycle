@@ -1,6 +1,6 @@
 # R11 context usage is recorded when the harness exposes it
 
-_Run at 2026-11-14 03:32:14_
+_Run at 2026-11-14 03:54:40_
 
 ```
 $ python -m unittest tests.test_statusline -v   # exit 0
@@ -28,7 +28,7 @@ test_status_line_asks_for_a_compaction_before_the_trigger (tests.test_statusline
 test_unreadable_override_keeps_the_default (tests.test_statusline.TriggerTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 22 tests in 1.756s
+Ran 22 tests in 2.249s
 
 OK
 
@@ -41,7 +41,7 @@ recorded; status now prints: []
 
 ```
 $ printf '{"source":"compact","context_tokens":42000}' | python -m lifecycle resume --hook   # exit 0
-Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R12
+Lifecycle: stage 4 Verify - 2 requirement(s) not verified: R11, R12
 ```
 
 measured

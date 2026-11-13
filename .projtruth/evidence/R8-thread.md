@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-14 03:31:53_
+_Run at 2026-11-14 03:54:14_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 3.044s
+Ran 9 tests in 7.351s
 
 OK
 
@@ -24,7 +24,7 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R12
+Lifecycle: stage 4 Verify - 3 requirement(s) not verified: R9, R11, R12
   fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
 # Current work
@@ -84,7 +84,11 @@ task alive across context resets.
   own architecture requirement. 139 tests.
 - v1.4.4: kinds of work are peers - a pack may replace checks at any stage;
   story replaces stage 3's source/tests with `story:draft` (chapter and word
-  counts). 142 tests.
+  counts). End-to-end contract test with the installed siblings pins the JSON
+  lifecycle reads; `references/writing-a-pack.md` documents how to add a type.
+- v1.4.5: fixed root finding - a stray `.projtruth/` or `.lifecycle/` in an
+  ancestor hijacked subdirectories (found in a game dry run); home and drive
+  root are never roots now. README.zh-CN brought up to 1.4.x. 147 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
@@ -112,12 +116,12 @@ None.
 ## Last compaction snapshot
 
 - stages: 5/7 pass
-- blocked: none
-- working tree: 11 changed file(s)
+- blocked: Sustain
+- working tree: 9 changed file(s)
 - plan: 4/7 milestones, 22/25 tasks
-- f8580b3 lifecycle 1.4.1: fix the pack-layer review (2 P1, 6 P2)
-- 6843657 evidence: regenerate for 1.4.0
-- 71ebd91 lifecycle 1.4.0: packs carry a craft standard, not only structure
+- 792c454 tests: end-to-end contract with projtruth and corpus; docs: writing a pack
+- 870b1a7 lifecycle 1.4.4: kinds of work are peers
+- ad4e501 lifecycle 1.4.3: a pack can add checks automatically, never remove one
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

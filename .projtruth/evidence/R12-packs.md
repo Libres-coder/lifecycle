@@ -1,6 +1,6 @@
 # R12 packs extend the stages for non-software work
 
-_Run at 2026-11-14 03:34:31_
+_Run at 2026-11-14 03:54:44_
 
 ```
 $ python -m unittest tests.test_packs.StoryPackTests -v   # exit 0
@@ -26,7 +26,7 @@ test_valid_story_passes (tests.test_packs.StoryPackTests) ... ok
 test_word_count_counts_kana_and_hangul (tests.test_packs.StoryPackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 19 tests in 1.440s
+Ran 19 tests in 1.772s
 
 OK
 
@@ -55,7 +55,7 @@ test_unknown_actor_blocks (tests.test_packs.GamePackTests) ... ok
 test_valid_world_passes (tests.test_packs.GamePackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 19 tests in 0.181s
+Ran 19 tests in 0.239s
 
 OK
 
@@ -63,9 +63,9 @@ OK
 
 ```
 $ python -m lifecycle pack init story   # exit 0
-kept    docs/story/outline.md (exists)
-kept    docs/story/characters.md (exists)
-kept    docs/story/chapters/_template.md (exists)
+created docs/story/outline.md
+created docs/story/characters.md
+created docs/story/chapters/_template.md
 
 Next: fill the TODOs, then `lifecycle check`. The checks read these files; they do not read intention.
 ```
@@ -79,7 +79,7 @@ story  Long-form story    stages 0,2,3  active
 ```
 $ two chapters both with order 10, then python -m lifecycle status   # exit 0
 - story:characters:list: no characters declared
-- story:draft: no chapters written
+- story:order-dup: two chapters share order 10: ch-one and ch-two
 ```
 
 measured

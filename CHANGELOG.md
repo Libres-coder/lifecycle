@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.1] - 2026-11-13
+
+### Added
+- `lifecycle suggest` names the active pack when the blocking stage is 0 or 2,
+  with the command that prints its playbook. A story project was being told the
+  generic design questions and nothing about the pack actually checking it.
+- `corpus` 0.1.3 skips `_template.md` scaffold files, so the two tools agree on
+  what counts as a document.
+
 ## [1.3.0] - 2026-11-13
 
 ### Added

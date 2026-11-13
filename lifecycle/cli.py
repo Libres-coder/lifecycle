@@ -309,6 +309,11 @@ def _suggest(repo, stages):
             out.append(("tool", "%s - %s" % (name, why),
                         "use it if installed; `lifecycle guide %s` explains why" %
                         stage["key"]))
+    pack = next((s.get("pack") for s in stages if s.get("pack")), None)
+    if pack and stage is not None and stage["id"] in (0, 2):
+        out.append(("pack", "pack %s is active: the stage checks below are the "
+                    "generic ones, and this kind of work has its own" % pack,
+                    "lifecycle pack guide %s" % pack))
     data, _ = statusline.last(repo)
     if (data or {}).get("used_percentage") is None:
         out.append(("context",

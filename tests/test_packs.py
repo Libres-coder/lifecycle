@@ -289,6 +289,21 @@ class ScaffoldTests(unittest.TestCase):
             self.assertIsNone(result)
             self.assertIn("unknown pack", err)
 
+    def test_suggest_names_the_active_pack(self):
+        from lifecycle import cli
+        import io
+        with tempfile.TemporaryDirectory() as tmp:
+            packs.scaffold(tmp, "story")
+            old = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                rc = cli.main(["--repo", tmp, "suggest"])
+                out = sys.stdout.getvalue()
+            finally:
+                sys.stdout = old
+            self.assertEqual(rc, 0)
+            self.assertIn("pack guide story", out)
+
     def test_cli_pack_list_and_init(self):
         from lifecycle import cli
         import io

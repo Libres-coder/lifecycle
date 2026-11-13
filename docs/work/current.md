@@ -36,6 +36,9 @@ task alive across context resets.
 - v1.3.0: packs for work that is not software - story (outline/cast/chapters,
   POV, thread resolution) and the game pack extended with act/order timelines
   and per-character knowledge; `lifecycle pack list|init|guide`. 117 tests.
+- v1.3.1: `suggest` names the active pack at stages 0/2; corpus 0.1.3 skips
+  `_template.md` scaffold files so the two tools agree on what a document is.
+  118 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

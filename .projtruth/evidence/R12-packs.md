@@ -1,12 +1,14 @@
 # R12 packs extend the stages for non-software work
 
-_Run at 2026-11-14 05:02:30_
+_Run at 2026-11-14 05:36:56_
 
 ```
 $ python -m unittest tests.test_packs.StoryPackTests -v   # exit 0
 test_auto_detection_keeps_source_and_tests (tests.test_packs.StoryPackTests) ... ok
 test_auto_detection_never_removes_a_generic_gate (tests.test_packs.StoryPackTests)
 A narrative folder in a software repo must not drop architecture. ... ok
+test_auto_detection_runs_every_detected_pack (tests.test_packs.StoryPackTests)
+A game with a written narrative is both kinds; auto runs both. ... ok
 test_craft_flags_a_character_without_a_want (tests.test_packs.StoryPackTests) ... ok
 test_craft_flags_a_quest_without_stakes (tests.test_packs.StoryPackTests) ... ok
 test_craft_flags_a_summary_chapter (tests.test_packs.StoryPackTests) ... ok
@@ -27,7 +29,7 @@ test_with_adds_checks_without_replacing_the_gate (tests.test_packs.StoryPackTest
 test_word_count_counts_kana_and_hangul (tests.test_packs.StoryPackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 20 tests in 1.602s
+Ran 21 tests in 2.209s
 
 OK
 
@@ -56,7 +58,7 @@ test_unknown_actor_blocks (tests.test_packs.GamePackTests) ... ok
 test_valid_world_passes (tests.test_packs.GamePackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 19 tests in 0.169s
+Ran 19 tests in 0.160s
 
 OK
 

@@ -1,6 +1,6 @@
 # R1 status is computed from repository artifacts
 
-_Run at 2026-11-14 05:01:30_
+_Run at 2026-11-14 05:35:55_
 
 ```
 $ python -m unittest tests.test_lifecycle.StageTests -v   # exit 0
@@ -17,7 +17,7 @@ test_vision_missing_section_names_it (tests.test_lifecycle.StageTests) ... ok
 test_vision_sections (tests.test_lifecycle.StageTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 10 tests in 0.039s
+Ran 10 tests in 0.038s
 
 OK
 
@@ -29,7 +29,7 @@ test_bom_registry_is_read (tests.test_review2.RegistryRobustnessTests) ... ok
 test_malformed_registry_reports_instead_of_crashing (tests.test_review2.RegistryRobustnessTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.024s
+Ran 2 tests in 0.033s
 
 OK
 
@@ -46,21 +46,21 @@ $ python -m lifecycle status   # exit 0
 | 1 | Spec | **PASS** | What exactly is promised, in a way a stranger can check? |
 | 2 | Design | **PASS** | How is it built, and why this way? |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
-| 4 | Verify | **FAIL** | 8 requirement(s) not verified: R1, R2, R3, R4, R7, R9 |
+| 4 | Verify | **FAIL** | 9 requirement(s) not verified: R1, R2, R3, R4, R6, R7 |
 | 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
 | 6 | Sustain | **PASS** | Does the work survive a context reset, and is it summarised? |
 
 ## Blocked
 **Stage 4 Verify**
-- evidence: 8 requirement(s) not verified: R1, R2, R3, R4, R7, R9
+- evidence: 9 requirement(s) not verified: R1, R2, R3, R4, R6, R7
   - re-run each requirement's verification and write evidence, then `projtruth report`
 
 ## Next
-Stage 4 Verify: **evidence** - 8 requirement(s) not verified: R1, R2, R3, R4, R7, R9
+Stage 4 Verify: **evidence** - 9 requirement(s) not verified: R1, R2, R3, R4, R6, R7
 
     re-run each requirement's verification and write evidence, then `projtruth report`
 
-_2026-11-14 05:01_
+_2026-11-14 05:35_
 ```
 
 measured

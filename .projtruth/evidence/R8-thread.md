@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-14 05:02:06_
+_Run at 2026-11-14 05:36:32_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 6.619s
+Ran 9 tests in 6.153s
 
 OK
 
@@ -94,6 +94,9 @@ task alive across context resets.
   checks run); the secondary pack adds, never replaces. CI installs the sibling
   tools so the cross-tool contract runs on Linux, and dogfoods stage 4. 148
   tests.
+- v1.4.7: auto-detection runs every kind of work present, not just the first -
+  a game+story project gets both check sets and the table says `pack:
+  game+story`; replacement still belongs to an explicit primary. 149 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
@@ -125,9 +128,9 @@ None.
 - blocked: none
 - working tree: 11 changed file(s)
 - plan: 4/7 milestones, 22/25 tasks
+- 4924084 lifecycle 1.4.6: a project can be more than one kind of work (--with)
+- c380b31 evidence: regenerate for 1.4.5
 - 8f83183 lifecycle 1.4.5: a stray marker in an ancestor must not hijack a project
-- d969266 evidence: regenerate for 1.4.4; thread records the integration test
-- 792c454 tests: end-to-end contract with projtruth and corpus; docs: writing a pack
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

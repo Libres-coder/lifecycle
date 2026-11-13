@@ -65,6 +65,9 @@ task alive across context resets.
   checks run); the secondary pack adds, never replaces. CI installs the sibling
   tools so the cross-tool contract runs on Linux, and dogfoods stage 4. 148
   tests.
+- v1.4.7: auto-detection runs every kind of work present, not just the first -
+  a game+story project gets both check sets and the table says `pack:
+  game+story`; replacement still belongs to an explicit primary. 149 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

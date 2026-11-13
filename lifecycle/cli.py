@@ -392,13 +392,13 @@ def _pack(repo, args):
     """list the packs, print one's playbook, or write its empty structure."""
     name = (args.name or "").strip().lower()
     if args.action == "list":
-        active = packs.detect(repo)
+        active = packs.detect_all(repo)
         for key in sorted(packs.PACKS):
             spec = packs.PACKS[key]
             print("%-6s %-18s stages %-6s %s"
                   % (key, spec.get("title", ""),
                      ",".join(str(s) for s in spec.get("stages", ())),
-                     "active" if key == active else ""))
+                     "active" if key in active else ""))
         return 0
     if not name:
         sys.stderr.write("lifecycle: pack %s needs a name (%s)\n"

@@ -277,7 +277,9 @@ lifecycle --pack game --with story check   # quests AND architecture
 ```
 
 The stage table shows `pack: game+story`; the architecture, source and test
-gates stay, because the secondary pack only adds.
+gates stay, because the secondary pack only adds. Auto-detection already runs
+every kind whose artifacts exist, so `--with` is for a pack you have not
+scaffolded yet.
 
 To add a type of your own - service, film, site - see
 [references/writing-a-pack.md](references/writing-a-pack.md).

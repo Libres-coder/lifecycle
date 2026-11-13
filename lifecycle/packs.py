@@ -163,25 +163,33 @@ def _has_data_file(path):
     return False
 
 
-def detect(repo):
-    """A pack applies when its artifacts exist, not when an empty directory does.
+def detect_all(repo):
+    """Every pack whose artifacts exist, in a stable order.
 
-    `mkdir docs/game` should not turn two stages red. The first match wins; a
-    project that is both uses `--pack` to say which one the stage checks follow.
+    A project can be more than one kind of work; auto-detection should see all
+    of them. Only an explicitly chosen primary pack may replace a generic gate,
+    so adding the rest here cannot remove another kind's checks.
     """
+    found = []
     game = os.path.join(repo, "docs", "game")
     if os.path.isdir(game) and (
             os.path.isfile(os.path.join(game, "pillars.md"))
             or os.path.isfile(os.path.join(game, "world-bible.md"))
             or _has_data_file(os.path.join(game, "quests"))):
-        return "game"
+        found.append("game")
     story = os.path.join(repo, "docs", "story")
     if os.path.isdir(story) and (
             os.path.isfile(os.path.join(story, "outline.md"))
             or os.path.isfile(os.path.join(story, "characters.md"))
             or _has_data_file(os.path.join(story, "chapters"))):
-        return "story"
-    return None
+        found.append("story")
+    return found
+
+
+def detect(repo):
+    """The primary pack, or None. Kept for callers that need one name."""
+    found = detect_all(repo)
+    return found[0] if found else None
 
 
 # -- shared narrative checks ----------------------------------------------

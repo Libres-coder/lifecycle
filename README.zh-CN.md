@@ -51,7 +51,7 @@ lifecycle pack guide story       # 该类工作的深度手册与工艺标准
 
 - **自动检测只加检查，绝不删除门槛**：软件仓库里出现 `docs/story/` 只会多出剧情检查，架构要求照旧。
 - 替换必须显式：`lifecycle --pack story check`。小说的构建产物是稿子（`story:draft`，报告章节与字数），不是源码和测试。
-- 一个项目可以同时属于多类工作：`lifecycle --pack game --with story check` 在保留架构/源码/测试门槛的同时检查剧情（stage 表显示 `pack: game+story`）；`--with` 只加检查，绝不替换。
+- 一个项目可以同时属于多类工作：`lifecycle --pack game --with story check` 在保留架构/源码/测试门槛的同时检查剧情（stage 表显示 `pack: game+story`）；`--with` 只加检查，绝不替换。自动检测本身会运行所有产物已存在的包，`--with` 用于提前启用尚未搭好结构的包。
 - 每个包同时是工艺标准：story 要求具体场景、冲突是引擎、困难题材正面写、情节线必须回收；game 要求任务有动词、有代价、世界记得你做过什么。
 
 新增一类工作（service、视频、网页）见 [references/writing-a-pack.md](references/writing-a-pack.md)。

@@ -554,12 +554,14 @@ def evaluate(repo, pack="auto", skip=(), also=()):
     from . import depth as depthmod
     from . import packs as packsmod
 
-    active = packsmod.detect(repo) if pack == "auto" else pack
-    if active in ("none", "", None):
-        active = None
-    elif active not in packsmod.PACKS:
+    if pack == "auto":
+        detected = packsmod.detect_all(repo)
+    else:
+        detected = [pack] if pack not in ("none", "", None) else []
+    active = detected[0] if detected else None
+    if active is not None and active not in packsmod.PACKS:
         raise ValueError("unknown pack: %s" % active)
-    extras = []
+    extras = list(detected[1:])
     for name in also or ():
         name = str(name).strip()
         if not name or name in ("none", "auto"):

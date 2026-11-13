@@ -206,8 +206,11 @@ lifecycle pack init game     # write the empty structure (never content)
 lifecycle pack guide story   # the playbook for that kind of work
 ```
 
-Packs are opt-in by presence, and the first match wins (`--pack story` says
-which one the checks follow). **Kinds of work are peers**: the generic
+Packs are opt-in by presence: every kind whose artifacts exist is checked, so a
+project that is both a game and a written narrative runs both sets and the
+stage table says `pack: game+story`. `--pack story` chooses the primary
+explicitly (and its replacements apply); `--with story` opts into a pack whose
+artifacts do not exist yet. **Kinds of work are peers**: the generic
 seven-stage checks are the software default, not a universal law. A pack
 declares its own artifacts for any stage it differs in - the story pack stands
 in for the architecture and decision checks at stage 2 and for the source/test

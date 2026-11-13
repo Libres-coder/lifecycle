@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.7] - 2026-11-14
+
+### Fixed
+- **Auto-detection now runs every kind of work present, not just the first.**
+  A project with both `docs/game/` and `docs/story/` silently skipped the story
+  checks unless the caller remembered `--with story`; the artifacts were
+  there, so the tool already knew. `packs.detect_all` returns every matching
+  pack, the stage table says `pack: game+story`, and `lifecycle pack list`
+  marks both active. Replacement still belongs to an explicitly chosen primary
+  pack, so auto-detection still cannot remove another kind's gate. `--with`
+  stays useful for opting into a pack before its artifacts exist.
+
 ## [1.4.6] - 2026-11-14
 
 ### Added

@@ -454,6 +454,34 @@ class StoryPackTests(unittest.TestCase):
         self.assertIn("story:draft", names3)
         self.assertIn("source", names3, "the software build gate stays")
 
+    def test_auto_detection_runs_every_detected_pack(self):
+        """A game with a written narrative is both kinds; auto runs both."""
+        from lifecycle import contract
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
+                resolves=["the-heir"])
+        chapter(self.repo, "two", "ch-02", order=20, pov="borin",
+                threads=["the-war"], resolves=["the-war"])
+        mk(os.path.join(self.repo, "docs", "game", "pillars.md"),
+           "# Pillars\n\n- a\n- b\n- c\n")
+        mk(os.path.join(self.repo, "docs", "game", "world-bible.md"), BIBLE)
+        quest(self.repo, "q1", "q1")
+
+        stages = contract.evaluate(self.repo)          # auto: game + story
+        stage2 = next(s for s in stages if s["id"] == 2)
+        names = [r["name"] for r in stage2["results"]]
+        self.assertIn("game:bible", names)
+        self.assertIn("story:characters", names)
+        self.assertIn("architecture", names, "auto never replaces a gate")
+        self.assertEqual(stage2["pack"], "game+story")
+
+        explicit = contract.evaluate(self.repo, pack="game")
+        names2 = [r["name"] for s in explicit if s["id"] == 2
+                  for r in s["results"]]
+        self.assertIn("game:bible", names2)
+        self.assertNotIn("story:characters", names2,
+                         "an explicit primary pack follows only that pack")
+
     def test_story_pack_replaces_the_generic_design_artifacts(self):
         from lifecycle import contract
         self.write_world()

@@ -50,9 +50,11 @@ PACKS = {
 }
 ```
 
-1. **Detection** - `packs.detect(repo)` returns the pack name when its
-   artifacts exist (a real file, not an empty directory, not a template).
-   First match wins; `--pack` says which one the checks follow.
+1. **Detection** - `packs.detect_all(repo)` returns every pack whose
+   artifacts exist (a real file, not an empty directory, not a template), in a
+   stable order; `--pack` says which one is the primary the checks follow.
+   All detected packs run, so a game with a written narrative gets both sets of
+   checks; only the primary can replace a generic gate.
 2. **Checks** - one function per stage, returning result dicts from
    `contract.ok/fail/warn`. Blocking failures are for contradictions a reader
    cannot resolve (a quest requiring a missing quest); taste and length are

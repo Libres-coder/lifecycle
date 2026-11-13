@@ -556,7 +556,8 @@ def _story_chapters(repo):
                     "reveals": _as_list(fm.get("reveals")),
                     "reveals_to": _pairs(fm.get("reveals_to")),
                     "threads": _as_list(fm.get("threads")),
-                    "resolves": _as_list(fm.get("resolves"))})
+                    "resolves": _as_list(fm.get("resolves")),
+                    "words": _word_count(_text)})
     return out
 
 
@@ -683,6 +684,19 @@ def story_design(repo):
 
     out.extend(_knowledge_checks("story", ids, knows, chapters))
     return out
+
+
+def story_build(repo):
+    """The draft exists. A design without a draft is not a build, and a novel
+    has no source files and no tests - those are software's build artifacts,
+    not a universal law."""
+    chapters = _story_chapters(repo)
+    if not chapters:
+        return [fail("story:draft", "no chapters written",
+                     "write docs/story/chapters/<id>.md - a design without a "
+                     "draft is not a build")]
+    words = sum(c.get("words") or 0 for c in chapters)
+    return [ok("story:draft", "%d chapter(s), %d words" % (len(chapters), words))]
 
 
 # -- scaffold --------------------------------------------------------------
@@ -825,9 +839,13 @@ PACKS = {
              "title": "Open-world game",
              "stages": (0, 2), "playbook": "game.md"},
     "story": {"discovery": [story_discovery], "design": [story_design, story_craft],
+              "build": [story_build],
               "title": "Long-form story",
-              "stages": (0, 2), "playbook": "story.md",
-              # A novel has no architecture document; its design artifacts are
-              # the outline, cast and chapters, and the pack checks them.
-              "replaces": {"design": ["architecture", "decisions"]}},
+              "stages": (0, 2, 3), "playbook": "story.md",
+              # A novel has no architecture document, no source tree and no
+              # tests; its design artifacts are the outline, cast and chapters,
+              # and its build artifact is the draft. These replacements apply
+              # only when the pack is chosen explicitly.
+              "replaces": {"design": ["architecture", "decisions"],
+                           "build": ["source", "tests"]}},
 }

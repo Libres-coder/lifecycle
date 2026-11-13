@@ -256,10 +256,15 @@ are written out of order; that is why the checks are graph checks, not
 spell-check. `lifecycle guide <pack>` prints the full playbook, and the
 template files (`_template.md`) are never read as data.
 
-A pack can also **replace** a generic artifact it makes no sense for. The
-story pack stands in for the architecture and decision checks at stage 2: a
-novel has no architecture document, and its outline, cast and chapters are the
-design. This applies **only when the pack is chosen explicitly**
+## Kinds of work are peers
+
+The seven stages are the frame; the artifacts are the type's own. The generic
+checks are the **software default** - architecture, source, tests - not a
+universal law. A pack declares what its kind of work produces, and may
+**replace** the checks of any stage it differs in: the story pack stands in for
+architecture and decisions at stage 2 (a novel has no architecture) and for
+source and tests at stage 3 (its build artifact is the draft, with chapter and
+word counts reported). This applies **only when the pack is chosen explicitly**
 (`lifecycle --pack story check`); auto-detection adds checks and never removes
 a gate, so a narrative folder in a software project cannot drop its
 architecture requirement.

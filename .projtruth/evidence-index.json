@@ -3,7 +3,7 @@
     {
       "file": ".projtruth/evidence/R1-status.md",
       "tier": "measured",
-      "mtime": 1794596676.388901
+      "mtime": 1794597236.1061733
     }
   ],
   "R10": [
@@ -31,14 +31,14 @@
     {
       "file": ".projtruth/evidence/R2-check.md",
       "tier": "measured",
-      "mtime": 1794596470.658155
+      "mtime": 1794596683.9589894
     }
   ],
   "R3": [
     {
       "file": ".projtruth/evidence/R3-stateless.md",
       "tier": "measured",
-      "mtime": 1794596042.1794949
+      "mtime": 1794597104.8535736
     }
   ],
   "R4": [

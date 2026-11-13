@@ -207,16 +207,19 @@ lifecycle pack guide story   # the playbook for that kind of work
 ```
 
 Packs are opt-in by presence, and the first match wins (`--pack story` says
-which one the checks follow). **Each pack is a complete tool**: structure
-checks, a craft standard (what an excellent deliverable in that domain looks
-like, and what weak work looks like), advisory checks that make the empty case
-visible, and a scaffold that teaches the fields by existing. A pack may also
-**replace** a generic artifact it makes no sense for: the story pack stands in
-for the architecture and decision checks, because a novel has no architecture.
-That replacement applies **only when the pack is chosen explicitly**
-(`--pack story`); auto-detection adds checks but never removes a gate, so a
-narrative folder inside a software repository cannot weaken its own design
-stage.
+which one the checks follow). **Kinds of work are peers**: the generic
+seven-stage checks are the software default, not a universal law. A pack
+declares its own artifacts for any stage it differs in - the story pack stands
+in for the architecture and decision checks at stage 2 and for the source/test
+checks at stage 3, because a novel's design is its outline, cast and chapters
+and its build artifact is the draft. **Each pack is a complete tool**:
+structure checks, a craft standard (what an excellent deliverable in that
+domain looks like, and what weak work looks like), advisory checks that make
+the empty case visible, and a scaffold that teaches the fields by existing.
+Any replacement applies **only when the pack is chosen explicitly**
+(`--pack story`); auto-detection adds checks but never removes another type's
+gate, so a narrative folder inside a software repository cannot weaken its own
+design stage.
 
 **game** (`docs/game/`) - pillars, a world bible with characters/factions/
 locations/facts, and quest files with `id`, `act`, `order`, `requires`,

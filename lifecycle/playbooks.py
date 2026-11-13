@@ -453,6 +453,15 @@ The advisory checks read the shadow of this standard: a chapter without
 declared want, obstacle or flaw. They do not grade prose. They make the empty
 case visible.
 
+## Build
+
+For a story the build artifact is the draft, not a source tree: chapters under
+`docs/story/chapters/`, each one a scene. `lifecycle --pack story check
+--stage 3` requires at least one chapter and reports the chapter and word
+counts; it does not judge the prose. Do not add source files or tests to
+satisfy a stage that was written for software - the pack replaces those checks
+because they are not this kind of work.
+
 ## What the checks catch
 
 - a chapter without an `order:`, or two chapters sharing one;

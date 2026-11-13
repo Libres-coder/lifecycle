@@ -400,6 +400,37 @@ class StoryPackTests(unittest.TestCase):
             results.extend(check(self.repo))
         self.assertTrue(all(r["ok"] for r in results), results)
 
+    def test_story_build_needs_a_draft_and_counts_it(self):
+        self.assertFalse(packs.story_build(self.repo)[0]["ok"])
+        self.assertEqual(packs.story_build(self.repo)[0]["name"], "story:draft")
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10)
+        out = packs.story_build(self.repo)
+        self.assertTrue(out[0]["ok"], out)
+        self.assertIn("words", out[0]["detail"])
+
+    def test_explicit_story_pack_replaces_the_software_build_checks(self):
+        from lifecycle import contract
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10)
+        stages = contract.evaluate(self.repo, pack="story")
+        stage3 = next(s for s in stages if s["id"] == 3)
+        names = [r["name"] for r in stage3["results"]]
+        self.assertNotIn("source", names)
+        self.assertNotIn("tests", names)
+        self.assertEqual(stage3["state"], "passed", stage3["results"])
+
+    def test_auto_detection_keeps_source_and_tests(self):
+        from lifecycle import contract
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10)
+        stages = contract.evaluate(self.repo)          # auto-detected story
+        stage3 = next(s for s in stages if s["id"] == 3)
+        names = [r["name"] for r in stage3["results"]]
+        self.assertIn("source", names)
+        self.assertIn("tests", names)
+        self.assertEqual(stage3["state"], "failed", stage3["results"])
+
     def test_story_pack_replaces_the_generic_design_artifacts(self):
         from lifecycle import contract
         self.write_world()

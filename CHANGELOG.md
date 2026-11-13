@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.4] - 2026-11-14
+
+### Added
+- **Kinds of work are peers.** A pack may replace the checks of any stage, not
+  just stage 2, and the story pack now replaces the software build checks
+  (`source`, `tests`) with `story:draft`: a novel's build artifact is the
+  draft - chapters on disk, with the chapter and word counts reported. The
+  generic seven-stage checks are the *software* default, not a universal law;
+  a type that differs declares its own artifacts for the stages it differs in.
+  Replacement still requires an explicit `--pack story`, so auto-detection can
+  add a type's checks but never impose or remove another type's rules.
+
 ## [1.4.3] - 2026-11-14
 
 ### Fixed

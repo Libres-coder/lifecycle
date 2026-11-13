@@ -391,6 +391,12 @@ def check_release(repo):
     return out
 
 
+def check_sustain(repo):
+    """Stage 6 lives in thread.py; imported here to keep the cycle one-way."""
+    from . import thread
+    return thread.check_sustain(repo)
+
+
 STAGES = [
     {"id": 0, "key": "discovery", "title": "Discovery",
      "question": "Why does this exist, and what will it not do?",
@@ -410,6 +416,9 @@ STAGES = [
     {"id": 5, "key": "release", "title": "Release",
      "question": "Is there a version, a changelog and a tag?",
      "checks": [check_release]},
+    {"id": 6, "key": "sustain", "title": "Sustain",
+     "question": "Does the work survive a context reset, and is it summarised?",
+     "checks": [check_sustain]},
 ]
 
 

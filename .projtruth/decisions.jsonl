@@ -2,3 +2,4 @@
 {"ts": "2026-11-13 19:01:00", "decision": "Six generic stages, not a configurable engine", "why": "a solo product does not need 33 stages; forks beat configuration"}
 {"ts": "2026-11-13 19:29:10", "decision": "Depth checks are advisory, structural checks block", "why": "taste is not a gate; a checker that fails on style gets disabled"}
 {"ts": "2026-11-13 19:29:10", "decision": "The game pack attaches checks to existing stages instead of adding stages", "why": "one lifecycle, domain rules plugged in; a separate game lifecycle would fork the whole tool"}
+{"ts": "2026-11-13 20:01:18", "decision": "The work thread is artifacts, not memory", "why": "a compacted context cannot recover what was said, only what was written"}

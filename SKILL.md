@@ -1,16 +1,18 @@
 ---
 name: lifecycle
 description: >-
-  Answers where a product actually is, stage by stage - discovery, spec,
-  design, build, verify, release - by checking the repository instead of asking.
-  Each stage declares what it must produce (a vision with problem/audience/
-  non-goals, requirements with acceptance criteria, an architecture plus a
-  recorded decision, source and tests, verified evidence, a changelog with a
-  matching git tag) and every gap is printed with the exact command that closes
-  it. Use at the start of a project, when asked what is left before shipping,
-  whether this is release-ready, or what to do next; when a project has code but
-  no spec, or a spec but no evidence; before a release (阶段, 还差什么, 能不能发,
-  上线前检查, 下一步做什么, 产品走到哪一步了). Not for: evidence per requirement
+  Keeps a long-running product effort organised - across stages and across
+  sessions. Checks the repository for what each stage must produce (a vision
+  with problem/audience/non-goals, requirements with acceptance criteria, an
+  architecture plus a recorded decision, source and tests, verified evidence, a
+  changelog with a matching tag) and for the work thread that survives a context
+  reset (docs/work/current.md, a session journal, periodic status reports, a
+  context budget). Every gap is printed with the command that closes it, and
+  `guide` prints the questions that separate real work from a filled-in
+  template. Use when asked where the project is, what is left before shipping,
+  whether it is release-ready, what to do next, or to summarise progress (阶段,
+  还差什么, 能不能发, 上线前检查, 下一步做什么, 长线, 跨会话, 上下文压缩,
+  阶段汇报, 进度总结, 接着上次继续). Not for: evidence per requirement
   (projtruth), document sprawl (corpus), code structure (graphify), or prose
   style (writing-standards, tech-doc-style-chinese).
 ---
@@ -55,6 +57,38 @@ Commands:
 | `lifecycle check [--stage N]` | CI gate: exit 1 on a failing stage |
 | `lifecycle stages` | the contract: what each stage asks |
 | `lifecycle guide [stage]` | the playbook for a stage: questions to answer, what shallow looks like |
+| `lifecycle resume` | after a compaction or in a new session: the work thread, recent journal, next blocker |
+| `lifecycle report` | drafts `docs/reports/status-<date>.md` from facts it can check |
+
+## Long-running work
+
+A task that outlives one context window needs three artifacts, and they are the
+only ones a fresh session can read:
+
+- `docs/work/current.md` - Goal / Done / Next / Blockers. The handoff.
+- `docs/work/log/<date>.md` - one entry per working session: what you tried, what
+  happened, what surprised you.
+- `docs/reports/status-<date>.md` - a periodic summary written by
+  `lifecycle report`, with three sections left blank for you: what went well,
+  what did not, what is next.
+
+Stage 6 (Sustain) makes these conditions rather than habits: after the first
+release, a missing or stale work thread fails the stage, and a journal entry or
+report older than its window is reported. Before the first release they are
+warnings - a thread is good practice, not a promise you have made to a user.
+
+The cadence, in one line each:
+
+- **before you stop a session** - update `current.md`, append a journal entry;
+- **when a stage ends** - `lifecycle report`, then fill in the three sections;
+- **when the context is compacted** - `lifecycle resume`;
+- **every couple of weeks** - `corpus report --noise` and `corpus find` before
+  writing anything new.
+
+What it cannot do: see your actual context window. The context check measures
+the documents the repository loads before work starts (CLAUDE.md, README, the
+vision, the architecture, `current.md`); it is a proxy, and the real decision to
+compact is still yours.
 
 ## Deep work, not just presence
 

@@ -142,6 +142,26 @@
           "judge": "command"
         }
       ]
+    },
+    {
+      "id": "R8",
+      "title": "The work thread survives a context reset",
+      "status": "pending",
+      "files": [
+        "lifecycle/thread.py"
+      ],
+      "criteria": [
+        {
+          "id": "R8.1",
+          "text": "resume prints current.md, the last journal entries and the blocking item",
+          "judge": "command"
+        },
+        {
+          "id": "R8.2",
+          "text": "after a release, a missing or stale work thread fails the Sustain stage",
+          "judge": "command"
+        }
+      ]
     }
   ]
 }

@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.0] - 2026-11-13
+
+### Added
+- **Stage 6 Sustain**: the long-running thread. `docs/work/current.md` (goal,
+  done, next, blockers), a session journal in `docs/work/log/`, periodic status
+  reports in `docs/reports/`, and a context budget for the documents a session
+  loads before any work starts. After the first release a missing or stale work
+  thread fails the stage; before it, it warns.
+- `lifecycle resume` - after a compaction or in a new session: the work thread,
+  the last journal entries and the one blocking item.
+- `lifecycle report` - drafts `docs/reports/status-<date>.md` from facts it can
+  check (stage state, requirements, document findings, recent commits), leaving
+  three sections blank for the human: what went well, what did not, what next.
+- A Sustain playbook with the cadence: every session, every stage, every couple
+  of weeks, every compaction.
+
+### Fixed
+- Evidence regenerated with identical bytes looked stale forever, because git
+  sees no change; the evidence files now stamp their run time.
+
 ## [0.2.1] - 2026-11-13
 
 ### Fixed

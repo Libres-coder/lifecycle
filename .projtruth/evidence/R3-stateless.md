@@ -1,12 +1,14 @@
 # R3 no gate state is stored
 
+_Run at 2026-11-13 20:03:14_
+
 ```
 $ python -m unittest tests.test_lifecycle.ReportTests -v   # exit 0
 test_all_passed_message (tests.test_lifecycle.ReportTests) ... ok
 test_next_action_points_at_first_blocker (tests.test_lifecycle.ReportTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.000s
+Ran 2 tests in 0.001s
 
 OK
 
@@ -16,8 +18,8 @@ OK
 $ python -m lifecycle status   # twice, in a copy of this repo
 identical: True (exit 0, 0)
 
-# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmp7d17tdvs\demo)
-2/6 stages pass
+# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmprhdheknq\demo)
+3/7 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -31,8 +33,8 @@ identical: True (exit 0, 0)
 
 ```
 $ rm docs/product/vision.md && python -m lifecycle status   # exit 0
-# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmp7d17tdvs\demo)
-1/6 stages pass
+# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmprhdheknq\demo)
+2/7 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|

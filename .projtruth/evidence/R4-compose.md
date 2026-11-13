@@ -1,11 +1,13 @@
 # R4 sibling tools compose, missing ones are advisory
 
+_Run at 2026-11-13 20:03:16_
+
 ```
 $ python -m unittest tests.test_lifecycle.StageTests.test_verify_skips_when_tools_missing -v   # exit 0
 test_verify_skips_when_tools_missing (tests.test_lifecycle.StageTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.006s
+Ran 1 test in 0.008s
 
 OK
 
@@ -25,7 +27,7 @@ OK
 
 ```
 $ python -m lifecycle status   # in an empty directory   # exit 0
-# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmpri9_cvgg)
+# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmpsvjyco79)
 0/6 stages pass
 
 | # | stage | state | what the stage asks |
@@ -67,13 +69,13 @@ Stage 0 Discovery: **vision** - no product vision document
 - stage 4 Verify: no requirements registered - nothing to verify - stage 1 comes first: add requirements with criteria
 - stage 5 Release: not a git repository - git init and tag the release
 
-_2026-11-13 19:51_
+_2026-11-13 20:03_
 ```
 
 ```
 $ python -m lifecycle check --stage 4   # exit 1
 stage 4 Verify     FAIL
-  - evidence: 4 requirement(s) not verified: R4, R5, R6, R7
+  - evidence: 1 requirement(s) not verified: R7
     -> re-run each requirement's verification and write evidence, then `projtruth report`
 ```
 

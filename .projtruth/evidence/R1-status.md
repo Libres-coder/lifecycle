@@ -1,5 +1,7 @@
 # R1 status is computed from repository artifacts
 
+_Run at 2026-11-13 20:03:08_
+
 ```
 $ python -m unittest tests.test_lifecycle.StageTests -v   # exit 0
 test_build_needs_tests (tests.test_lifecycle.StageTests) ... ok
@@ -13,7 +15,7 @@ test_vision_missing_section_names_it (tests.test_lifecycle.StageTests) ... ok
 test_vision_sections (tests.test_lifecycle.StageTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 8 tests in 0.037s
+Ran 8 tests in 0.045s
 
 OK
 
@@ -25,7 +27,7 @@ test_bom_registry_is_read (tests.test_review2.RegistryRobustnessTests) ... ok
 test_malformed_registry_reports_instead_of_crashing (tests.test_review2.RegistryRobustnessTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.030s
+Ran 2 tests in 0.026s
 
 OK
 
@@ -34,7 +36,7 @@ OK
 ```
 $ python -m lifecycle status   # exit 0
 # lifecycle (D:\my_idea\lifecycle)
-5/6 stages pass
+6/7 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -42,20 +44,21 @@ $ python -m lifecycle status   # exit 0
 | 1 | Spec | **PASS** | What exactly is promised, in a way a stranger can check? |
 | 2 | Design | **PASS** | How is it built, and why this way? |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
-| 4 | Verify | **FAIL** | 7 requirement(s) not verified: R1, R2, R3, R4, R5, R6 |
+| 4 | Verify | **FAIL** | 1 requirement(s) not verified: R7 |
 | 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
+| 6 | Sustain | **PASS** | Does the work survive a context reset, and is it summarised? |
 
 ## Blocked
 **Stage 4 Verify**
-- evidence: 7 requirement(s) not verified: R1, R2, R3, R4, R5, R6
+- evidence: 1 requirement(s) not verified: R7
   - re-run each requirement's verification and write evidence, then `projtruth report`
 
 ## Next
-Stage 4 Verify: **evidence** - 7 requirement(s) not verified: R1, R2, R3, R4, R5, R6
+Stage 4 Verify: **evidence** - 1 requirement(s) not verified: R7
 
     re-run each requirement's verification and write evidence, then `projtruth report`
 
-_2026-11-13 19:51_
+_2026-11-13 20:03_
 ```
 
 measured

@@ -287,8 +287,58 @@ the generic design checks and these - and every quest id, fact and actor
 resolves.
 """
 
+SUSTAIN = """# Stage 6 - Sustain
+
+A long task outlives the conversation it started in. When the context is
+compacted, or a new session picks the work up, what survives is what was written
+down - not what was said.
+
+## The cadence
+
+**Every working session, before you stop:**
+
+1. Update `docs/work/current.md` - Goal, Done, Next, Blockers. It is the file a
+   fresh session reads first; if it is wrong, the next session repeats work.
+2. Add one entry to `docs/work/log/YYYY-MM-DD.md` - what you tried, what
+   happened, what surprised you. A compacted context cannot recover this.
+
+**Every stage transition:** `lifecycle report` drafts `docs/reports/status-<date>.md`
+from facts it can check (stage state, requirements, document findings, commits).
+Fill in the three sections it leaves blank - what went well, what did not, what
+is next. A stage that ends without that sentence is a stage nobody learned from.
+
+**Every couple of weeks:** `corpus report --noise` and `corpus find` before
+writing anything new. Documents are the part of the thread that rots silently.
+
+**When the context is compacted:** run `lifecycle resume`. It prints the work
+thread, the last journal entries and the one blocking item - the state you would
+otherwise have to rebuild from the transcript.
+
+## Answer these
+
+1. If this session ended now, what would the next one get wrong? That is what
+   belongs in `current.md`.
+2. What did you learn that is not in the code or the docs? That is the journal.
+3. What did you promise at the start of the stage, and what actually happened?
+   That is the report.
+4. Is the always-loaded set still small enough to start a session with? Detail
+   belongs in a reference file, not in the file every session reads.
+
+## Shallow looks like
+
+A `current.md` that says "working on it", a journal written once, a report that
+lists commits, and a `CLAUDE.md` that has grown into the project's whole
+documentation.
+
+## Exit
+
+`lifecycle check --stage 6` passes: the work thread exists, it is newer than the
+code it describes, and there is a journal entry and a report from this cycle.
+"""
+
 STAGES = {"discovery": DISCOVERY, "spec": SPEC, "design": DESIGN,
-          "build": BUILD, "verify": VERIFY, "release": RELEASE}
+          "build": BUILD, "verify": VERIFY, "release": RELEASE,
+          "sustain": SUSTAIN}
 PACKS = {"game": GAME}
 
 

@@ -12,7 +12,7 @@ import json
 import os
 import sys
 
-from . import contract, playbooks, report
+from . import contract, playbooks, report, thread
 
 
 def _find_root(start):
@@ -58,6 +58,8 @@ def main(argv=None):
                    help="assert one stage (default: every stage)")
     p.add_argument("--json", action="store_true")
     sub.add_parser("stages")
+    sub.add_parser("resume")
+    sub.add_parser("report")
     p = sub.add_parser("guide")
     p.add_argument("stage", nargs="?",
                    help="stage number or name, or a pack name (game); default: "
@@ -95,6 +97,26 @@ def main(argv=None):
 
     if args.cmd == "check":
         return _check(stages, args)
+
+    if args.cmd == "resume":
+        print(thread.resume_text(repo, stages))
+        stage, item = report.next_action(stages)
+        print("")
+        if stage is None or item is None:
+            print("Lifecycle: every stage passes.")
+        else:
+            print("Lifecycle: stage %d %s - %s" % (stage["id"], stage["title"],
+                                                   item["detail"]))
+            print("  fix: %s" % item["fix"])
+        return 0
+
+    if args.cmd == "report":
+        reqs = contract.run_json(repo, "projtruth", ["report", "--json"])
+        docs = contract.run_json(repo, "corpus", ["report", "--json"])
+        text = thread.report_text(repo, stages, requirements=reqs, corpus=docs)
+        path = thread.write_report(repo, text)
+        print("wrote %s" % os.path.relpath(path, repo).replace("\\", "/"))
+        return 0
 
     if args.cmd == "guide":
         return _guide(stages, args)

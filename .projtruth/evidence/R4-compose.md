@@ -1,13 +1,13 @@
 # R4 sibling tools compose, missing ones are advisory
 
-_Run at 2026-11-14 00:28:39_
+_Run at 2026-11-14 02:56:38_
 
 ```
 $ python -m unittest tests.test_lifecycle.StageTests.test_verify_skips_when_tools_missing -v   # exit 0
 test_verify_skips_when_tools_missing (tests.test_lifecycle.StageTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.009s
+Ran 1 test in 0.007s
 
 OK
 
@@ -19,7 +19,7 @@ test_verify_does_not_pass_without_requirements (tests.test_lifecycle.StageTests)
 No registry is stage 1's problem; stage 4 must not claim success. ... ok
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.005s
+Ran 1 test in 0.006s
 
 OK
 
@@ -74,13 +74,13 @@ Stage 0 Discovery: **vision** - no product vision document
 - stage 6 Sustain: no docs/work/plan.md - a long task needs milestones and checkboxes, or 'how far along' is an opinion
 - stage 6 Sustain: no review note in docs/reviews/ - record an adversarial review: what you tried to break, what broke, what you decided to live with
 
-_2026-11-14 00:28_
+_2026-11-14 02:56_
 ```
 
 ```
 $ python -m lifecycle check --stage 4   # exit 1
 stage 4 Verify     FAIL
-  - evidence: 3 requirement(s) not verified: R6, R7, R12
+  - evidence: 5 requirement(s) not verified: R6, R7, R9, R11, R12
     -> re-run each requirement's verification and write evidence, then `projtruth report`
 ```
 

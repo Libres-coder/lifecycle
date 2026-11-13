@@ -1,6 +1,6 @@
 # R12 packs extend the stages for non-software work
 
-_Run at 2026-11-14 00:41:05_
+_Run at 2026-11-14 02:59:38_
 
 ```
 $ python -m unittest tests.test_packs.StoryPackTests -v   # exit 0
@@ -12,12 +12,15 @@ test_discovery_needs_an_outline (tests.test_packs.StoryPackTests) ... ok
 test_discovery_warns_without_threads (tests.test_packs.StoryPackTests) ... ok
 test_duplicate_order_blocks (tests.test_packs.StoryPackTests) ... ok
 test_reveal_to_a_character_who_already_knows_warns (tests.test_packs.StoryPackTests) ... ok
+test_story_packs_wiring_runs_both_checks (tests.test_packs.StoryPackTests) ... ok
+test_thread_resolved_before_its_last_advance_warns (tests.test_packs.StoryPackTests) ... ok
 test_undeclared_pov_blocks (tests.test_packs.StoryPackTests) ... ok
 test_unknown_thread_blocks_and_open_thread_warns (tests.test_packs.StoryPackTests) ... ok
 test_valid_story_passes (tests.test_packs.StoryPackTests) ... ok
+test_word_count_counts_kana_and_hangul (tests.test_packs.StoryPackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 11 tests in 0.152s
+Ran 14 tests in 0.155s
 
 OK
 
@@ -27,20 +30,26 @@ OK
 $ python -m unittest tests.test_packs.GamePackTests -v   # exit 0
 test_cycle_blocks (tests.test_packs.GamePackTests) ... ok
 test_duplicate_quest_id_blocks (tests.test_packs.GamePackTests) ... ok
+test_empty_artifact_directory_does_not_opt_in (tests.test_packs.GamePackTests) ... ok
+test_knowledge_accumulates_across_quests (tests.test_packs.GamePackTests) ... ok
+test_knows_naming_undeclared_things_blocks (tests.test_packs.GamePackTests) ... ok
 test_missing_bible_blocks (tests.test_packs.GamePackTests) ... ok
 test_missing_order_warns_not_blocks (tests.test_packs.GamePackTests) ... ok
 test_missing_prerequisite_blocks (tests.test_packs.GamePackTests) ... ok
 test_pack_detected_by_artifacts_not_an_empty_directory (tests.test_packs.GamePackTests) ... ok
 test_pillars_need_three (tests.test_packs.GamePackTests) ... ok
+test_quest_without_an_act_warns (tests.test_packs.GamePackTests) ... ok
+test_repo_path_with_glob_characters_is_still_scanned (tests.test_packs.GamePackTests) ... ok
 test_reveal_to_someone_who_already_knows_warns (tests.test_packs.GamePackTests) ... ok
 test_reveal_to_unknown_fact_or_actor_blocks (tests.test_packs.GamePackTests) ... ok
 test_timeline_inversion_blocks (tests.test_packs.GamePackTests) ... ok
+test_underscore_prefixed_real_file_is_data (tests.test_packs.GamePackTests) ... ok
 test_unestablished_reveal_blocks (tests.test_packs.GamePackTests) ... ok
 test_unknown_actor_blocks (tests.test_packs.GamePackTests) ... ok
 test_valid_world_passes (tests.test_packs.GamePackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 13 tests in 0.152s
+Ran 19 tests in 0.187s
 
 OK
 

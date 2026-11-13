@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-14 00:29:07_
+_Run at 2026-11-14 02:57:01_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 7.484s
+Ran 9 tests in 6.042s
 
 OK
 
@@ -24,7 +24,7 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R12
+Lifecycle: stage 4 Verify - 3 requirement(s) not verified: R9, R11, R12
   fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
 # Current work
@@ -72,6 +72,10 @@ task alive across context resets.
   scenes, conflict engine, no evasion, stakes, contradictions) and game (verb
   with a cost, choices, a world that remembers), plus advisory craft checks on
   declared `want`/`obstacle`/`turn`/`stakes` and length. 121 tests.
+- v1.4.1: independent review of the pack layer (2 P1, 6 P2, all fixed) - glob
+  escaping, only `_template.md` skipped, quote/comment parsing, detection,
+  knowledge accumulation, timeline/thread ordering, scaffold errors, CJK word
+  count. 135 tests; review note in `docs/reviews/`.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
@@ -100,11 +104,11 @@ None.
 
 - stages: 6/7 pass
 - blocked: none
-- working tree: 10 changed file(s)
+- working tree: 11 changed file(s)
 - plan: 4/7 milestones, 22/25 tasks
+- 71ebd91 lifecycle 1.4.0: packs carry a craft standard, not only structure
+- a850114 evidence: regenerate for 1.3.1
 - 585fa9c lifecycle 1.3.1: suggest names the active pack
-- be9ae60 evidence: regenerate for 1.3.0; R12 covers the packs
-- 77f9016 lifecycle 1.3.0: packs for work that is not software
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

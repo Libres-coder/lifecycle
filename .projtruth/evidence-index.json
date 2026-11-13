@@ -3,84 +3,84 @@
     {
       "file": ".projtruth/evidence/R1-status.md",
       "tier": "measured",
-      "mtime": 1794586511.8081715
+      "mtime": 1794595687.28754
     }
   ],
   "R10": [
     {
       "file": ".projtruth/evidence/R10-plan.md",
       "tier": "measured",
-      "mtime": 1794587363.4098237
+      "mtime": 1794596234.0093143
     }
   ],
   "R11": [
     {
       "file": ".projtruth/evidence/R11-context.md",
       "tier": "measured",
-      "mtime": 1794587375.5050228
+      "mtime": 1794596243.1418428
     }
   ],
   "R12": [
     {
       "file": ".projtruth/evidence/R12-packs.md",
       "tier": "measured",
-      "mtime": 1794588065.7820618
+      "mtime": 1794596378.2512767
     }
   ],
   "R2": [
     {
       "file": ".projtruth/evidence/R2-check.md",
       "tier": "measured",
-      "mtime": 1794586520.6353762
+      "mtime": 1794595692.5801516
     }
   ],
   "R3": [
     {
       "file": ".projtruth/evidence/R3-stateless.md",
       "tier": "measured",
-      "mtime": 1794587120.02056
+      "mtime": 1794596042.1794949
     }
   ],
   "R4": [
     {
       "file": ".projtruth/evidence/R4-compose.md",
       "tier": "measured",
-      "mtime": 1794587319.76134
+      "mtime": 1794596198.8392537
     }
   ],
   "R5": [
     {
       "file": ".projtruth/evidence/R5-depth.md",
       "tier": "measured",
-      "mtime": 1794587323.4954357
+      "mtime": 1794596201.983369
     }
   ],
   "R6": [
     {
       "file": ".projtruth/evidence/R6-game-pack.md",
       "tier": "measured",
-      "mtime": 1794587324.0472374
+      "mtime": 1794596202.5777035
     }
   ],
   "R7": [
     {
       "file": ".projtruth/evidence/R7-guide.md",
       "tier": "measured",
-      "mtime": 1794587330.8053732
+      "mtime": 1794596208.2106285
     }
   ],
   "R8": [
     {
       "file": ".projtruth/evidence/R8-thread.md",
       "tier": "measured",
-      "mtime": 1794587347.6609056
+      "mtime": 1794596221.526297
     }
   ],
   "R9": [
     {
       "file": ".projtruth/evidence/R9-hooks.md",
       "tier": "measured",
-      "mtime": 1794587356.4233005
+      "mtime": 1794596228.4702754
     }
   ]
 }

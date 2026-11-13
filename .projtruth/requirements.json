@@ -203,6 +203,28 @@
           "judge": "command"
         }
       ]
+    },
+    {
+      "id": "R11",
+      "title": "Context usage is recorded when the harness exposes it",
+      "status": "pending",
+      "files": [
+        "lifecycle/statusline.py",
+        "lifecycle/hooks.py",
+        "lifecycle/cli.py"
+      ],
+      "criteria": [
+        {
+          "id": "R11.1",
+          "text": "the statusline payload is recorded and shown in status/resume",
+          "judge": "command"
+        },
+        {
+          "id": "R11.2",
+          "text": "an old or missing reading is marked, never crashes",
+          "judge": "command"
+        }
+      ]
     }
   ]
 }

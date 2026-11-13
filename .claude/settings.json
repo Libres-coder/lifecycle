@@ -21,5 +21,9 @@
         "matcher": "startup|resume|compact"
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "lifecycle statusline"
   }
 }

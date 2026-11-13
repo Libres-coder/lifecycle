@@ -27,12 +27,13 @@ def next_action(stages):
     return None, None
 
 
-def render(repo, stages, threads=None):
+def render(repo, stages, threads=None, context=""):
     passed, total = summary(stages)
     pack = next((s.get("pack") for s in stages if s.get("pack")), None)
     lines = ["# lifecycle (%s)" % repo,
-             "%d/%d stages pass%s" % (passed, total,
-                                      ("  ·  pack: %s" % pack) if pack else ""), "",
+             "%d/%d stages pass%s%s" % (passed, total,
+                                        ("  ·  pack: %s" % pack) if pack else "",
+                                        ("  ·  " + context) if context else ""), "",
              "| # | stage | state | what the stage asks |",
              "|---|---|---|---|"]
     for s in stages:

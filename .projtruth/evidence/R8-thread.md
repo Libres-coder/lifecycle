@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 21:04:28_
+_Run at 2026-11-13 21:10:26_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 6.044s
+Ran 9 tests in 5.846s
 
 OK
 
@@ -24,8 +24,10 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 5 Release - no tag matches version 1.1.0 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0)
-  fix: tag v1.1.0, or fix the version
+Lifecycle: stage 4 Verify - 4 requirement(s) not verified: R8, R9, R10, R11
+  fix: re-run each requirement's verification and write evidence, then `projtruth report`
+
+context: 74% used
 
 # Current work
 
@@ -75,9 +77,9 @@ None.
 
 ## Last compaction snapshot
 
-- stages: 6/7 pass
-- blocked: none
-- working tree: 20 changed file(s)
+- stages: 5/7 pass
+- blocked: Release
+- working tree: 27 changed file(s)
 - plan: 4/5 milestones, 15/17 tasks
 - 11a9d0a 1.0.0: pre-release review fixes
 - d063740 1.0 hardening: light snapshots, module fallback for hooks

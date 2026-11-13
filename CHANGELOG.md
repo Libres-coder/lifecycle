@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0] - 2026-11-13
+
+### Added
+- **Context readings.** `lifecycle statusline` is a Claude Code status line
+  command: it records `context_window.used_percentage` to
+  `.lifecycle/context.json` and renders `74% ctx`. `status` and `resume` print
+  `context: N% used`, and a reading older than ten minutes is marked.
+- `resume --hook` records `context_tokens` from the SessionStart payload, so the
+  thread knows how full the window was after a compaction.
+- `hook install` adds the status line only when none is configured; `hook
+  uninstall` removes it only when it is ours.
+- A documentation section on what a hook can and cannot see about context, and
+  how to compact earlier (`CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`).
+
 ## [1.1.0] - 2026-11-13
 
 ### Added

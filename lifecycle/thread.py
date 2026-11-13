@@ -368,6 +368,13 @@ def snapshot(repo, transcript=None, trigger=""):
                         summary["tasks_done"], summary["tasks"]))
     if tokens:
         lines.append("- transcript: ~%dk tokens" % (tokens // 1000))
+    try:
+        from . import statusline as statusmod
+        ctx = statusmod.staleness_line(repo)
+        if ctx:
+            lines.append("- %s" % ctx)
+    except Exception:
+        pass
     if commits:
         lines += ["", "## Last commits", ""]
         lines += ["- %s" % c for c in commits.splitlines()]

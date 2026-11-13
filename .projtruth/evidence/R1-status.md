@@ -1,6 +1,6 @@
 # R1 status is computed from repository artifacts
 
-_Run at 2026-11-13 21:04:02_
+_Run at 2026-11-13 21:09:57_
 
 ```
 $ python -m unittest tests.test_lifecycle.StageTests -v   # exit 0
@@ -27,7 +27,7 @@ test_bom_registry_is_read (tests.test_review2.RegistryRobustnessTests) ... ok
 test_malformed_registry_reports_instead_of_crashing (tests.test_review2.RegistryRobustnessTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.028s
+Ran 2 tests in 0.034s
 
 OK
 
@@ -36,7 +36,7 @@ OK
 ```
 $ python -m lifecycle status   # exit 0
 # lifecycle (D:\my_idea\lifecycle)
-6/7 stages pass
+5/7 stages pass  ·  context: 74% used
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -44,21 +44,24 @@ $ python -m lifecycle status   # exit 0
 | 1 | Spec | **PASS** | What exactly is promised, in a way a stranger can check? |
 | 2 | Design | **PASS** | How is it built, and why this way? |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
-| 4 | Verify | **PASS** | Is every promise backed by evidence that still holds? |
-| 5 | Release | **FAIL** | no tag matches version 1.1.0 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0) |
-| 6 | Sustain | **PASS** | Does the work survive a context reset, and is it summarised? |
+| 4 | Verify | **FAIL** | 7 requirement(s) not verified: R2, R3, R7, R8, R9, R10 |
+| 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
+| 6 | Sustain | **FAIL** | code changed after docs/work/current.md |
 
 ## Blocked
-**Stage 5 Release**
-- tag: no tag matches version 1.1.0 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0)
-  - tag v1.1.0, or fix the version
+**Stage 4 Verify**
+- evidence: 7 requirement(s) not verified: R2, R3, R7, R8, R9, R10
+  - re-run each requirement's verification and write evidence, then `projtruth report`
+**Stage 6 Sustain**
+- thread:fresh: code changed after docs/work/current.md
+  - update the work thread: what changed, what is next
 
 ## Next
-Stage 5 Release: **tag** - no tag matches version 1.1.0 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0)
+Stage 4 Verify: **evidence** - 7 requirement(s) not verified: R2, R3, R7, R8, R9, R10
 
-    tag v1.1.0, or fix the version
+    re-run each requirement's verification and write evidence, then `projtruth report`
 
-_2026-11-13 21:04_
+_2026-11-13 21:09_
 ```
 
 measured

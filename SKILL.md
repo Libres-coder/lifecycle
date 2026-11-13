@@ -230,6 +230,34 @@ The checks can see that a review happened, not whether it was good:
 - `lifecycle guide <stage>` prints what a shallow version of the stage looks
   like - the judgement the checker cannot make.
 
+## Context: what this tool can and cannot see
+
+A hook never receives the live context percentage, and no hook can trigger a
+compaction - Claude Code decides that itself. What is available:
+
+- **statusline**: its payload carries `context_window.used_percentage`. Install
+  it with `lifecycle hook install` (it adds `statusLine` only when you do not
+  already have one); `lifecycle statusline` records the payload to
+  `.lifecycle/context.json` and renders `74% ctx` on the status line.
+- **SessionStart on resume/compact**: carries `context_tokens`; `resume --hook`
+  records it, so the work thread knows how full the window was.
+- **PreCompact**: carries the transcript path; `snapshot` records its size.
+
+`status` and `resume` print `context: N% used` when a recent reading exists.
+
+Why the UI can sit at 74% without compacting: the displayed percentage is not
+the quantity compaction compares against. Auto-compact fires near the model's
+window minus a summary buffer, and `CLAUDE_CODE_AUTO_COMPACT_WINDOW` (or
+`autoCompactWindow`) can lower the window so the two numbers diverge further.
+To compact earlier, lower the trigger explicitly:
+
+```bash
+export CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=70     # 1-100, can only lower the default
+```
+
+`/compact` compacts now; `autoCompactEnabled` (or `/config`) turns auto-compact
+off, and `DISABLE_COMPACT=1` turns off both.
+
 ## Limits, stated honestly
 
 - The contract is opinionated and generic. A game, a library and a service do

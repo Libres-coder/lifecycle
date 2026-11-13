@@ -19,12 +19,16 @@ task alive across context resets.
   freshness, hook command resolution, criteria validation, report overwrite.
 - v1.1.0: threads (per-thread handoff/plan/owner, portfolio table,
   `resume --thread`, stale-claim and shared-owner warnings).
+- v1.2.0: context readings via the statusline payload; `resume --hook` records
+  session-start tokens; docs on why 74% does not compact.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
 ## Next
 
-- Independent review of 1.0, then publish with a release note.
+- Watch whether the status line actually fires in this desktop app; it did not
+  in a 20 s probe. The command is harmless where it does not.
+- Independent review of the 1.x surface (threads, statusline).
 - Try the hooks in a real session: does `resume` after a compaction actually
   restore enough to continue, or is it noise?
 - Publish to GitHub once the thread layer has survived one real handoff.

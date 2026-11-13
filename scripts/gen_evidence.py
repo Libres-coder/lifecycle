@@ -122,6 +122,19 @@ def main():
             res2[:800]),
            ("python -m lifecycle status   # exit %d" % rc15, st2[:800])])
 
+    rc16, _ = run(["statusline"],
+                  stdin='{"context_window": {"used_percentage": 74, "context_window_size": 200000}}')
+    rc17, res3 = run(["resume", "--hook"], stdin='{"source": "compact", "context_tokens": 42000}')
+    write("R11-context.md", "R11 context usage is recorded when the harness exposes it",
+          [tests("tests.test_statusline"),
+           ("printf '{\"context_window\":{\"used_percentage\":74}}' | "
+            "python -m lifecycle statusline   # exit %d" % rc16,
+            "recorded; status now prints: %s" %
+            [l for l in run(["status"])[1].splitlines() if "context:" in l][:1]),
+           ("printf '{\"source\":\"compact\",\"context_tokens\":42000}' | "
+            "python -m lifecycle resume --hook   # exit %d" % rc17,
+            (res3 or "").splitlines()[0] if res3 else "")])
+
     rc13, _ = run(["check"])
     print("final check exit:", rc13)
 

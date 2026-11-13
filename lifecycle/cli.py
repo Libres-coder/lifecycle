@@ -12,7 +12,7 @@ import json
 import os
 import sys
 
-from . import contract, hooks, playbooks, report, thread, threads
+from . import contract, hooks, playbooks, report, statusline, thread, threads
 
 
 def _find_root(start):
@@ -51,6 +51,7 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("init")
+    sub.add_parser("statusline")
     p = sub.add_parser("status")
     p.add_argument("--json", action="store_true")
     sub.add_parser("next")
@@ -61,6 +62,8 @@ def main(argv=None):
     sub.add_parser("stages")
     p = sub.add_parser("resume")
     p.add_argument("--thread", default=None, help="resume one named thread")
+    p.add_argument("--hook", action="store_true",
+                   help="read the hook payload from stdin (records context_tokens)")
     p = sub.add_parser("thread")
     p.add_argument("action", choices=["new", "claim", "release", "list"])
     p.add_argument("slug", nargs="?")
@@ -106,7 +109,8 @@ def main(argv=None):
         if args.json:
             print(json.dumps(report.as_json(stages), ensure_ascii=False, indent=2))
         else:
-            print(report.render(repo, stages, threads=threads.describe(repo)))
+            print(report.render(repo, stages, threads=threads.describe(repo),
+                                context=statusline.staleness_line(repo)))
         return 0
 
     if args.cmd == "next":
@@ -125,6 +129,19 @@ def main(argv=None):
         return _thread(repo, args)
 
     if args.cmd == "resume":
+        if getattr(args, "hook", False):
+            try:
+                payload = json.loads(sys.stdin.read() or "{}")
+            except ValueError:
+                payload = {}
+            tokens = payload.get("context_tokens")
+            if isinstance(tokens, int) and tokens > 0:
+                prev, _ = statusline.last(repo)
+                row = dict(prev or {})
+                row.update({"at": __import__("time").strftime("%Y-%m-%dT%H:%M:%S"),
+                            "total_input_tokens": tokens,
+                            "source": "session_start"})
+                statusline.save(repo, row)
         if getattr(args, "thread", None):
             t = threads._find(repo, args.thread)
             if t is None:
@@ -140,6 +157,10 @@ def main(argv=None):
             print("Lifecycle: stage %d %s - %s" % (stage["id"], stage["title"],
                                                    item["detail"]))
             print("  fix: %s" % item["fix"])
+            print("")
+        ctx = statusline.staleness_line(repo)
+        if ctx:
+            print(ctx)
             print("")
         print(thread.resume_text(repo, stages))
         rows = threads.describe(repo)
@@ -160,6 +181,13 @@ def main(argv=None):
         text = thread.report_text(repo, stages, requirements=reqs, corpus=docs)
         path = thread.write_report(repo, text)
         print("wrote %s" % os.path.relpath(path, repo).replace("\\", "/"))
+        return 0
+
+    if args.cmd == "statusline":
+        payload = statusline.parse(sys.stdin.read())
+        if payload.get("used_percentage") is not None:
+            statusline.save(repo, payload)
+        print(statusline.render(repo))
         return 0
 
     if args.cmd == "snapshot":

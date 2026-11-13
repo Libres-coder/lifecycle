@@ -59,8 +59,12 @@ def snapshot_command():
     return _command("snapshot --hook")
 
 
+def statusline_command():
+    return _command("statusline")
+
+
 def resume_command():
-    return _command("resume")
+    return _command("resume --hook")
 
 
 def _hooks():
@@ -139,6 +143,10 @@ def install(repo):
             entry["matcher"] = matcher
         entries.append(entry)
         added.append("%s -> %s" % (event, cmd))
+    sl = statusline_command()
+    if sl and "statusLine" not in data:
+        data["statusLine"] = {"type": "command", "command": sl}
+        added.append("statusLine -> %s" % sl)
     if not added:
         return True, "already installed in %s" % SETTINGS
     save(repo, data)
@@ -168,6 +176,10 @@ def uninstall(repo):
             hooks[event] = keep
         else:
             hooks.pop(event, None)
+    sl = (data.get("statusLine") or {}).get("command") or ""
+    if "lifecycle" in sl and "statusline" in sl:
+        data.pop("statusLine", None)
+        removed.append("statusLine")
     if not removed:
         return True, "nothing to remove from %s" % SETTINGS
     if not hooks:
@@ -182,5 +194,6 @@ def status(repo):
     state = installed(repo)
     if not any(state.values()):
         return "not installed (%s)" % SETTINGS
-    return ", ".join("%s: %s" % (e, "on" if state.get(e) else "off")
-                     for e in ("PreCompact", "SessionStart")) + " (%s)" % SETTINGS
+    sl = "on" if "lifecycle" in ((load(repo) or {}).get("statusLine") or {}).get("command", "") else "off"
+    return ", ".join(["%s: %s" % (e, "on" if state.get(e) else "off")
+                      for e in ("PreCompact", "SessionStart")] + ["statusLine: " + sl])         + " (%s)" % SETTINGS

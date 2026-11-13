@@ -219,7 +219,7 @@ the empty case visible, and a scaffold that teaches the fields by existing.
 Any replacement applies **only when the pack is chosen explicitly**
 (`--pack story`); auto-detection adds checks but never removes another type's
 gate, so a narrative folder inside a software repository cannot weaken its own
-design stage.
+design stage. To add a type of your own: [references/writing-a-pack.md](references/writing-a-pack.md).
 
 **game** (`docs/game/`) - pillars, a world bible with characters/factions/
 locations/facts, and quest files with `id`, `act`, `order`, `requires`,

@@ -1,6 +1,6 @@
 # R1 status is computed from repository artifacts
 
-_Run at 2026-11-14 03:13:56_
+_Run at 2026-11-14 03:17:08_
 
 ```
 $ python -m unittest tests.test_lifecycle.StageTests -v   # exit 0
@@ -17,7 +17,7 @@ test_vision_missing_section_names_it (tests.test_lifecycle.StageTests) ... ok
 test_vision_sections (tests.test_lifecycle.StageTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 10 tests in 0.035s
+Ran 10 tests in 0.036s
 
 OK
 
@@ -29,7 +29,7 @@ test_bom_registry_is_read (tests.test_review2.RegistryRobustnessTests) ... ok
 test_malformed_registry_reports_instead_of_crashing (tests.test_review2.RegistryRobustnessTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.024s
+Ran 2 tests in 0.022s
 
 OK
 
@@ -60,7 +60,7 @@ Stage 4 Verify: **evidence** - 4 requirement(s) not verified: R4, R6, R7, R12
 
     re-run each requirement's verification and write evidence, then `projtruth report`
 
-_2026-11-14 03:13_
+_2026-11-14 03:17_
 ```
 
 measured

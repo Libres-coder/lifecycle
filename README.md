@@ -269,6 +269,9 @@ word counts reported). This applies **only when the pack is chosen explicitly**
 a gate, so a narrative folder in a software project cannot drop its
 architecture requirement.
 
+To add a type of your own - service, film, site - see
+[references/writing-a-pack.md](references/writing-a-pack.md).
+
 ## Craft, not just structure
 
 Each pack is a complete tool, not a checklist: structure checks, a **craft

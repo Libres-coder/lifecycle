@@ -13,7 +13,7 @@ test_repo_must_exist (tests.test_lifecycle.CliTests) ... lifecycle: --repo is no
 ok
 
 ----------------------------------------------------------------------
-Ran 4 tests in 1.432s
+Ran 4 tests in 1.225s
 
 OK
 

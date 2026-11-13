@@ -44,10 +44,12 @@ class FrontmatterTests(unittest.TestCase):
 
 
 class GamePackTests(unittest.TestCase):
-    def test_pack_detected_by_directory(self):
+    def test_pack_detected_by_artifacts_not_an_empty_directory(self):
         with tempfile.TemporaryDirectory() as tmp:
             self.assertIsNone(packs.detect(tmp))
             os.makedirs(os.path.join(tmp, "docs", "game"))
+            self.assertIsNone(packs.detect(tmp), "an empty docs/game must not opt in")
+            mk(os.path.join(tmp, "docs", "game", "pillars.md"), "# p\n")
             self.assertEqual(packs.detect(tmp), "game")
 
     def test_missing_bible_blocks(self):

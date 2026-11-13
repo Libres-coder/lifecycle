@@ -15,6 +15,19 @@ import sys
 from . import contract, playbooks, report
 
 
+def _find_root(start):
+    """Running `lifecycle` from src/ should find the project, not fail on docs/."""
+    path = os.path.abspath(start)
+    while True:
+        if any(os.path.exists(os.path.join(path, m))
+               for m in (".git", ".projtruth", ".lifecycle")):
+            return path
+        parent = os.path.dirname(path)
+        if parent == path:
+            return os.path.abspath(start)
+        path = parent
+
+
 def _utf8():
     rec = getattr(sys.stdout, "reconfigure", None)
     if rec:
@@ -30,8 +43,9 @@ def _stages(repo):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="lifecycle")
-    ap.add_argument("--repo", default=os.getcwd(),
-                    help="project root (default: cwd)")
+    ap.add_argument("--repo", default=None,
+                    help="project root (default: nearest ancestor with .git or "
+                         ".projtruth, else cwd)")
     ap.add_argument("--pack", default="auto",
                     help="domain pack: auto (detect), game, or none")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -51,12 +65,17 @@ def main(argv=None):
 
     args = ap.parse_args(argv)
     _utf8()
-    repo = os.path.abspath(args.repo)
+    repo = os.path.abspath(args.repo) if args.repo else _find_root(os.getcwd())
     if not os.path.isdir(repo):
         sys.stderr.write("lifecycle: --repo is not a directory: %s\n" % repo)
         return 2
 
-    stages = contract.evaluate(repo, args.pack)
+    try:
+        stages = contract.evaluate(repo, args.pack)
+    except ValueError as e:
+        sys.stderr.write("lifecycle: %s" % e)
+        sys.stderr.write("\n")
+        return 2
 
     if args.cmd == "status":
         if args.json:

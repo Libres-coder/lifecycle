@@ -282,8 +282,9 @@ timeline that exists only in the writer's head.
 
 ## Exit
 
-`lifecycle check --stage 2` passes with the pack active, and every quest id,
-fact and actor resolves.
+`lifecycle check --stage 2` passes with the pack active - which means both
+the generic design checks and these - and every quest id, fact and actor
+resolves.
 """
 
 STAGES = {"discovery": DISCOVERY, "spec": SPEC, "design": DESIGN,

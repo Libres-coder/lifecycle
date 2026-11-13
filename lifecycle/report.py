@@ -55,8 +55,14 @@ def render(repo, stages):
     stage, item = next_action(stages)
     lines.append("")
     if stage is None or item is None:
-        lines.append("Every stage passes. The next change is a new requirement, "
-                     "not a new document.")
+        flagged = [(s, r) for s in stages for r in s["results"]
+                   if not r["required"] and not r["ok"]]
+        if flagged:
+            lines.append("Every stage passes, with %d advisory warning(s) below."
+                         % len(flagged))
+        else:
+            lines.append("Every stage passes. The next change is a new requirement, "
+                         "not a new document.")
     else:
         lines.append("## Next")
         lines.append("Stage %d %s: **%s** - %s"

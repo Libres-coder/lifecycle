@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.2.1] - 2026-11-13
+
+### Fixed
+- A malformed `requirements.json` (entries that are not objects, `criteria` as a
+  string, a top-level list) crashed `status` with a traceback. It is now a
+  reported finding, and a BOM'd registry is read.
+- Build stage misclassified whole ecosystems: Rust falls back to inline
+  `#[cfg(test)]` tests, Dart and a dozen other extensions count as source, and
+  `docs/spec/openapi.yaml` no longer counts as a test file.
+- An empty architecture document passed the design stage.
+- Release matching was substring-based: version `1.0.0` matched tag `v11.0.0`.
+  Versions and tags are normalised and compared exactly; `Cargo.toml` is read.
+- Release depth checks no longer miss an empty changelog entry.
+- The game pack activated on an empty `docs/game/` directory and turned two
+  stages red. It now requires pillars, a bible or a quests directory.
+- Nested quest directories (`quests/act1/q.md`) were ignored.
+- Frontmatter comments (`requires: [q1]  # note`) corrupted ids.
+- Vision headings with numbering or articles (`## 1. The Problem`) failed.
+- `run_json` put the scanned repository on PYTHONPATH, so a repository under
+  review could execute code when its status was requested. Only installed tools
+  run now.
+- Running `lifecycle` from a subdirectory failed every document stage; it now
+  walks up to the nearest `.git` / `.projtruth`.
+
+### Changed
+- An unknown `--pack` exits 2 instead of silently disabling checks.
+- `guide` appends the pack playbook when a pack is active, and the game
+  playbook's exit line now says both generic and pack checks must pass.
+
 ## [0.2.0] - 2026-11-13
 
 ### Added

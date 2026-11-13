@@ -29,9 +29,11 @@ def frontmatter(text):
         return {}
     data, key = {}, None
     for line in text[3:end].splitlines():
+        if line.lstrip().startswith("#"):
+            continue
         m = re.match(r"^([A-Za-z_][\w-]*):\s*(.*)$", line)
         if m:
-            k, v = m.group(1).lower(), m.group(2).strip()
+            k, v = m.group(1).lower(), _strip_comment(m.group(2).strip())
             if v.startswith("["):
                 data[k] = [x.strip().strip("'\"") for x in v.strip("[]").split(",") if x.strip()]
                 key = None
@@ -42,8 +44,19 @@ def frontmatter(text):
                 data[k] = []
                 key = k
         elif key and line.strip().startswith("- "):
-            data[key].append(line.strip()[2:].strip().strip("'\""))
+            item = _strip_comment(line.strip()[2:].strip())
+            data[key].append(item.strip("'\""))
     return data
+
+
+def _strip_comment(value):
+    """Drop a trailing `  # note` unless it is inside quotes."""
+    if "#" not in value:
+        return value
+    quote = value.count('"') % 2 == 0 and value.count("'") % 2 == 0
+    if quote:
+        return value.split(" #", 1)[0].strip()
+    return value
 
 
 def _as_list(value):
@@ -57,8 +70,16 @@ def _as_list(value):
 # -- detection -------------------------------------------------------------
 
 def detect(repo):
-    """A pack applies when its directory exists. No config file to forget."""
-    if os.path.isdir(os.path.join(repo, "docs", "game")):
+    """A pack applies when its artifacts exist, not when an empty directory does.
+
+    `mkdir docs/game` should not turn two stages red.
+    """
+    game = os.path.join(repo, "docs", "game")
+    if not os.path.isdir(game):
+        return None
+    if (os.path.isfile(os.path.join(game, "pillars.md"))
+            or os.path.isfile(os.path.join(game, "world-bible.md"))
+            or os.path.isdir(os.path.join(game, "quests"))):
         return "game"
     return None
 
@@ -95,7 +116,8 @@ def _bible(repo):
 
 def _quests(repo):
     out = []
-    for path in sorted(glob.glob(os.path.join(repo, "docs", "game", "quests", "*.md"))):
+    for path in sorted(glob.glob(os.path.join(repo, "docs", "game", "quests",
+                                              "**", "*.md"), recursive=True)):
         rel = os.path.relpath(path, repo).replace("\\", "/")
         try:
             with open(path, encoding="utf-8-sig", errors="replace") as f:
@@ -180,8 +202,9 @@ def game_design(repo):
             if f not in ids["factions"]:
                 missing_char.append("%s -> %s" % (q["id"], f))
 
-    out.append(fail("game:requires", "quest(s) require a quest that does not exist: %s"
-                    % ", ".join(missing_req[:5]),
+    out.append(fail("game:requires", "quest(s) require a quest that does not exist: %s%s"
+                    % (", ".join(missing_req[:5]),
+                       (" (+%d more)" % (len(missing_req) - 5)) if len(missing_req) > 5 else ""),
                     "fix the id or add the missing quest file")
                if missing_req else ok("game:requires", "%d quest(s) linked" % len(quests)))
     out.append(fail("game:reveals", "quest(s) reveal a fact not in the bible: %s"

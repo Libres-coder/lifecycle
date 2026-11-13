@@ -5,6 +5,18 @@ $ python -m unittest tests.test_lifecycle.StageTests.test_verify_skips_when_tool
 test_verify_skips_when_tools_missing (tests.test_lifecycle.StageTests) ... ok
 
 ----------------------------------------------------------------------
+Ran 1 test in 0.006s
+
+OK
+
+```
+
+```
+$ python -m unittest tests.test_lifecycle.StageTests.test_verify_does_not_pass_without_requirements -v   # exit 0
+test_verify_does_not_pass_without_requirements (tests.test_lifecycle.StageTests)
+No registry is stage 1's problem; stage 4 must not claim success. ... ok
+
+----------------------------------------------------------------------
 Ran 1 test in 0.007s
 
 OK
@@ -13,8 +25,8 @@ OK
 
 ```
 $ python -m lifecycle status   # in an empty directory   # exit 0
-# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmpi796l25d)
-1/6 stages pass
+# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmpri9_cvgg)
+0/6 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -22,8 +34,29 @@ $ python -m lifecycle status   # in an empty directory   # exit 0
 | 1 | Spec | **FAIL** | no requirement registry |
 | 2 | Design | **FAIL** | no architecture document |
 | 3 | Build | **FAIL** | no source files found |
-| 4 | Verify | **PASS** | Is every promise backed by evidence that still holds? |
+| 4 | Verify | **WARN** | Is every promise backed by evidence that still holds? |
 | 5 | Release | **FAIL** | no CHANGELOG |
+
+## Blocked
+**Stage 0 Discovery**
+- vision: no product vision document
+  - write docs/product/vision.md with Problem, Audience and Non-goals
+**Stage 1 Spec**
+- requirements: no requirement registry
+  - projtruth init && projtruth import-spec spec.md (or write .projtruth/requirements.json)
+**Stage 2 Design**
+- architecture: no architecture document
+  - write docs/design/architecture.md: components, data flow, and the trade-off you chose
+- decisions: no recorded decision
+  - projtruth decide "<choice>" --why "<reason>" for each non-obvious choice
+**Stage 3 Build**
+- source: no source files found
+  - build the thing, or point lifecycle at the right --repo
+- tests: no test files found
+  - add tests before claiming the build stage is done
+**Stage 5 Release**
+- changelog: no CHANGELOG
+  - write CHANGELOG.md - what changed, for whom
 
 ## Next
 Stage 0 Discovery: **vision** - no product vision document
@@ -31,15 +64,16 @@ Stage 0 Discovery: **vision** - no product vision document
     write docs/product/vision.md with Problem, Audience and Non-goals
 
 ## Not blocking
+- stage 4 Verify: no requirements registered - nothing to verify - stage 1 comes first: add requirements with criteria
 - stage 5 Release: not a git repository - git init and tag the release
 
-_2026-11-13 19:36_
+_2026-11-13 19:51_
 ```
 
 ```
-$ python -m lifecycle check --stage 4   # projtruth + corpus installed   # exit 1
+$ python -m lifecycle check --stage 4   # exit 1
 stage 4 Verify     FAIL
-  - evidence: 1 requirement(s) not verified: R4
+  - evidence: 4 requirement(s) not verified: R4, R5, R6, R7
     -> re-run each requirement's verification and write evidence, then `projtruth report`
 ```
 

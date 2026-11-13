@@ -8,14 +8,14 @@ test_short_vision_warns (tests.test_packs.DepthTests) ... ok
 test_thin_criteria_warn (tests.test_packs.DepthTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 4 tests in 0.050s
+Ran 4 tests in 0.033s
 
 OK
 
 ```
 
 ```
-$ python -m lifecycle status   # exit 0, WARN items never fail a stage
+$ python -m lifecycle status   # WARN items never fail a stage   # exit 0
 # lifecycle (D:\my_idea\lifecycle)
 5/6 stages pass
 
@@ -25,20 +25,20 @@ $ python -m lifecycle status   # exit 0, WARN items never fail a stage
 | 1 | Spec | **PASS** | What exactly is promised, in a way a stranger can check? |
 | 2 | Design | **PASS** | How is it built, and why this way? |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
-| 4 | Verify | **PASS** | Is every promise backed by evidence that still holds? |
-| 5 | Release | **FAIL** | newest tag v0.1.0 does not match version 0.2.0 |
+| 4 | Verify | **FAIL** | 3 requirement(s) not verified: R5, R6, R7 |
+| 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
 
 ## Blocked
-**Stage 5 Release**
-- tag: newest tag v0.1.0 does not match version 0.2.0
-  - bump the version or tag 0.2.0
+**Stage 4 Verify**
+- evidence: 3 requirement(s) not verified: R5, R6, R7
+  - re-run each requirement's verification and write evidence, then `projtruth report`
 
 ## Next
-Stage 5 Release: **tag** - newest tag v0.1.0 does not match version 0.2.0
+Stage 4 Verify: **evidence** - 3 requirement(s) not verified: R5, R6, R7
 
-    bump the version or tag 0.2.0
+    re-run each requirement's verification and write evidence, then `projtruth report`
 
-_2026-11-13 19:36_
+_2026-11-13 19:51_
 ```
 
 measured

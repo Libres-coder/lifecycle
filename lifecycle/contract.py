@@ -1,16 +1,15 @@
 """lifecycle contract: what each stage must produce before the next one starts.
 
 A stage is a list of checks. A check answers one question about the repository
-as it is right now - it does not run anything and it does not write anything.
-Three kinds of check:
+as it is right now - it does not run the product and it does not write anything.
+Three kinds of result:
 
     required   the stage cannot pass without it
     advisory   reported, never blocks
-    skipped    the tool it needs is not installed (reported as "needs X")
+    skipped    the tool or the artifact it needs is absent (reported as WARN)
 
 The contract is deliberately small and the stages are the generic product ones;
-a project that wants different gates edits `STAGES` or ignores the tool. The
-point is that "done" is computed from artifacts, not declared in a meeting.
+a project that wants different gates forks the contract.
 """
 import json
 import os
@@ -23,10 +22,19 @@ IGNORE_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist",
                "build", "target", ".next", ".cache", ".corpus", ".lifecycle",
                ".projtruth", ".claude", ".idea", "graphify-out"}
 SOURCE_EXT = {".py", ".js", ".ts", ".tsx", ".jsx", ".go", ".rs", ".java", ".rb",
-              ".cs", ".cpp", ".c", ".h", ".kt", ".swift", ".php", ".lua", ".gd"}
-TEST_RE = re.compile(r"(^|/)(tests?|spec|__tests__)/|(^|/)test_[^/]+\.py$|"
+              ".cs", ".cpp", ".cc", ".c", ".h", ".hpp", ".kt", ".kts", ".swift",
+              ".php", ".lua", ".gd", ".dart", ".ex", ".exs", ".clj", ".scala",
+              ".m", ".mm", ".fs", ".vb", ".jl", ".r", ".pl", ".sh"}
+# A test file is named like a test or lives in a test directory. "spec" as a
+# directory is excluded on purpose - docs/spec/openapi.yaml is documentation.
+TEST_RE = re.compile(r"(^|/)(tests?|__tests__)/|(^|/)test_[^/]+\.py$|"
+                     r"(^|/)[^/]+_test\.(go|rs|rb|exs)$|"
                      r"[._-](test|spec)\.[a-z]+$", re.IGNORECASE)
+INLINE_TEST_RE = re.compile(r"#\[cfg\(test\)\]|#\[test\]|mod tests\s*\{|"
+                            r"\bfunc Test[A-Z]\w*\(|\bdescribe\(|\bit\(")
 VERSION_RE = re.compile(r'^\s*version\s*=\s*"([^"]+)"', re.MULTILINE)
+HEADING_NUM_RE = re.compile(r"^[\d.)\s]+")
+HEADING_ARTICLE_RE = re.compile(r"^(the|our|your|a|an)\s+", re.IGNORECASE)
 
 
 def ok(name, detail, required=True):
@@ -57,8 +65,15 @@ def read(repo, *candidates):
     return None, None
 
 
+def normalize_heading(text):
+    """'2. The Problem' -> 'problem'. Numbering and articles are noise."""
+    t = HEADING_NUM_RE.sub("", text.strip().lower())
+    t = HEADING_ARTICLE_RE.sub("", t)
+    return t.strip()
+
+
 def headings(text):
-    return [m.group(1).strip().lower()
+    return [normalize_heading(m.group(1))
             for m in re.finditer(r"^#{1,3}\s+(.+)$", text, re.MULTILINE)]
 
 
@@ -69,35 +84,39 @@ def walk_files(repo):
             yield os.path.relpath(os.path.join(root, f), repo).replace("\\", "/")
 
 
-def run_json(repo, tool, args):
-    """Run a sibling tool and parse its JSON. None if it cannot be run.
+def _installed(tool):
+    try:
+        import importlib.util
+        return importlib.util.find_spec(tool) is not None
+    except (ImportError, ValueError):
+        return False
 
-    Two ways, because these tools are often checkouts rather than installed
-    packages: an executable on PATH, or -m <module> with the scanned repo on
-    PYTHONPATH (which is how a self-hosted repo finds its own tool).
+
+def run_json(repo, tool, args):
+    """Run an installed sibling tool and parse its JSON. None if unavailable.
+
+    Only tools on PATH (or installed as a module) run. The scanned repository is
+    deliberately NOT put on PYTHONPATH: a repository under review must not be
+    able to execute code because someone asked for its status.
     """
-    env = dict(os.environ)
-    env["PYTHONPATH"] = repo + (os.pathsep + env["PYTHONPATH"]
-                                if env.get("PYTHONPATH") else "")
-    candidates = []
     exe = shutil.which(tool)
     if exe:
-        candidates.append([exe])
-    candidates.append([sys.executable, "-m", tool])
-    for base in candidates:
-        try:
-            proc = subprocess.run(base + ["--repo", repo] + args, stdout=subprocess.PIPE,
-                                  stderr=subprocess.DEVNULL, timeout=120, cwd=repo,
-                                  env=env)
-        except (OSError, subprocess.SubprocessError):
-            continue
-        if proc.returncode not in (0, 1):
-            continue
-        try:
-            return json.loads(proc.stdout.decode("utf-8", "replace"))
-        except ValueError:
-            continue
-    return None
+        cmd = [exe]
+    elif _installed(tool):
+        cmd = [sys.executable, "-m", tool]
+    else:
+        return None
+    try:
+        proc = subprocess.run(cmd + ["--repo", repo] + args, stdout=subprocess.PIPE,
+                              stderr=subprocess.DEVNULL, timeout=120)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if proc.returncode not in (0, 1):
+        return None
+    try:
+        return json.loads(proc.stdout.decode("utf-8", "replace"))
+    except ValueError:
+        return None
 
 
 def git(repo, *args):
@@ -112,28 +131,39 @@ def git(repo, *args):
 
 
 def project_version(repo):
-    rel, text = read(repo, "pyproject.toml")
+    f, text = read(repo, "pyproject.toml")
     if text:
         m = VERSION_RE.search(text)
         if m:
-            return m.group(1)
-    rel, text = read(repo, "package.json")
+            return m.group(1).strip()
+    f, text = read(repo, "Cargo.toml")
+    if text:
+        section = re.search(r"^\[package\](.*?)(^\[|\Z)", text,
+                            re.MULTILINE | re.DOTALL)
+        m = VERSION_RE.search(section.group(1)) if section else None
+        if m:
+            return m.group(1).strip()
+    f, text = read(repo, "package.json")
     if text:
         try:
             return str(json.loads(text).get("version") or "")
         except ValueError:
             pass
-    rel, text = read(repo, "VERSION")
+    f, text = read(repo, "VERSION")
     if text:
         return text.strip()
     return ""
+
+
+def _norm_version(v):
+    return str(v or "").strip().lstrip("vV")
 
 
 # -- stage 0: discovery ----------------------------------------------------
 
 def check_vision(repo):
     rel, text = read(repo, "docs/product/vision.md", "docs/vision.md", "VISION.md")
-    if not text:
+    if not text or not text.strip():
         return [fail("vision", "no product vision document",
                      "write docs/product/vision.md with Problem, Audience and Non-goals")]
     have = headings(text)
@@ -150,20 +180,44 @@ def check_vision(repo):
 
 # -- stage 1: spec ---------------------------------------------------------
 
-def check_spec(repo):
+def _load_registry(repo):
+    """(data, error). Shape errors are reported, never raised."""
     path = os.path.join(repo, ".projtruth", "requirements.json")
     try:
-        with open(path, encoding="utf-8") as f:
+        with open(path, encoding="utf-8-sig") as f:
             data = json.load(f)
+    except FileNotFoundError:
+        return None, "missing"
     except (OSError, ValueError):
+        return None, "unreadable"
+    if not isinstance(data, dict):
+        return None, "malformed"
+    reqs = data.get("requirements", [])
+    if not isinstance(reqs, list):
+        return None, "malformed"
+    for r in reqs:
+        if not isinstance(r, dict):
+            return None, "malformed"
+        if not isinstance(r.get("criteria", []), list):
+            return None, "malformed"
+    return data, None
+
+
+def check_spec(repo):
+    data, err = _load_registry(repo)
+    if err == "missing":
         return [fail("requirements", "no requirement registry",
                      "projtruth init && projtruth import-spec spec.md "
                      "(or write .projtruth/requirements.json)")]
+    if err:
+        return [fail("requirements", "the requirement registry is not readable JSON",
+                     "fix .projtruth/requirements.json - an object with a "
+                     "'requirements' list")]
     reqs = data.get("requirements") or []
-    if not isinstance(reqs, list) or not reqs:
+    if not reqs:
         return [fail("requirements", "registry has no requirements",
                      "add at least one requirement with acceptance criteria")]
-    no_criteria = [r.get("id") for r in reqs if not r.get("criteria")]
+    no_criteria = [str(r.get("id") or "?") for r in reqs if not r.get("criteria")]
     out = [ok("requirements", "%d requirement(s)" % len(reqs))]
     if no_criteria:
         out.append(fail("criteria", "%d requirement(s) without acceptance criteria: %s"
@@ -176,21 +230,40 @@ def check_spec(repo):
 
 # -- stage 2: design -------------------------------------------------------
 
+def _decision_count(repo):
+    path = os.path.join(repo, ".projtruth", "decisions.jsonl")
+    count = 0
+    if not os.path.isfile(path):
+        return 0
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                row = json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(row, dict):
+                count += 1
+    return count
+
+
 def check_design(repo):
-    rel, _ = read(repo, "docs/design/architecture.md", "docs/architecture.md",
-                  "ARCHITECTURE.md", "docs/design/README.md")
+    rel, text = read(repo, "docs/design/architecture.md", "docs/architecture.md",
+                     "ARCHITECTURE.md", "docs/design/README.md")
     out = []
-    if rel:
+    if text and text.strip():
         out.append(ok("architecture", rel))
+    elif text is not None:
+        out.append(fail("architecture", "the architecture document is empty",
+                        "write docs/design/architecture.md: components, data flow, "
+                        "and the trade-off you chose"))
     else:
         out.append(fail("architecture", "no architecture document",
                         "write docs/design/architecture.md: components, data flow, "
                         "and the trade-off you chose"))
-    decisions = os.path.join(repo, ".projtruth", "decisions.jsonl")
-    count = 0
-    if os.path.isfile(decisions):
-        with open(decisions, encoding="utf-8", errors="replace") as f:
-            count = len([line for line in f if line.strip()])
+    count = _decision_count(repo)
     if count:
         out.append(ok("decisions", "%d recorded decision(s)" % count))
     else:
@@ -202,22 +275,43 @@ def check_design(repo):
 
 # -- stage 3: build --------------------------------------------------------
 
+def _inline_tests(repo, sources):
+    """Rust, Java and friends often keep tests in the source file."""
+    for rel in sources[:300]:
+        try:
+            with open(os.path.join(repo, rel), encoding="utf-8-sig",
+                      errors="replace") as f:
+                head = f.read(40000)
+        except OSError:
+            continue
+        if INLINE_TEST_RE.search(head):
+            return rel
+    return None
+
+
 def check_build(repo):
-    sources, tests = 0, 0
+    sources, tests = [], []
     for rel in walk_files(repo):
         ext = os.path.splitext(rel)[1].lower()
         if TEST_RE.search(rel):
-            tests += 1
+            tests.append(rel)
         elif ext in SOURCE_EXT:
-            sources += 1
+            sources.append(rel)
     out = []
     if sources:
-        out.append(ok("source", "%d source file(s)" % sources))
+        out.append(ok("source", "%d source file(s)" % len(sources)))
     else:
         out.append(fail("source", "no source files found",
                         "build the thing, or point lifecycle at the right --repo"))
     if tests:
-        out.append(ok("tests", "%d test file(s)" % tests))
+        out.append(ok("tests", "%d test file(s)" % len(tests)))
+    elif sources:
+        inline = _inline_tests(repo, sources)
+        if inline:
+            out.append(ok("tests", "tests inline in %s" % inline))
+        else:
+            out.append(fail("tests", "no test files found",
+                            "add tests before claiming the build stage is done"))
     else:
         out.append(fail("tests", "no test files found",
                         "add tests before claiming the build stage is done"))
@@ -231,16 +325,16 @@ def check_verify(repo):
     if data is None:
         return [skip("projtruth", "projtruth is not installed",
                      "pip install git+https://github.com/Libres-coder/projtruth")]
-    if not data:
+    if not isinstance(data, list) or not data:
         # No registry is stage 1's problem; claiming "verified" here would be a
         # false pass on a repository that has promised nothing.
         return [skip("evidence", "no requirements registered - nothing to verify",
                      "stage 1 comes first: add requirements with criteria")]
     out = []
-    bad = [r for r in data if r.get("status") != "verified"]
+    bad = [r for r in data if isinstance(r, dict) and r.get("status") != "verified"]
     if bad:
         out.append(fail("evidence", "%d requirement(s) not verified: %s"
-                        % (len(bad), ", ".join(r.get("id", "?") for r in bad[:6])),
+                        % (len(bad), ", ".join(str(r.get("id", "?")) for r in bad[:6])),
                         "re-run each requirement's verification and write evidence, "
                         "then `projtruth report`"))
     else:
@@ -250,7 +344,8 @@ def check_verify(repo):
         out.append(skip("docs", "corpus is not installed",
                         "pip install git+https://github.com/Libres-coder/corpus"))
     else:
-        incorrect = (corpus.get("metrics", {}).get("severity", {}) or {}).get("incorrect", 0)
+        severity = ((corpus or {}).get("metrics") or {}).get("severity") or {}
+        incorrect = severity.get("incorrect", 0)
         if incorrect:
             out.append(fail("docs", "%d document finding(s) mislead a reader" % incorrect,
                             "`corpus report` and fix the incorrect findings"))
@@ -262,13 +357,19 @@ def check_verify(repo):
 # -- stage 5: release ------------------------------------------------------
 
 def check_release(repo):
-    version = project_version(repo)
+    version = _norm_version(project_version(repo))
     rel, changelog = read(repo, "CHANGELOG.md", "CHANGELOG", "docs/CHANGELOG.md")
     out = []
     if not changelog:
         out.append(fail("changelog", "no CHANGELOG",
                         "write CHANGELOG.md - what changed, for whom"))
-    elif version and version not in changelog:
+    elif not version:
+        out.append(skip("changelog", "no version file to match against",
+                        "set a version in pyproject.toml, Cargo.toml, package.json "
+                        "or VERSION"))
+    elif not re.search(r"\[\s*v?%s\s*\]|^#+\s*v?%s\s*$" % (re.escape(version),
+                                                           re.escape(version)),
+                       changelog, re.MULTILINE):
         out.append(fail("changelog", "CHANGELOG has no entry for %s" % version,
                         "add a '## [%s]' section to %s" % (version, rel)))
     else:
@@ -281,10 +382,10 @@ def check_release(repo):
                         "git tag -a v%s -m \"release\"" % (version or "0.1.0")))
     else:
         newest = tags.splitlines()[0]
-        if version and version not in newest:
+        if version and _norm_version(newest) != version:
             out.append(fail("tag", "newest tag %s does not match version %s"
                             % (newest, version),
-                            "bump the version or tag %s" % version))
+                            "bump the version or tag v%s" % version))
         else:
             out.append(ok("tag", newest))
     return out
@@ -325,6 +426,8 @@ def evaluate(repo, pack="auto"):
     active = packsmod.detect(repo) if pack == "auto" else pack
     if active in ("none", "", None):
         active = None
+    elif active not in packsmod.PACKS:
+        raise ValueError("unknown pack: %s" % active)
     pack_def = packsmod.PACKS.get(active or "", {})
     out = []
     for stage in STAGES:

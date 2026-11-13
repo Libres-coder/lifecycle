@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.2.4] - 2026-11-13
+
+An adversarial review of the 1.2.x surface found one P1 and six P2s; all fixed.
+
+### Fixed
+- A wrong-typed field in `.lifecycle/context.json` (a percentage as `"85"` or
+  `"high"`) crashed the status line and the SessionStart hook with `TypeError`.
+  Readings are now sanitized on read: numeric strings are accepted, anything
+  else becomes "unknown", and no consumer sees a string where it expects a
+  number.
+- `resume --hook` no longer carries the previous session's percentage into a
+  fresh mtime. A token count is not a percent of the window, so the percentage
+  is cleared; `resume` shows no context line until the status line writes a
+  real reading.
+- `suggest` no longer reports "no context reading" for a healthy reading below
+  the nudge threshold; the entry is simply absent.
+- Thread lookups normalize case and surrounding spaces, so
+  `thread claim My-Thing` finds what `thread new My-Thing` created. Reserved
+  Windows device names (`nul`, `con`, `com1`, ...) are refused at creation.
+
+### Changed
+- `hook install` upgrades legacy entries it wrote before `--hook` existed
+  instead of treating them as current, and says so.
+- When another tool owns `statusLine`, `hook install` leaves it alone **and
+  says so**, naming the command; before, it reported a successful install
+  while the context reading could never happen.
+- Hook commands are matched on a subcommand word boundary: a script such as
+  `~/bin/lifecycle-resume.sh` is neither claimed nor removed by uninstall.
+
+### Docs
+- Corrected: SessionStart carries `context_tokens` on `resume`/`fork`, not on
+  `compact`; the thread therefore records the count when present and says
+  nothing when it is not.
+- Noted that a reading belongs to the repository, not to a window: two
+  sessions on one repository overwrite each other's number.
+
 ## [1.2.3] - 2026-11-13
 
 ### Added

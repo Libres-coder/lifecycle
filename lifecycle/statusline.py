@@ -29,16 +29,50 @@ def trigger():
     """
     raw = os.environ.get("CLAUDE_AUTOCOMPACT_PCT_OVERRIDE", "")
     try:
-        value = int(str(raw).strip())
+        value = int(float(str(raw).strip()))
     except ValueError:
         return DEFAULT_TRIGGER
     return min(max(value, 1), 99)
+
+
+def auto_enabled():
+    """False when the environment turns automatic compaction off.
+
+    `DISABLE_COMPACT=1` turns off both compaction paths and
+    `DISABLE_AUTO_COMPACT=1` only the automatic one; either way an advice that
+    says "auto-compact fires at N%" would be a lie.
+    """
+    for var in ("DISABLE_COMPACT", "DISABLE_AUTO_COMPACT"):
+        if str(os.environ.get(var, "")).strip().lower() in ("1", "true", "yes", "on"):
+            return False
+    return True
 
 
 def thresholds(trigger_pct=None):
     """(nudge, warn): start thinking about a compaction, and compact now."""
     t = trigger() if trigger_pct is None else trigger_pct
     return (max(t - 15, 1), max(t - 5, 1))
+
+
+def _number(value):
+    """A percentage or token count as a number, or None.
+
+    The state file is also hand-edited and merged, so a value of the wrong type
+    is input, not an exception: one bad field must not blank the status line or
+    crash the SessionStart hook.
+    """
+    if value is None or isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return value
+    try:
+        return float(str(value).strip())
+    except ValueError:
+        return None
+
+
+NUMERIC_FIELDS = ("used_percentage", "remaining_percentage", "context_window_size",
+                  "total_input_tokens", "total_output_tokens")
 
 
 def parse(text):
@@ -52,7 +86,7 @@ def parse(text):
     if not isinstance(ctx, dict):
         ctx = {}
     model = data.get("model") or {}
-    return {
+    row = {
         "at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "session": data.get("session_name") or data.get("session_id") or "",
         "model": model.get("display_name") or model.get("id") or "",
@@ -63,6 +97,9 @@ def parse(text):
         "total_input_tokens": ctx.get("total_input_tokens"),
         "total_output_tokens": ctx.get("total_output_tokens"),
     }
+    for key in NUMERIC_FIELDS:
+        row[key] = _number(row[key])
+    return row
 
 
 def save(repo, payload):
@@ -74,7 +111,8 @@ def save(repo, payload):
 
 
 def last(repo):
-    """(payload, age_seconds) or (None, None)."""
+    """(payload, age_seconds) or (None, None). Values are sanitized here, so
+    every consumer can trust the types."""
     path = os.path.join(repo, CTX_FILE)
     try:
         with open(path, encoding="utf-8") as f:
@@ -82,7 +120,12 @@ def last(repo):
         age = time.time() - os.path.getmtime(path)
     except (OSError, ValueError):
         return None, None
-    return (data if isinstance(data, dict) else None), age
+    if not isinstance(data, dict):
+        return None, age
+    for key in NUMERIC_FIELDS:
+        if key in data:
+            data[key] = _number(data[key])
+    return data, age
 
 
 def staleness_line(repo):

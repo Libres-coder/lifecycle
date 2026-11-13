@@ -25,6 +25,13 @@ def _context_hint(repo):
                 "the status line is what keeps it current" % (age // 60, pct))
     trigger = statusline.trigger()
     nudge, warn = statusline.thresholds(trigger)
+    if not statusline.auto_enabled():
+        if pct >= nudge:
+            return ("Context at %d%%; auto-compact is disabled, so nothing will "
+                    "shrink this window by itself: run /compact when this step "
+                    "ends - afterwards `lifecycle resume` brings the thread back."
+                    % pct)
+        return ""
     if pct >= warn:
         return ("Context at %d%% (auto-compact fires at %d%%): run /compact now - "
                 "afterwards `lifecycle resume` brings the thread back. "
@@ -181,12 +188,18 @@ def main(argv=None):
             except ValueError:
                 payload = {}
             tokens = payload.get("context_tokens")
-            if isinstance(tokens, int) and tokens > 0:
+            if isinstance(tokens, int) and not isinstance(tokens, bool) and tokens > 0:
                 prev, _ = statusline.last(repo)
                 row = dict(prev or {})
                 row.update({"at": __import__("time").strftime("%Y-%m-%dT%H:%M:%S"),
+                            "session": payload.get("session_id") or row.get("session", ""),
                             "total_input_tokens": tokens,
-                            "source": "session_start"})
+                            "source": payload.get("source") or ""})
+                # A token count says nothing about how full the window is, and a
+                # new session is not the one the old percentage was measured in.
+                # Keeping it would show yesterday's 94% as today's reading.
+                row["used_percentage"] = None
+                row["remaining_percentage"] = None
                 statusline.save(repo, row)
         if getattr(args, "thread", None):
             t = threads._find(repo, args.thread)
@@ -290,13 +303,17 @@ def _suggest(repo, stages):
             out.append(("tool", "%s - %s" % (name, why),
                         "use it if installed; `lifecycle guide %s` explains why" %
                         stage["key"]))
-    hint = _context_hint(repo)
-    if hint:
-        out.append(("context", hint, "/compact"))
-    else:
+    data, _ = statusline.last(repo)
+    if (data or {}).get("used_percentage") is None:
         out.append(("context",
-                    "no recent context reading; `lifecycle hook install` adds the "
+                    "no context reading recorded; `lifecycle hook install` adds the "
                     "status line that records it", "lifecycle hook install"))
+    else:
+        hint = _context_hint(repo)
+        if hint:
+            stale = "is not live" in hint
+            out.append(("context", hint,
+                        "lifecycle hook status" if stale else "/compact"))
     print("What to do now")
     for kind, what, how in out:
         print("")

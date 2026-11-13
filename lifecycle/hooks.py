@@ -20,11 +20,30 @@ a hook that exits 127.
 """
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
 
 SETTINGS = os.path.join(".claude", "settings.json")
+# A command of ours ends at the subcommand; the legacy forms (before --hook
+# existed) have nothing after it.
+LEGACY = re.compile(r"lifecycle(?:\.exe)?\s+(snapshot|resume)\s*$")
+
+
+def _kind(cmd):
+    """Which lifecycle subcommand a hook command runs, or None if it is not ours.
+
+    Matched on a word boundary: `~/bin/lifecycle-resume.sh` is someone else's
+    script, and claiming it would also make `uninstall` delete it.
+    """
+    if not isinstance(cmd, str):
+        return None
+    tail = r"\s+(snapshot|resume|statusline)(?=[\s\"']|$)"
+    m = re.search(r"(?:^|[\\/\s\"'])lifecycle(?:\.exe)?" + tail, cmd)
+    if not m:
+        m = re.search(r"-m\s+lifecycle" + tail, cmd)
+    return m.group(1) if m else None
 
 
 def _runs(python, module="lifecycle"):
@@ -109,7 +128,7 @@ def _all_commands(hooks, event):
     out = []
     for e in (hooks.get(event) or []):
         for c in _entry_commands(e):
-            if c and "lifecycle" in c and ("snapshot" in c or "resume" in c):
+            if _kind(c):
                 out.append(c)
     return out
 
@@ -133,10 +152,21 @@ def install(repo):
     if data is None:
         return False, "cannot read %s - fix the JSON first" % SETTINGS
     hooks = data.setdefault("hooks", {})
-    added = []
+    added, warnings = [], []
     for event, matcher, cmd in hooks_spec:
         entries = hooks.setdefault(event, [])
-        if _all_commands(hooks, event):
+        ours = [(e, h) for e in entries
+                for h in e.get("hooks", []) if isinstance(h, dict)]
+        ours = [(e, h) for e, h in ours if _kind(h.get("command"))]
+        if ours:
+            upgraded = False
+            for _, h in ours:
+                if LEGACY.match(h.get("command") or "") \
+                        and _kind(h["command"]) == _kind(cmd):
+                    h["command"] = cmd      # the pre-1.2.0 form knows nothing of --hook
+                    upgraded = True
+            if upgraded:
+                added.append("%s -> upgraded to %s" % (event, cmd))
             continue                     # one lifecycle entry per event is enough
         entry = {"hooks": [{"type": "command", "command": cmd}]}
         if matcher:
@@ -144,13 +174,26 @@ def install(repo):
         entries.append(entry)
         added.append("%s -> %s" % (event, cmd))
     sl = statusline_command()
-    if sl and "statusLine" not in data:
-        data["statusLine"] = {"type": "command", "command": sl}
-        added.append("statusLine -> %s" % sl)
-    if not added:
+    if sl:
+        current = data.get("statusLine")
+        cur_cmd = (current or {}).get("command") if isinstance(current, dict) else None
+        if current is None:
+            data["statusLine"] = {"type": "command", "command": sl}
+            added.append("statusLine -> %s" % sl)
+        elif _kind(cur_cmd) != "statusline":
+            warnings.append(
+                "statusLine left alone - it is already %r; the context reading "
+                "needs `lifecycle statusline` to run, so add that to the existing "
+                "command or remove it" % (cur_cmd,))
+    if not added and not warnings:
         return True, "already installed in %s" % SETTINGS
-    save(repo, data)
-    return True, "installed in %s: %s" % (SETTINGS, "; ".join(added))
+    if added:
+        save(repo, data)
+    msg = ("installed in %s: %s" % (SETTINGS, "; ".join(added)) if added
+           else "no hook changed in %s" % SETTINGS)
+    if warnings:
+        msg += ". Warning: " + " ".join(warnings)
+    return True, msg
 
 
 def uninstall(repo):
@@ -163,21 +206,22 @@ def uninstall(repo):
         entries = hooks.get(event) or []
         keep = []
         for e in entries:
-            ours = [c for c in _entry_commands(e)
-                    if c and "lifecycle" in c and ("snapshot" in c or "resume" in c)]
+            ours = [h.get("command") for h in e.get("hooks", [])
+                    if isinstance(h, dict) and _kind(h.get("command"))]
             if not ours:
                 keep.append(e)
                 continue
             removed.append("%s -> %s" % (event, ", ".join(ours)))
-            rest = [h for h in e.get("hooks", []) if h.get("command") not in ours]
+            rest = [h for h in e.get("hooks", [])
+                    if not (isinstance(h, dict) and _kind(h.get("command")))]
             if rest:
                 keep.append(dict(e, hooks=rest))
         if keep:
             hooks[event] = keep
         else:
             hooks.pop(event, None)
-    sl = (data.get("statusLine") or {}).get("command") or ""
-    if "lifecycle" in sl and "statusline" in sl:
+    sl = data.get("statusLine")
+    if isinstance(sl, dict) and _kind(sl.get("command")) == "statusline":
         data.pop("statusLine", None)
         removed.append("statusLine")
     if not removed:
@@ -194,6 +238,7 @@ def status(repo):
     state = installed(repo)
     if not any(state.values()):
         return "not installed (%s)" % SETTINGS
-    sl = "on" if "lifecycle" in ((load(repo) or {}).get("statusLine") or {}).get("command", "") else "off"
+    sl_data = (load(repo) or {}).get("statusLine")
+    sl = "on" if isinstance(sl_data, dict) and _kind(sl_data.get("command")) == "statusline" else "off"
     return ", ".join(["%s: %s" % (e, "on" if state.get(e) else "off")
                       for e in ("PreCompact", "SessionStart")] + ["statusLine: " + sl])         + " (%s)" % SETTINGS

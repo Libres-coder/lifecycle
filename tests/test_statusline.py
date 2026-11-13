@@ -67,6 +67,65 @@ class RenderTests(unittest.TestCase):
             self.assertEqual(statusline.render(tmp), "lifecycle")
 
 
+class BadStateTests(unittest.TestCase):
+    """The state file is hand-edited and merged; a bad field is input, not a crash."""
+
+    def _write(self, tmp, text):
+        os.makedirs(os.path.join(tmp, ".lifecycle"), exist_ok=True)
+        with open(os.path.join(tmp, ".lifecycle", "context.json"), "w",
+                  encoding="utf-8", newline="\n") as f:
+            f.write(text)
+
+    def test_numeric_strings_are_accepted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._write(tmp, '{"used_percentage": " 85 "}')
+            self.assertEqual(statusline.last(tmp)[0]["used_percentage"], 85)
+            self.assertIn("85%", statusline.render(tmp))
+
+    def test_wrong_type_does_not_crash_any_consumer(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._write(tmp, '{"used_percentage": "high", '
+                             '"total_input_tokens": "many"}')
+            data, _ = statusline.last(tmp)
+            self.assertIsNone(data["used_percentage"])
+            self.assertEqual(statusline.render(tmp), "lifecycle")
+            self.assertEqual(statusline.staleness_line(tmp), "")
+            self.assertEqual(cli._context_hint(tmp), "")
+
+
+class SuggestTests(unittest.TestCase):
+    def _run(self, tmp):
+        import io
+        old = sys.stdout
+        sys.stdout = io.StringIO()
+        try:
+            cli._suggest(tmp, [])
+            return sys.stdout.getvalue()
+        finally:
+            sys.stdout = old
+
+    def setUp(self):
+        self._old = os.environ.get("CLAUDE_AUTOCOMPACT_PCT_OVERRIDE")
+        os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = "60"
+
+    def tearDown(self):
+        if self._old is None:
+            os.environ.pop("CLAUDE_AUTOCOMPACT_PCT_OVERRIDE", None)
+        else:
+            os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = self._old
+
+    def test_no_reading_is_reported_as_missing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIn("no context reading", self._run(tmp))
+
+    def test_a_healthy_reading_is_not_called_missing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            statusline.save(tmp, {"used_percentage": 30})
+            text = self._run(tmp)
+            self.assertNotIn("no context reading", text)
+            self.assertNotIn("[context]", text)      # nothing to do
+
+
 class CliTests(unittest.TestCase):
     def _run(self, argv, stdin_text=""):
         import io
@@ -103,6 +162,18 @@ class CliTests(unittest.TestCase):
             data, _ = statusline.last(tmp)
             self.assertEqual(data["total_input_tokens"], 42000)
 
+    def test_resume_hook_does_not_keep_a_stale_percentage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            os.makedirs(os.path.join(tmp, "docs", "work"))
+            statusline.save(tmp, statusline.parse(json.dumps(PAYLOAD)))   # 74%
+            rc, _ = self._run(["--repo", tmp, "resume", "--hook"],
+                              '{"source": "resume", "context_tokens": 42000}')
+            self.assertEqual(rc, 0)
+            data, _ = statusline.last(tmp)
+            self.assertEqual(data["total_input_tokens"], 42000)
+            self.assertIsNone(data["used_percentage"],
+                              "a token count is not a percent of the window")
+
 
 class TriggerTests(unittest.TestCase):
     """The advice must arrive before the thing it warns about."""
@@ -128,6 +199,24 @@ class TriggerTests(unittest.TestCase):
         for bad in ("0", "-3", "500"):
             os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = bad
             self.assertTrue(1 <= statusline.trigger() <= 99)
+
+    def test_override_parsing(self):
+        for raw, want in ((" 70 ", 70), ("70.5", 70), ("0100", 99), ("0", 1),
+                          ("70%", statusline.DEFAULT_TRIGGER), ("", statusline.DEFAULT_TRIGGER)):
+            os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = raw
+            self.assertEqual(statusline.trigger(), want, raw)
+
+    def test_boundary_values_are_inclusive(self):
+        os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = "60"   # warn 55, nudge 45
+        with tempfile.TemporaryDirectory() as tmp:
+            statusline.save(tmp, {"used_percentage": 55})
+            self.assertIn("/compact", statusline.render(tmp))
+            self.assertIn("/compact", cli._context_hint(tmp))
+            statusline.save(tmp, {"used_percentage": 54})
+            self.assertNotIn("/compact", statusline.render(tmp))
+            self.assertNotIn("/compact now", cli._context_hint(tmp))
+            statusline.save(tmp, {"used_percentage": 45})
+            self.assertIn("fine for the current step", cli._context_hint(tmp))
 
     def test_hint_follows_the_trigger(self):
         with tempfile.TemporaryDirectory() as tmp:

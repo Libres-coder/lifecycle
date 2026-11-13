@@ -119,7 +119,9 @@ lifecycle hook install
   context.
 
 Installed into the project's `.claude/settings.json`, uninstalled by the same
-command, and it refuses to touch a settings file it cannot parse.
+command, and it refuses to touch a settings file it cannot parse. It upgrades
+entries written by older versions, and leaves a `statusLine` it did not write
+alone - saying so instead of reporting a success the reading would never see.
 
 ## Quality, as far as it is checkable
 
@@ -253,11 +255,15 @@ compaction - Claude Code decides that itself. What is available:
   already have one); `lifecycle statusline` records the payload to
   `.lifecycle/context.json` and renders `74% ctx` - or `74% ctx - /compact` once
   the reading is within five points of the trigger.
-- **SessionStart on resume/compact**: carries `context_tokens`; `resume --hook`
-  records it, so the work thread knows how full the window was.
+- **SessionStart on resume/fork**: carries `context_tokens`; `resume --hook`
+  records it and clears the previous percentage, which described a window this
+  session no longer has. On `compact` the harness sends no token count, so the
+  hook records nothing and the old reading stays honestly stale.
 - **PreCompact**: carries the transcript path; `snapshot` records its size.
 
-`status` and `resume` print `context: N% used` when a recent reading exists.
+`status` and `resume` print `context: N% used` when a recent reading exists. A
+reading belongs to the repository, not to a window: two sessions on one repo
+overwrite each other's number, and only the stale label separates them.
 
 Why the UI can sit at 74% without compacting: the displayed percentage is not
 the quantity compaction compares against. Auto-compact fires near the model's

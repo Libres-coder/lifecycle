@@ -20,7 +20,17 @@ from . import thread as threadmod
 
 THREADS_DIR = "docs/work/threads"
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,40}$")
+# Windows resolves these device names before the filesystem does: `thread new
+# nul` would pass validation and then die on the first write.
+RESERVED = {"con", "prn", "aux", "nul"} \
+    | {"com%d" % i for i in range(1, 10)} \
+    | {"lpt%d" % i for i in range(1, 10)}
 CLAIM_HOURS = 24
+
+
+def normalize(slug):
+    """The form `create` writes and every lookup must use."""
+    return str(slug or "").strip().lower()
 
 CURRENT_TEMPLATE = ("# Thread: {title}\n\n## Goal\n\n\n## Done\n\n- \n\n"
                     "## Next\n\n- \n\n## Blockers\n\nNone.\n")
@@ -65,6 +75,7 @@ def owner(repo, slug):
 
 
 def claim(repo, slug, who):
+    slug = normalize(slug)
     t = _find(repo, slug)
     if t is None:
         return False, "no thread %r (create it with `lifecycle thread new %s`)" % (slug, slug)
@@ -74,6 +85,7 @@ def claim(repo, slug, who):
 
 
 def release(repo, slug):
+    slug = normalize(slug)
     t = _find(repo, slug)
     if t is None:
         return False, "no thread %r" % slug
@@ -85,16 +97,19 @@ def release(repo, slug):
 
 
 def _find(repo, slug):
+    want = normalize(slug)
     for t in list_threads(repo):
-        if t["slug"] == slug:
+        if t["slug"] == want:
             return t
     return None
 
 
 def create(repo, slug, title=""):
-    slug = str(slug or "").strip().lower()
+    slug = normalize(slug)
     if not SLUG_RE.match(slug):
         return False, "slug must be lowercase letters, digits and dashes: %r" % slug
+    if slug in RESERVED:
+        return False, "slug %r is a reserved Windows device name; pick another" % slug
     d = os.path.join(root(repo), slug)
     if os.path.isdir(d):
         return False, "thread %s already exists" % slug

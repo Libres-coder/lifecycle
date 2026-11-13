@@ -31,6 +31,38 @@ class HookTests(unittest.TestCase):
             cmds = [h["command"] for e in pre for h in e["hooks"]]
             self.assertEqual(len([c for c in cmds if "snapshot" in c]), 1)
 
+    def test_install_upgrades_a_pre_1_2_hook(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, ".claude", "settings.json"),
+               '{"hooks": {"SessionStart": [{"hooks": [{"type": "command", '
+               '"command": "lifecycle resume"}], "matcher": "compact|resume"}]}}\n')
+            ok, msg = hooks.install(tmp)
+            self.assertTrue(ok, msg)
+            cmds = [h["command"] for e in hooks.load(tmp)["hooks"]["SessionStart"]
+                    for h in e["hooks"]]
+            self.assertTrue(any("resume --hook" in c for c in cmds), cmds)
+
+    def test_existing_status_line_is_reported_not_overwritten(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, ".claude", "settings.json"),
+               '{"statusLine": {"type": "command", "command": "ccusage statusline"}}\n')
+            ok, msg = hooks.install(tmp)
+            self.assertTrue(ok)
+            self.assertIn("left alone", msg)
+            self.assertEqual(hooks.load(tmp)["statusLine"]["command"],
+                             "ccusage statusline")
+
+    def test_uninstall_leaves_a_lookalike_script(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, ".claude", "settings.json"),
+               '{"hooks": {"PreCompact": [{"hooks": [{"type": "command", '
+               '"command": "~/bin/lifecycle-resume.sh"}]}]}}\n')
+            ok, _ = hooks.uninstall(tmp)
+            self.assertTrue(ok)
+            data = hooks.load(tmp)
+            cmds = [h["command"] for e in data["hooks"]["PreCompact"] for h in e["hooks"]]
+            self.assertEqual(cmds, ["~/bin/lifecycle-resume.sh"])
+
     def test_install_preserves_existing_settings(self):
         with tempfile.TemporaryDirectory() as tmp:
             mk(os.path.join(tmp, ".claude", "settings.json"),

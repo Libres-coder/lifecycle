@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "lifecycle resume"
+            "command": "lifecycle resume --hook"
           }
         ],
         "matcher": "startup|resume|compact"

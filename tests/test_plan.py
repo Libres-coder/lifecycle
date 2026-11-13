@@ -127,7 +127,19 @@ class ThreadTests(unittest.TestCase):
     def test_slug_is_validated(self):
         with tempfile.TemporaryDirectory() as tmp:
             self.assertFalse(threads.create(tmp, "Bad Slug!")[0])
-            self.assertFalse(threads.create(tmp, "ok-slug")[0] if False else False)
+            for name in ("nul", "CON", "com1", "lpt9"):
+                ok, msg = threads.create(tmp, name)
+                self.assertFalse(ok, msg)
+
+    def test_lookups_normalize_case_and_space(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ok, msg = threads.create(tmp, "My-Thing", "Mixed")
+            self.assertTrue(ok, msg)
+            ok, msg = threads.claim(tmp, " My-Thing ", "aria")
+            self.assertTrue(ok, msg)
+            self.assertTrue(threads.owner(tmp, "my-thing").startswith("aria @"))
+            self.assertTrue(threads.release(tmp, "MY-THING")[0])
+            self.assertIsNotNone(threads._find(tmp, " My-Thing "))
 
     def test_shared_owner_warns(self):
         with tempfile.TemporaryDirectory() as tmp:

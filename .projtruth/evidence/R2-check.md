@@ -1,6 +1,6 @@
 # R2 check exits 1 on a failing stage
 
-_Run at 2026-11-13 23:37:32_
+_Run at 2026-11-13 23:50:54_
 
 ```
 $ python -m unittest tests.test_lifecycle.CliTests -v   # exit 0
@@ -15,7 +15,7 @@ test_repo_must_exist (tests.test_lifecycle.CliTests) ... lifecycle: --repo is no
 ok
 
 ----------------------------------------------------------------------
-Ran 4 tests in 1.628s
+Ran 4 tests in 1.720s
 
 OK
 

@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 23:38:03_
+_Run at 2026-11-14 00:00:15_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 6.460s
+Ran 9 tests in 6.441s
 
 OK
 
@@ -65,6 +65,9 @@ task alive across context resets.
 - v1.3.0: packs for work that is not software - story (outline/cast/chapters,
   POV, thread resolution) and the game pack extended with act/order timelines
   and per-character knowledge; `lifecycle pack list|init|guide`. 117 tests.
+- v1.3.1: `suggest` names the active pack at stages 0/2; corpus 0.1.3 skips
+  `_template.md` scaffold files so the two tools agree on what a document is.
+  118 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
@@ -91,14 +94,13 @@ None.
 
 ## Last compaction snapshot
 
-- stages: 5/7 pass
-- blocked: Sustain
+- stages: 6/7 pass
+- blocked: none
 - working tree: 10 changed file(s)
-- plan: 4/6 milestones, 18/20 tasks
-- context: 74% (as of 46 min ago - install the statusline hook to keep it current)
+- plan: 4/7 milestones, 22/25 tasks
+- 77f9016 lifecycle 1.3.0: packs for work that is not software
+- 1b00de9 evidence: regenerate for 1.2.4; thread records the review round
 - 1545066 lifecycle 1.2.4: fix the independent review of the 1.2.x surface
-- 1f37d41 evidence: regenerate for 1.2.3; thread records the status-line advice
-- 3b78b5b lifecycle 1.2.3: the status line asks for a compaction
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long
@@ -112,7 +114,7 @@ None.
 
 ```
 $ python -m lifecycle report   # exit 0
-wrote docs/reports/status-2026-11-13.md
+wrote docs/reports/status-2026-11-14.md
 ```
 
 measured

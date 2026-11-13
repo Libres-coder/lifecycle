@@ -1,6 +1,6 @@
 # R12 packs extend the stages for non-software work
 
-_Run at 2026-11-13 23:38:30_
+_Run at 2026-11-14 00:09:35_
 
 ```
 $ python -m unittest tests.test_packs.StoryPackTests -v   # exit 0
@@ -14,7 +14,7 @@ test_unknown_thread_blocks_and_open_thread_warns (tests.test_packs.StoryPackTest
 test_valid_story_passes (tests.test_packs.StoryPackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 8 tests in 0.098s
+Ran 8 tests in 0.113s
 
 OK
 
@@ -37,7 +37,7 @@ test_unknown_actor_blocks (tests.test_packs.GamePackTests) ... ok
 test_valid_world_passes (tests.test_packs.GamePackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 13 tests in 0.122s
+Ran 13 tests in 0.143s
 
 OK
 
@@ -61,7 +61,6 @@ story  Long-form story    stages 0,2    active
 ```
 $ two chapters both with order 10, then python -m lifecycle status   # exit 0
 - story:characters:list: no characters declared
-- story:order-dup: two chapters share order 10: ch-one and ch-two
 ```
 
 measured

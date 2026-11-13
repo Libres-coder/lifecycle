@@ -12,7 +12,7 @@ import json
 import os
 import sys
 
-from . import contract, hooks, playbooks, report, statusline, thread, threads
+from . import contract, hooks, packs, playbooks, report, statusline, thread, threads
 
 
 def _context_hint(repo):
@@ -50,7 +50,7 @@ def _initialized(repo):
     .projtruth/ left by a probe does not count."""
     if os.path.exists(os.path.join(repo, "docs", "work")):
         return True
-    if os.path.isdir(os.path.join(repo, ".lifecycle")):
+    if os.path.isdir(os.path.join(repo, ".lifecycle", "snapshots")):
         return True
     req = os.path.join(repo, ".projtruth", "requirements.json")
     try:
@@ -94,7 +94,7 @@ def main(argv=None):
                     help="project root (default: nearest ancestor with .git or "
                          ".projtruth, else cwd)")
     ap.add_argument("--pack", default="auto",
-                    help="domain pack: auto (detect), game, or none")
+                    help="domain pack: auto (detect), game, story, or none")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("init")
@@ -125,8 +125,11 @@ def main(argv=None):
     p.add_argument("action", choices=["install", "uninstall", "status"])
     p = sub.add_parser("guide")
     p.add_argument("stage", nargs="?",
-                   help="stage number or name, or a pack name (game); default: "
-                        "the stage that is blocking")
+                   help="stage number or name, or a pack name (game, story); "
+                        "default: the stage that is blocking")
+    p = sub.add_parser("pack")
+    p.add_argument("action", choices=["list", "init", "guide"])
+    p.add_argument("name", nargs="?")
 
     args = ap.parse_args(argv)
     _utf8()
@@ -222,7 +225,7 @@ def main(argv=None):
             print(ctx)
             print("")
         hint = _context_hint(repo)
-        if hint:
+        if hint and not (ctx and "min ago" in ctx):   # the stale line already said it
             print("")
             print(hint)
         print(thread.resume_text(repo, stages))
@@ -275,6 +278,9 @@ def main(argv=None):
                    else hooks.uninstall(repo))
         print(msg)
         return 0 if ok else 1
+
+    if args.cmd == "pack":
+        return _pack(repo, args)
 
     if args.cmd == "guide":
         return _guide(stages, args)
@@ -351,6 +357,43 @@ def _thread(repo, args):
         ok, msg = threads.release(repo, args.slug)
     print(msg)
     return 0 if ok else 1
+
+
+def _pack(repo, args):
+    """list the packs, print one's playbook, or write its empty structure."""
+    name = (args.name or "").strip().lower()
+    if args.action == "list":
+        active = packs.detect(repo)
+        for key in sorted(packs.PACKS):
+            spec = packs.PACKS[key]
+            print("%-6s %-18s stages %-6s %s"
+                  % (key, spec.get("title", ""),
+                     ",".join(str(s) for s in spec.get("stages", ())),
+                     "active" if key == active else ""))
+        return 0
+    if not name:
+        sys.stderr.write("lifecycle: pack %s needs a name (%s)\n"
+                         % (args.action, ", ".join(sorted(packs.PACKS))))
+        return 2
+    if name not in packs.PACKS:
+        sys.stderr.write("lifecycle: unknown pack %r (have: %s)\n"
+                         % (name, ", ".join(sorted(packs.PACKS))))
+        return 2
+    if args.action == "guide":
+        print(playbooks.for_pack(name) or "")
+        return 0
+    result, err = packs.scaffold(repo, name)
+    if err:
+        sys.stderr.write("lifecycle: %s\n" % err)
+        return 1
+    for rel in result["created"]:
+        print("created %s" % rel)
+    for rel in result["kept"]:
+        print("kept    %s (exists)" % rel)
+    print("")
+    print("Next: fill the TODOs, then `lifecycle check`. The checks read these "
+          "files; they do not read intention.")
+    return 0
 
 
 def _guide(stages, args):

@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.3.0] - 2026-11-13
+
+### Added
+- **Packs for work that is not software.** `story` is the second pack: an
+  outline with acts and plot threads, a cast with starting knowledge, and
+  chapters with `order`/`pov`/`reveals`/`threads`/`resolves`. It catches a
+  chapter out of order, a POV who is not in the cast, a thread used but never
+  declared, a thread nobody resolves, and a reveal to someone who already
+  knows.
+- `lifecycle pack list | init <name> | guide <name>`: what is available and
+  active, a scaffold that creates the empty structure (never content), and the
+  playbook. Template files (`_template.md`) are never read as data.
+- Game pack: `act`/`order` on quests, so a quest that requires one the timeline
+  puts later is refused; `knows:` in the bible and `reveals_to:` in a quest
+  report a reveal to a character who already knows the fact.
+
+### Fixed
+- The status line writing `.lifecycle/context.json` made the SessionStart hook
+  treat an unrelated folder as a lifecycle project; `resume --hook` now needs
+  `docs/work/`, a snapshot history, or a registry with requirements.
+- `resume` printed the stale-context sentence twice (once as the reading, once
+  as the advice).
+
 ## [1.2.4] - 2026-11-13
 
 An adversarial review of the 1.2.x surface found one P1 and six P2s; all fixed.

@@ -24,12 +24,56 @@ facts: [war-started, king-dead]
 # World
 """
 
+BIBLE_KNOWS = BIBLE.replace("facts: [war-started, king-dead]",
+                            "facts: [war-started, king-dead]\nknows:\n  - aria: war-started")
 
-def quest(repo, name, qid, requires=(), reveals=(), characters=(), factions=()):
+
+def quest(repo, name, qid, requires=(), reveals=(), characters=(), factions=(),
+          act=1, order=10, reveals_to=()):
+    lines = ["---", "id: %s" % qid, "act: %s" % act, "order: %s" % order,
+             "requires: [%s]" % ", ".join(requires),
+             "reveals: [%s]" % ", ".join(reveals),
+             "characters: [%s]" % ", ".join(characters),
+             "factions: [%s]" % ", ".join(factions)]
+    if reveals_to:
+        lines.append("reveals_to:")
+        lines.extend("  - %s" % item for item in reveals_to)
+    lines.append("---")
     mk(os.path.join(repo, "docs", "game", "quests", name + ".md"),
-       "---\nid: %s\nrequires: [%s]\nreveals: [%s]\ncharacters: [%s]\nfactions: [%s]\n---\n\n# %s\n"
-       % (qid, ", ".join(requires), ", ".join(reveals), ", ".join(characters),
-          ", ".join(factions), qid))
+       "\n".join(lines) + "\n\n# %s\n" % qid)
+
+
+def chapter(repo, name, cid, order=10, pov="aria", reveals=(), threads=(),
+            resolves=(), reveals_to=()):
+    lines = ["---", "id: %s" % cid, "order: %s" % order]
+    if pov:
+        lines.append("pov: %s" % pov)
+    lines += ["reveals: [%s]" % ", ".join(reveals),
+              "threads: [%s]" % ", ".join(threads),
+              "resolves: [%s]" % ", ".join(resolves)]
+    if reveals_to:
+        lines.append("reveals_to:")
+        lines.extend("  - %s" % item for item in reveals_to)
+    lines.append("---")
+    mk(os.path.join(repo, "docs", "story", "chapters", name + ".md"),
+       "\n".join(lines) + "\n\nprose\n")
+
+
+STORY_CHARS = """---
+characters: [aria, borin]
+facts: [war-started, king-dead]
+knows:
+  - aria: war-started
+---
+"""
+
+STORY_OUTLINE = """---
+acts: [setup, turn, resolution]
+threads: [the-heir, the-war]
+---
+
+# Outline
+"""
 
 
 class FrontmatterTests(unittest.TestCase):
@@ -104,6 +148,41 @@ class GamePackTests(unittest.TestCase):
             bad = [r for r in packs.game_design(tmp) if not r["ok"] and r["required"]]
             self.assertTrue(any(r["name"] == "game:quest-id" for r in bad), bad)
 
+    def test_timeline_inversion_blocks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, "docs", "game", "world-bible.md"), BIBLE)
+            quest(tmp, "early", "early", requires=["late"], order=10)
+            quest(tmp, "late", "late", order=20)
+            bad = [r for r in packs.game_design(tmp) if not r["ok"] and r["required"]]
+            self.assertTrue(any(r["name"] == "game:timeline-order" for r in bad), bad)
+
+    def test_missing_order_warns_not_blocks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, "docs", "game", "world-bible.md"), BIBLE)
+            mk(os.path.join(tmp, "docs", "game", "quests", "q.md"),
+               "---\nid: q\n---\n")
+            out = packs.game_design(tmp)
+            timeline = [r for r in out if r["name"] == "game:timeline"]
+            self.assertTrue(timeline and not timeline[0]["ok"], out)
+            self.assertFalse(timeline[0]["required"])
+
+    def test_reveal_to_someone_who_already_knows_warns(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, "docs", "game", "world-bible.md"), BIBLE_KNOWS)
+            quest(tmp, "q1", "q1", reveals_to=["aria:war-started"])
+            out = packs.game_design(tmp)
+            self.assertTrue(any(r["name"] == "game:knows-redundant" for r in out), out)
+            self.assertTrue(all(r["ok"] for r in out if r["required"]), out)
+
+    def test_reveal_to_unknown_fact_or_actor_blocks(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            mk(os.path.join(tmp, "docs", "game", "world-bible.md"), BIBLE)
+            quest(tmp, "q1", "q1", reveals_to=["aria:never", "nobody:war-started"])
+            bad = [r for r in packs.game_design(tmp) if not r["ok"] and r["required"]]
+            names = {r["name"] for r in bad}
+            self.assertIn("game:knows-fact", names)
+            self.assertIn("game:knows-actor", names)
+
     def test_pillars_need_three(self):
         with tempfile.TemporaryDirectory() as tmp:
             mk(os.path.join(tmp, "docs", "game", "pillars.md"),
@@ -113,6 +192,122 @@ class GamePackTests(unittest.TestCase):
             mk(os.path.join(tmp, "docs", "game", "pillars.md"),
                "# Pillars\n\n- one\n- two\n- three\n")
             self.assertTrue(all(r["ok"] for r in packs.game_discovery(tmp)))
+
+
+class StoryPackTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.repo = self.tmp.name
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def write_world(self):
+        mk(os.path.join(self.repo, "docs", "story", "outline.md"), STORY_OUTLINE)
+        mk(os.path.join(self.repo, "docs", "story", "characters.md"), STORY_CHARS)
+
+    def test_detected_by_outline_not_an_empty_directory(self):
+        os.makedirs(os.path.join(self.repo, "docs", "story"))
+        self.assertIsNone(packs.detect(self.repo))
+        mk(os.path.join(self.repo, "docs", "story", "outline.md"), STORY_OUTLINE)
+        self.assertEqual(packs.detect(self.repo), "story")
+
+    def test_discovery_needs_an_outline(self):
+        bad = [r for r in packs.story_discovery(self.repo) if not r["ok"]]
+        self.assertTrue(bad)
+        mk(os.path.join(self.repo, "docs", "story", "outline.md"), STORY_OUTLINE)
+        self.assertTrue(all(r["ok"] for r in packs.story_discovery(self.repo)))
+
+    def test_discovery_warns_without_threads(self):
+        mk(os.path.join(self.repo, "docs", "story", "outline.md"),
+           "---\nacts: [one, two]\n---\n")
+        out = packs.story_discovery(self.repo)
+        self.assertTrue(any(r["name"] == "story:threads" for r in out), out)
+
+    def test_valid_story_passes(self):
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
+                resolves=["the-heir"])
+        chapter(self.repo, "two", "ch-02", order=20, pov="borin",
+                threads=["the-war"], resolves=["the-war"], reveals=["king-dead"])
+        out = packs.story_design(self.repo)
+        self.assertTrue(all(r["ok"] for r in out), out)
+
+    def test_duplicate_order_blocks(self):
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10)
+        chapter(self.repo, "two", "ch-02", order=10)
+        bad = [r for r in packs.story_design(self.repo) if not r["ok"] and r["required"]]
+        self.assertTrue(any(r["name"] == "story:order-dup" for r in bad), bad)
+
+    def test_undeclared_pov_blocks(self):
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", pov="stranger")
+        bad = [r for r in packs.story_design(self.repo) if not r["ok"] and r["required"]]
+        self.assertTrue(any(r["name"] == "story:pov" for r in bad), bad)
+
+    def test_unknown_thread_blocks_and_open_thread_warns(self):
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir", "ghost"])
+        out = packs.story_design(self.repo)
+        names = {r["name"] for r in out if not r["ok"]}
+        self.assertIn("story:threads-unknown", names)
+        self.assertIn("story:threads-open", names)
+        open_thread = [r for r in out if r["name"] == "story:threads-open"][0]
+        self.assertFalse(open_thread["required"])
+
+    def test_reveal_to_a_character_who_already_knows_warns(self):
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
+                resolves=["the-heir"], reveals_to=["aria:war-started"])
+        out = packs.story_design(self.repo)
+        self.assertTrue(any(r["name"] == "story:knows-redundant" for r in out), out)
+
+
+class ScaffoldTests(unittest.TestCase):
+    def test_pack_init_creates_structure_and_never_overwrites(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result, err = packs.scaffold(tmp, "story")
+            self.assertIsNone(err)
+            self.assertIn("docs/story/outline.md", result["created"])
+            before = os.path.getmtime(os.path.join(tmp, "docs", "story", "outline.md"))
+            result2, _ = packs.scaffold(tmp, "story")
+            self.assertEqual(result2["created"], [])
+            self.assertEqual(os.path.getmtime(
+                os.path.join(tmp, "docs", "story", "outline.md")), before)
+
+    def test_templates_are_not_data(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            packs.scaffold(tmp, "game")
+            self.assertEqual(packs._quests(tmp), [])
+            out = packs.game_design(tmp)
+            self.assertTrue(any(r["name"] == "game:quests" for r in out), out)
+
+    def test_unknown_pack_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result, err = packs.scaffold(tmp, "nope")
+            self.assertIsNone(result)
+            self.assertIn("unknown pack", err)
+
+    def test_cli_pack_list_and_init(self):
+        from lifecycle import cli
+        import io
+        with tempfile.TemporaryDirectory() as tmp:
+            old = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                rc = cli.main(["--repo", tmp, "pack", "list"])
+                listing = sys.stdout.getvalue()
+                rc2 = cli.main(["--repo", tmp, "pack", "init", "game"])
+                init_out = sys.stdout.getvalue()
+            finally:
+                sys.stdout = old
+            self.assertEqual(rc, 0)
+            self.assertIn("game", listing)
+            self.assertIn("story", listing)
+            self.assertEqual(rc2, 0)
+            self.assertIn("docs/game/pillars.md", init_out)
+            self.assertTrue(os.path.isfile(os.path.join(tmp, "docs", "game", "pillars.md")))
 
 
 class DepthTests(unittest.TestCase):

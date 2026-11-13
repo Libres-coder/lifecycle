@@ -38,3 +38,10 @@
 - [x] advice follows `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` instead of fixed 70/85
 - [x] independent review of the advice, hooks and threads; 100 tests
 - [ ] confirm in a live session that the 45% nudge arrives before the 60% trigger
+
+## M7 - packs for other kinds of work
+
+- [x] pack registry, `pack list|init|guide`, scaffolds that never overwrite
+- [x] story pack: acts and threads, chapter order/POV, knowledge state
+- [x] game pack: act/order timeline, `knows:`/`reveals_to:`
+- [ ] a third pack driven by a real project (service runbook? level design?)

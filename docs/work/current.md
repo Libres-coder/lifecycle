@@ -33,6 +33,9 @@ task alive across context resets.
   context readings sanitized on read, `hook install` reports instead of
   silently skipping, legacy hooks upgraded, no stale percentage after resume,
   thread slugs normalized. 100 tests; review note in `docs/reviews/`.
+- v1.3.0: packs for work that is not software - story (outline/cast/chapters,
+  POV, thread resolution) and the game pack extended with act/order timelines
+  and per-character knowledge; `lifecycle pack list|init|guide`. 117 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

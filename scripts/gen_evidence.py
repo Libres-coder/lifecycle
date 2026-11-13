@@ -17,9 +17,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def run(args, cwd=ROOT, stdin=None):
+    env = dict(os.environ)
+    env["PYTHONPATH"] = ROOT + (os.pathsep + env["PYTHONPATH"]
+                                if env.get("PYTHONPATH") else "")
     p = subprocess.run([sys.executable, "-m", "lifecycle"] + args, cwd=cwd,
                        input=stdin, capture_output=True, text=True,
-                       encoding="utf-8", errors="replace")
+                       encoding="utf-8", errors="replace", env=env)
     return p.returncode, ((p.stdout or "") + (p.stderr or "")).strip()
 
 
@@ -134,6 +137,25 @@ def main():
            ("printf '{\"source\":\"compact\",\"context_tokens\":42000}' | "
             "python -m lifecycle resume --hook   # exit %d" % rc17,
             (res3 or "").splitlines()[0] if res3 else "")])
+
+    with tempfile.TemporaryDirectory() as tmp:
+        demo = os.path.join(tmp, "story-demo")
+        os.makedirs(os.path.join(demo, "docs", "story", "chapters"))
+        a_rc, a = run(["pack", "init", "story"], cwd=demo)
+        b_rc, b = run(["pack", "list"], cwd=demo)
+        for name in ("one", "two"):
+            with open(os.path.join(demo, "docs", "story", "chapters", name + ".md"),
+                      "w", encoding="utf-8", newline="\n") as f:
+                f.write("---\nid: ch-%s\norder: 10\npov: aria\n---\n\nprose\n" % name)
+        c_rc, c = run(["status"], cwd=demo)
+        dupe = [l for l in c.splitlines() if "story:" in l]
+    write("R12-packs.md", "R12 packs extend the stages for non-software work",
+          [tests("tests.test_packs.StoryPackTests"),
+           tests("tests.test_packs.GamePackTests"),
+           ("python -m lifecycle pack init story   # exit %d" % a_rc, a),
+           ("python -m lifecycle pack list   # exit %d" % b_rc, b),
+           ("two chapters both with order 10, then python -m lifecycle status   # exit %d" % c_rc,
+            "\n".join(dupe) or c[:800])])
 
     rc13, _ = run(["check"])
     print("final check exit:", rc13)

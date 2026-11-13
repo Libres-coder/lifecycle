@@ -95,6 +95,7 @@ pip install ~/.claude/skills/lifecycle     # or PYTHONPATH=~/.claude/skills/life
 | `lifecycle check [--stage N]` | CI gate: exit 1 on a failing stage |
 | `lifecycle stages` | the contract: what each stage asks |
 | `lifecycle guide [stage]` | the playbook: questions to answer, what shallow looks like |
+| `lifecycle pack list\|init\|guide <name>` | domain packs (game, story): checks, playbook, scaffold |
 | `lifecycle init` | scaffold the work thread, plan, log/report/review directories |
 | `lifecycle resume` | after a compaction or in a new session: the work thread, plan progress, journal, next blocker |
 | `lifecycle report` | drafts `docs/reports/status-<date>.md` from facts it can check |
@@ -198,15 +199,24 @@ a reason, an architecture that never mentions a trade-off or a failure, evidence
 marked `guessed`. They are reported with the sentence that says what a shallow
 version looks like, because taste is not a gate.
 
-## Game pack
+## Packs: work that is not software
 
-An open-world game's design is not an architecture document. When `docs/game/`
-exists, a pack adds checks to stages 0 and 2: pillars, a world bible with
-characters/factions/locations/facts, and quest files with
-`id`/`requires`/`reveals`.
+The stages are generic; the design inside them is not. A pack adds checks to
+stages 0 and 2, a playbook for that kind of work, and a scaffold that creates
+the empty structure the checks read - never the content:
 
-Real output on a game-shaped demo repository (the missing prerequisite is
-deliberate):
+```bash
+lifecycle pack list          # what is available, and which one is active
+lifecycle pack init game     # pillars, bible, quest template
+lifecycle pack init story    # outline, cast, chapter template
+lifecycle pack guide story
+```
+
+**game** (`docs/game/`) - pillars, a world bible
+(characters/factions/locations/facts, plus `knows:` per character), and quest
+files with `id`, `act`, `order`, `requires`, `reveals`, `reveals_to`,
+`characters`, `factions`. Real output on a game-shaped demo repository (the
+missing prerequisite is deliberate):
 
 ```
 $ lifecycle --repo ../game-demo status
@@ -227,9 +237,22 @@ $ lifecycle --repo ../game-demo status
   - fix the id or add the missing quest file
 ```
 
-The checks are the ones a wiki cannot do: a prerequisite loop, a reveal of a fact
-the bible never establishes, an actor used but never declared.
-`lifecycle guide game` prints the full playbook.
+The checks are the ones a wiki cannot do: a prerequisite loop, a quest that
+requires one the timeline puts later, a reveal of a fact the bible never
+establishes, a reveal to a character who already knows it, an actor used but
+never declared.
+
+**story** (`docs/story/`) - an outline with acts and the plot threads the
+reader is promised, a cast file with starting knowledge, and chapters with
+`order`, `pov`, `reveals`, `threads`, `resolves`. The checks catch a chapter
+out of order, a POV who is not in the cast, a thread used but never declared,
+a thread nobody resolves (the abandoned promise readers call a plot hole), and
+a reveal to someone who already knows.
+
+Both packs are narrative structure that has to stay consistent while scenes
+are written out of order; that is why the checks are graph checks, not
+spell-check. `lifecycle guide <pack>` prints the full playbook, and the
+template files (`_template.md`) are never read as data.
 
 ## Design notes
 

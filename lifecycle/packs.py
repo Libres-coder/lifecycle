@@ -1,13 +1,17 @@
-"""lifecycle packs: extra checks for a kind of product.
+"""lifecycle packs: extra checks for a kind of work.
 
-A pack adds checks to existing stages; it never adds a stage. The game pack is
-the first one, because an open-world game's "design" is not an architecture
-document - it is a world bible and a quest graph, and those have their own ways
-of being wrong: a quest that requires a quest that does not exist, a reveal of a
-fact nobody ever established, a prerequisite loop that makes a quest
-unreachable.
+A pack adds checks to existing stages; it never adds a stage. It also brings a
+playbook (what deep work in that domain looks like) and a scaffold (`lifecycle
+pack init`) that creates the empty structure the checks read - never content.
 
-Packs are opt-in by presence: create docs/game/ and the game pack applies.
+The games and stories here are the first two, because a game's "design" is not
+an architecture document and a novel's is not a quest graph. Both are narrative
+structure that has to stay consistent while scenes are written out of order.
+Their ways of being wrong are specific: a quest that requires a quest that does
+not exist, a reveal of a fact nobody established, a prerequisite loop, a plot
+thread nobody resolves, a reveal to a character who already knows.
+
+Packs are opt-in by presence: `docs/game/` or `docs/story/`, or `--pack`.
 """
 import glob
 import os
@@ -67,24 +71,117 @@ def _as_list(value):
     return []
 
 
+def _as_int(value):
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def _pairs(value):
+    """`- aria: war-started` lines become {aria: [war-started, ...]}."""
+    out = {}
+    for item in _as_list(value):
+        who, sep, fact = item.partition(":")
+        if sep and who.strip() and fact.strip():
+            out.setdefault(who.strip(), []).append(fact.strip())
+    return out
+
+
+def _frontmatter_files(repo, sub, pattern="**/*.md"):
+    """(rel_path, name, frontmatter, text) for files that are not templates."""
+    out = []
+    root = os.path.join(repo, *sub.split("/"))
+    for path in sorted(glob.glob(os.path.join(root, pattern), recursive=True)):
+        if os.path.basename(path).startswith("_"):
+            continue                       # `_template.md` is a scaffold, not data
+        try:
+            with open(path, encoding="utf-8-sig", errors="replace") as f:
+                text = f.read()
+        except OSError:
+            continue
+        rel = os.path.relpath(path, repo).replace("\\", "/")
+        out.append((rel, os.path.splitext(os.path.basename(path))[0],
+                    frontmatter(text), text))
+    return out
+
+
 # -- detection -------------------------------------------------------------
 
 def detect(repo):
     """A pack applies when its artifacts exist, not when an empty directory does.
 
-    `mkdir docs/game` should not turn two stages red.
+    `mkdir docs/game` should not turn two stages red. The first match wins; a
+    project that is both uses `--pack` to say which one the stage checks follow.
     """
     game = os.path.join(repo, "docs", "game")
-    if not os.path.isdir(game):
-        return None
-    if (os.path.isfile(os.path.join(game, "pillars.md"))
+    if os.path.isdir(game) and (
+            os.path.isfile(os.path.join(game, "pillars.md"))
             or os.path.isfile(os.path.join(game, "world-bible.md"))
             or os.path.isdir(os.path.join(game, "quests"))):
         return "game"
+    story = os.path.join(repo, "docs", "story")
+    if os.path.isdir(story) and (
+            os.path.isfile(os.path.join(story, "outline.md"))
+            or os.path.isfile(os.path.join(story, "characters.md"))
+            or os.path.isdir(os.path.join(story, "chapters"))):
+        return "story"
     return None
 
 
-# -- game: discovery -------------------------------------------------------
+# -- shared narrative checks ----------------------------------------------
+
+def _ids(fm, keys=("characters", "factions", "locations", "facts")):
+    return dict((key, set(_as_list(fm.get(key)))) for key in keys)
+
+
+def _start_knowledge(fm):
+    """facts a character knows before the story starts: `- aria: war-started`."""
+    knows = {}
+    for who, facts in _pairs(fm.get("knows")).items():
+        knows.setdefault(who, set()).update(facts)
+    return knows
+
+
+def _knowledge_checks(prefix, ids, knows, items):
+    """items: dicts with id, path, reveals_to {character: [fact]}."""
+    unknown_actor, unknown_fact, redundant = [], [], []
+    for item in items:
+        for who, facts in (item.get("reveals_to") or {}).items():
+            if who not in ids["characters"]:
+                unknown_actor.append("%s -> %s" % (item["id"], who))
+            for fact in facts:
+                if fact not in ids["facts"]:
+                    unknown_fact.append("%s -> %s" % (item["id"], fact))
+                elif fact in knows.get(who, set()):
+                    redundant.append("%s -> %s already knows %s"
+                                     % (item["id"], who, fact))
+    out = []
+    if unknown_actor:
+        out.append(fail("%s:knows-actor" % prefix,
+                        "reveal to undeclared character(s): %s"
+                        % ", ".join(unknown_actor[:5]),
+                        "declare them under `characters:`"))
+    if unknown_fact:
+        out.append(fail("%s:knows-fact" % prefix,
+                        "reveal of a fact the bible never establishes: %s"
+                        % ", ".join(unknown_fact[:5]),
+                        "declare the fact under `facts:`, or fix the id"))
+    if redundant:
+        out.append(warn("%s:knows-redundant" % prefix,
+                        "a reveal tells a character what they already know: %s"
+                        % ", ".join(redundant[:5]),
+                        "cut the reveal, or remove the fact from `knows:` if the "
+                        "character learns it here for the first time"))
+    if out:
+        return out
+    return [ok("%s:knows" % prefix, "knowledge state is consistent")]
+
+
+# -- game ------------------------------------------------------------------
+
+GAME_DIR = "docs/game"
+
 
 def game_discovery(repo):
     rel, text = read(repo, "docs/game/pillars.md")
@@ -101,36 +198,25 @@ def game_discovery(repo):
     return [ok("game:pillars", "%d pillar(s)" % len(bullets))]
 
 
-# -- game: design ----------------------------------------------------------
-
 def _bible(repo):
     rel, text = read(repo, "docs/game/world-bible.md", "docs/game/bible.md")
     if not text:
-        return None, None
+        return None, None, {}
     fm = frontmatter(text)
-    ids = {}
-    for key in ("characters", "factions", "locations", "facts"):
-        ids[key] = set(_as_list(fm.get(key)))
-    return rel, ids
+    return rel, _ids(fm), _start_knowledge(fm)
 
 
 def _quests(repo):
     out = []
-    for path in sorted(glob.glob(os.path.join(repo, "docs", "game", "quests",
-                                              "**", "*.md"), recursive=True)):
-        rel = os.path.relpath(path, repo).replace("\\", "/")
-        try:
-            with open(path, encoding="utf-8-sig", errors="replace") as f:
-                text = f.read()
-        except OSError:
-            continue
-        fm = frontmatter(text)
-        out.append({"path": rel, "id": str(fm.get("id") or os.path.splitext(
-            os.path.basename(path))[0]),
-            "requires": _as_list(fm.get("requires")),
-            "reveals": _as_list(fm.get("reveals")),
-            "characters": _as_list(fm.get("characters")),
-            "factions": _as_list(fm.get("factions"))})
+    for rel, name, fm, _text in _frontmatter_files(repo, GAME_DIR, "quests/**/*.md"):
+        out.append({"path": rel, "id": str(fm.get("id") or name),
+                    "requires": _as_list(fm.get("requires")),
+                    "reveals": _as_list(fm.get("reveals")),
+                    "characters": _as_list(fm.get("characters")),
+                    "factions": _as_list(fm.get("factions")),
+                    "act": _as_int(fm.get("act")),
+                    "order": _as_int(fm.get("order")),
+                    "reveals_to": _pairs(fm.get("reveals_to"))})
     return out
 
 
@@ -159,8 +245,45 @@ def _cycle(quests):
     return None
 
 
+def _timeline(quests):
+    """A quest may not require one that comes later in the act/order timeline."""
+    dated = [q for q in quests if q["order"] is not None]
+    if not dated:
+        return [warn("game:timeline", "no quest carries act/order",
+                     "give each quest `act:` and `order:` numbers so the graph can "
+                     "be checked against the timeline the player experiences")]
+    missing = [q["id"] for q in quests if q["order"] is None]
+    by_id = dict((q["id"], q) for q in quests)
+    inverted = []
+    for q in dated:
+        for required in q["requires"]:
+            other = by_id.get(required)
+            if not other or other["order"] is None:
+                continue
+            q_key = (q["act"] if q["act"] is not None else 1, q["order"])
+            o_key = (other["act"] if other["act"] is not None else 1, other["order"])
+            if o_key > q_key:
+                inverted.append("%s (act %d, order %d) requires %s (act %d, order %d)"
+                                % (q["id"], q_key[0], q_key[1],
+                                   other["id"], o_key[0], o_key[1]))
+    out = []
+    if inverted:
+        out.append(fail("game:timeline-order",
+                        "quest(s) require a later quest: %s"
+                        % "; ".join(inverted[:3]),
+                        "swap the order numbers, or cut the requirement - the "
+                        "player cannot finish a quest before the one it needs"))
+    if missing:
+        out.append(warn("game:timeline-missing",
+                        "quest(s) without an order: %s" % ", ".join(missing[:5]),
+                        "add `order:` (and `act:`) so the timeline check covers them"))
+    if not out:
+        out.append(ok("game:timeline", "%d quest(s) ordered" % len(dated)))
+    return out
+
+
 def game_design(repo):
-    rel, ids = _bible(repo)
+    rel, ids, knows = _bible(repo)
     if not ids:
         return [fail("game:bible", "no world bible",
                      "write docs/game/world-bible.md with frontmatter lists for "
@@ -222,11 +345,246 @@ def game_design(repo):
                         "break the loop; a quest that requires itself can never start"))
     else:
         out.append(ok("game:cycle", "no prerequisite loop"))
+
+    out.extend(_timeline(quests))
+    out.extend(_knowledge_checks("game", ids, knows, quests))
     return out
+
+
+# -- story -----------------------------------------------------------------
+
+STORY_DIR = "docs/story"
+
+
+def _story_chapters(repo):
+    out = []
+    for rel, name, fm, _text in _frontmatter_files(repo, STORY_DIR, "chapters/**/*.md"):
+        out.append({"path": rel, "id": str(fm.get("id") or name),
+                    "order": _as_int(fm.get("order")),
+                    "pov": str(fm.get("pov") or "").strip(),
+                    "reveals": _as_list(fm.get("reveals")),
+                    "reveals_to": _pairs(fm.get("reveals_to")),
+                    "threads": _as_list(fm.get("threads")),
+                    "resolves": _as_list(fm.get("resolves"))})
+    return out
+
+
+def story_discovery(repo):
+    rel, text = read(repo, "docs/story/outline.md")
+    if not text:
+        return [fail("story:outline", "no story outline",
+                     "write docs/story/outline.md with the premise, the acts and "
+                     "the plot threads the reader is promised")]
+    fm = frontmatter(text)
+    acts = _as_list(fm.get("acts"))
+    if not acts:
+        acts = [l for l in text.splitlines()
+                if re.match(r"^#{2,3}\s+(act|第\s*[一二三四五六七八九十\d]+\s*幕|chapter)",
+                            l.strip(), re.IGNORECASE)]
+    if len(acts) < 2:
+        return [warn("story:acts", "fewer than two acts",
+                     "a long story turns; two acts is the minimum that makes the "
+                     "turn visible (frontmatter `acts: [setup, turn]`)")]
+    threads = _as_list(fm.get("threads"))
+    if not threads:
+        return [warn("story:threads", "no plot threads declared",
+                     "list the promises the story makes under `threads:` so the "
+                     "chapters can be checked against them")]
+    return [ok("story:outline", "%d act(s), %d thread(s)" % (len(acts), len(threads)))]
+
+
+def story_design(repo):
+    rel, text = read(repo, "docs/story/characters.md")
+    if not text:
+        return [fail("story:characters", "no characters document",
+                     "write docs/story/characters.md with frontmatter lists for "
+                     "characters and facts, and `knows:` for what each starts out "
+                     "knowing")]
+    fm = frontmatter(text)
+    ids = _ids(fm)
+    knows = _start_knowledge(fm)
+    out = [ok("story:characters", rel)]
+    if not ids["characters"]:
+        out.append(fail("story:characters:list", "no characters declared",
+                        "list them under `characters:`"))
+
+    outline_fm = frontmatter(read(repo, "docs/story/outline.md")[1] or "")
+    threads = set(_as_list(outline_fm.get("threads")))
+
+    chapters = _story_chapters(repo)
+    if not chapters:
+        out.append(warn("story:chapters", "no chapter files yet",
+                        "docs/story/chapters/<id>.md with id/order/pov frontmatter"))
+        return out
+
+    seen, orders = {}, {}
+    for c in chapters:
+        if c["id"] in seen:
+            out.append(fail("story:chapter-id", "duplicate chapter id %s" % c["id"],
+                            "rename one of %s and %s" % (seen[c["id"]], c["path"])))
+        seen[c["id"]] = c["path"]
+        if c["order"] is None:
+            out.append(fail("story:order", "chapter %s has no `order:`" % c["id"],
+                            "number the chapters; the order is what a reader "
+                            "experiences and what continuity is checked against"))
+        elif c["order"] in orders:
+            out.append(fail("story:order-dup", "two chapters share order %d: %s and %s"
+                            % (c["order"], orders[c["order"]], c["id"]),
+                            "give each chapter a unique order number"))
+        else:
+            orders[c["order"]] = c["id"]
+
+    bad_pov = ["%s -> %s" % (c["id"], c["pov"]) for c in chapters
+               if c["pov"] and c["pov"] not in ids["characters"]]
+    if bad_pov:
+        out.append(fail("story:pov", "chapter POV is not a declared character: %s"
+                        % ", ".join(bad_pov[:5]),
+                        "declare them under `characters:` or fix the name"))
+
+    unknown_fact = ["%s -> %s" % (c["id"], f) for c in chapters
+                    for f in c["reveals"] if f not in ids["facts"]]
+    if unknown_fact:
+        out.append(fail("story:reveals", "chapter reveals a fact not established: %s"
+                        % ", ".join(unknown_fact[:5]),
+                        "declare the fact under `facts:`, or fix the id"))
+    else:
+        out.append(ok("story:reveals", "every reveal is established"))
+
+    unknown_thread = ["%s -> %s" % (c["id"], t) for c in chapters
+                      for t in c["threads"] + c["resolves"] if t not in threads]
+    if unknown_thread:
+        out.append(fail("story:threads-unknown",
+                        "chapter uses a plot thread the outline never declares: %s"
+                        % ", ".join(unknown_thread[:5]),
+                        "declare it under `threads:` in docs/story/outline.md"))
+
+    resolved = set(t for c in chapters for t in c["resolves"])
+    open_threads = sorted(threads - resolved)
+    if open_threads:
+        out.append(warn("story:threads-open",
+                        "plot thread(s) nobody resolves: %s" % ", ".join(open_threads),
+                        "resolve each in a chapter's `resolves:` or drop the thread - "
+                        "an abandoned promise is what readers call a plot hole"))
+    else:
+        out.append(ok("story:threads", "every thread is resolved"))
+
+    out.extend(_knowledge_checks("story", ids, knows, chapters))
+    return out
+
+
+# -- scaffold --------------------------------------------------------------
+
+PILLARS = """# Pillars
+
+- TODO: the first experience the game sells, and how the player feels it
+- TODO: the second
+- TODO: the third
+"""
+
+BIBLE = """---
+characters: []
+factions: []
+locations: []
+facts: []
+knows: []
+  # - aria: war-started      # facts a character knows before the story starts
+---
+
+# World bible
+
+One paragraph: what is true in this world before any quest happens.
+Every fact a quest reveals must be listed under `facts:`.
+"""
+
+QUEST_TEMPLATE = """---
+id: q-example
+act: 1
+order: 10
+requires: []
+reveals: []
+characters: []
+factions: []
+reveals_to: []
+  # - aria: war-started
+---
+
+What the player does, what they learn, what changes. Copy this file to
+`<id>.md`; files starting with `_` are templates and are not checked.
+"""
+
+OUTLINE = """---
+acts: [setup, turn]
+threads: []
+  # - the-heir            # a promise the story makes and must resolve
+---
+
+# Outline
+
+Premise: who wants what, and what stands in the way.
+
+## Act 1 - setup
+
+## Act 2 - turn
+"""
+
+CHARACTERS = """---
+characters: []
+facts: []
+knows: []
+  # - aria: war-started
+---
+
+# Characters
+
+One line each: what they want, what they hide, and what changes for them.
+"""
+
+CHAPTER_TEMPLATE = """---
+id: ch-01
+order: 10
+pov: aria
+reveals: []
+threads: []
+resolves: []
+reveals_to: []
+---
+
+What happens in this chapter, from the POV's eyes.
+"""
+
+TEMPLATES = {
+    "game": {"docs/game/pillars.md": PILLARS,
+             "docs/game/world-bible.md": BIBLE,
+             "docs/game/quests/_template.md": QUEST_TEMPLATE},
+    "story": {"docs/story/outline.md": OUTLINE,
+              "docs/story/characters.md": CHARACTERS,
+              "docs/story/chapters/_template.md": CHAPTER_TEMPLATE},
+}
+
+
+def scaffold(repo, name):
+    """Write the empty structure a pack checks. Never overwrites, never fills."""
+    files = TEMPLATES.get(name)
+    if files is None:
+        return None, "unknown pack %r (have: %s)" % (name, ", ".join(sorted(PACKS)))
+    created, kept = [], []
+    for rel, text in files.items():
+        path = os.path.join(repo, *rel.split("/"))
+        if os.path.exists(path):
+            kept.append(rel)
+            continue
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+        created.append(rel)
+    return {"created": created, "kept": kept}, None
 
 
 PACKS = {
     "game": {"discovery": [game_discovery], "design": [game_design],
              "title": "Open-world game",
-             "playbook": "game.md"},
+             "stages": (0, 2), "playbook": "game.md"},
+    "story": {"discovery": [story_discovery], "design": [story_design],
+              "title": "Long-form story",
+              "stages": (0, 2), "playbook": "story.md"},
 }

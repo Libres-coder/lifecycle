@@ -259,20 +259,37 @@ facts: [war-started, king-dead]
 ```markdown
 ---
 id: q-harbor-arrival
+act: 1
+order: 20
 requires: [q-prologue]
 reveals: [war-started]
 characters: [aria]
 factions: [guild]
+reveals_to:
+  - borin: war-started
 ---
 ```
 
 Then the prose: what the player does, what they learn, what changes.
 
+## Order and knowledge
+
+`act:` and `order:` say when the player meets the quest. The check refuses a
+quest that requires one the timeline puts later - the player cannot finish a
+quest before the one it needs, whatever the graph says.
+
+`knows:` in the bible is what each character knows before the story starts;
+`reveals_to:` says who learns a fact in this quest. A reveal to someone who
+already knows it is reported: either the reveal is redundant or the starting
+state is wrong, and both are cheap to fix now.
+
 ## What the checks catch
 
 - a quest requiring a quest that does not exist;
+- a quest that requires a later quest (timeline inversion);
 - a prerequisite loop (a quest that can never start);
 - a reveal of a fact the bible never establishes;
+- a reveal to a character who already knows it;
 - a character or faction used in a quest but never declared.
 
 ## Shallow looks like
@@ -285,6 +302,90 @@ timeline that exists only in the writer's head.
 `lifecycle check --stage 2` passes with the pack active - which means both
 the generic design checks and these - and every quest id, fact and actor
 resolves.
+"""
+
+STORY = """# Story pack - long-form narrative
+
+A novel or a screenplay is not a product backlog, and its design document is not
+an architecture. It is a world, a cast with conflicting wants, and a set of
+promises made to the reader that all have to be kept - usually written out of
+order.
+
+This pack adds checks to stages 0 and 2. It applies when `docs/story/` exists.
+
+## Answer these
+
+1. **What is the premise in one sentence?** Who wants what, and what stands in
+   the way. If it takes a paragraph, it is not decided yet.
+2. **What are the acts, and where does the story turn?** Two turns minimum;
+   frontmatter `acts: [setup, turn, resolution]`.
+3. **What does the story promise the reader?** Each promise is a plot thread:
+   the heir must be found, the war must end. List them under `threads:`.
+4. **Who wants what, and what do they hide?** Characters with goals that
+   conflict; a character with no want is scenery.
+5. **What facts are true in this world?** What a chapter may reveal. If it is
+   not under `facts:`, it does not exist.
+6. **Who knows what, when?** `knows:` is the starting state; `reveals_to:` in a
+   chapter updates it. A reveal to someone who already knows is a continuity
+   bug the reader will feel.
+7. **Which thread does each chapter advance or resolve?** A chapter that moves
+   nothing is a scene looking for a book.
+
+## Write
+
+`docs/story/outline.md` - premise, acts, threads:
+
+```markdown
+---
+acts: [setup, turn, resolution]
+threads: [the-heir, the-war]
+---
+```
+
+`docs/story/characters.md` - characters, facts, starting knowledge:
+
+```markdown
+---
+characters: [aria, borin]
+facts: [war-started, king-dead]
+knows:
+  - aria: war-started
+---
+```
+
+`docs/story/chapters/<id>.md`, one per chapter:
+
+```markdown
+---
+id: ch-03
+order: 30
+pov: aria
+reveals: [king-dead]
+threads: [the-heir]
+resolves: []
+reveals_to:
+  - borin: king-dead
+---
+```
+
+## What the checks catch
+
+- a chapter without an `order:`, or two chapters sharing one;
+- a POV character who is not in the cast;
+- a reveal of a fact the characters file never establishes;
+- a plot thread a chapter uses but the outline never declares;
+- a plot thread nobody resolves (the abandoned promise readers call a plot hole);
+- a reveal to a character who already knows it.
+
+## Shallow looks like
+
+A cast list with no wants, chapters named "Chapter 1" with no order or POV, a
+thread declared and forgotten, and a twist nobody planted.
+
+## Exit
+
+`lifecycle check --stage 2` passes with the pack active, and every chapter's
+order, POV, reveal and thread resolves against the two documents above.
 """
 
 SUSTAIN = """# Stage 6 - Sustain
@@ -376,7 +477,7 @@ TOOLS = {
 STAGES = {"discovery": DISCOVERY, "spec": SPEC, "design": DESIGN,
           "build": BUILD, "verify": VERIFY, "release": RELEASE,
           "sustain": SUSTAIN}
-PACKS = {"game": GAME}
+PACKS = {"game": GAME, "story": STORY}
 
 
 def for_stage(key):

@@ -225,6 +225,33 @@
           "judge": "command"
         }
       ]
+    },
+    {
+      "id": "R12",
+      "title": "Packs extend the stages for non-software work",
+      "status": "pending",
+      "files": [
+        "lifecycle/packs.py",
+        "lifecycle/playbooks.py",
+        "lifecycle/cli.py"
+      ],
+      "criteria": [
+        {
+          "id": "R12.1",
+          "text": "pack init story creates the outline, cast and a template the checks ignore",
+          "judge": "command"
+        },
+        {
+          "id": "R12.2",
+          "text": "a chapter with a duplicate order or an undeclared POV fails stage 2 under the story pack",
+          "judge": "command"
+        },
+        {
+          "id": "R12.3",
+          "text": "a quest that requires a later quest fails stage 2 under the game pack",
+          "judge": "command"
+        }
+      ]
     }
   ]
 }

@@ -145,6 +145,14 @@ class CliTests(unittest.TestCase):
             self.assertEqual(out, "")
             self.assertFalse(os.path.exists(os.path.join(tmp, ".lifecycle")))
 
+    def test_resume_hook_is_silent_when_only_a_context_reading_exists(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            statusline.save(tmp, statusline.parse(json.dumps(PAYLOAD)))
+            rc, out = self._run(["--repo", tmp, "resume", "--hook"],
+                                '{"source": "startup"}')
+            self.assertEqual(rc, 0)
+            self.assertEqual(out, "", "a status line reading alone is not a project")
+
     def test_statusline_command_records_and_prints(self):
         with tempfile.TemporaryDirectory() as tmp:
             rc, out = self._run(["--repo", tmp, "statusline"], json.dumps(PAYLOAD))

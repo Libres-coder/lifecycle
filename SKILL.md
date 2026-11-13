@@ -59,6 +59,7 @@ Commands:
 | `lifecycle check [--stage N]` | CI gate: exit 1 on a failing stage |
 | `lifecycle stages` | the contract: what each stage asks |
 | `lifecycle guide [stage]` | the playbook for a stage: questions to answer, what shallow looks like |
+| `lifecycle pack list\|init\|guide <name>` | domain packs: game, story - checks, playbook, scaffold |
 | `lifecycle init` | scaffold the work thread, plan, log/report/review directories |
 | `lifecycle resume` | after a compaction or in a new session: the work thread, plan progress, journal, next blocker |
 | `lifecycle report` | drafts `docs/reports/status-<date>.md` from facts it can check |
@@ -192,21 +193,38 @@ reason, architecture that never mentions a trade-off or a failure, evidence
 marked `guessed`. They never fail a stage - taste is not a gate - but they are
 printed with what a shallow version looks like.
 
-## Game pack
+## Packs: work that is not software
 
-An open-world game's design is not an architecture document. With
-`docs/game/` present, a pack adds checks to stages 0 and 2:
+A product's stages are generic; the work inside them is not. A pack adds
+domain checks to stages 0 and 2, a playbook for that kind of work, and a
+scaffold for its artifacts:
 
-- `docs/game/pillars.md` - three pillars;
-- `docs/game/world-bible.md` - frontmatter lists of characters, factions,
-  locations and facts;
-- `docs/game/quests/<id>.md` - frontmatter `id`, `requires`, `reveals`,
-  `characters`, `factions`.
+```bash
+lifecycle pack list          # what is available, and which one is active
+lifecycle pack init game     # write the empty structure (never content)
+lifecycle pack guide story   # the playbook for that kind of work
+```
 
-The checks are the ones a wiki cannot do: a quest requiring a quest that does
-not exist, a prerequisite loop, a reveal of a fact the bible never establishes,
-an actor used but never declared. `lifecycle guide game` prints the full
-playbook.
+Packs are opt-in by presence, and the first match wins (`--pack story` says
+which one the checks follow).
+
+**game** (`docs/game/`) - pillars, a world bible with characters/factions/
+locations/facts, and quest files with `id`, `act`, `order`, `requires`,
+`reveals`, `reveals_to`, `characters`, `factions`. The checks are the ones a
+wiki cannot do: a quest requiring a quest that does not exist, a quest that
+requires one the timeline puts later, a prerequisite loop, a reveal of a fact
+the bible never establishes, a reveal to a character who already knows it.
+
+**story** (`docs/story/`) - an outline with acts and the plot threads the
+reader is promised, a cast file with starting knowledge, and chapters with
+`order`, `pov`, `reveals`, `threads`, `resolves`. The checks catch a chapter
+out of order, a POV who is not in the cast, a thread used but never declared,
+a thread nobody resolves, and a reveal to someone who already knows.
+
+Both are narrative structure that has to stay consistent while scenes are
+written out of order - which is why the checks are graph checks, not
+spell-check. `lifecycle guide <pack>` prints the full playbook; the shared
+`pack init` templates are named `_template.md` and are never read as data.
 
 ## The contract
 

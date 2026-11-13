@@ -1,6 +1,6 @@
 # R11 context usage is recorded when the harness exposes it
 
-_Run at 2026-11-13 21:30:17_
+_Run at 2026-11-13 21:42:53_
 
 ```
 $ python -m unittest tests.test_statusline -v   # exit 0
@@ -14,9 +14,12 @@ test_old_reading_is_marked_stale (tests.test_statusline.RecordTests) ... ok
 test_save_and_read_back (tests.test_statusline.RecordTests) ... ok
 test_status_line_shows_thread_and_percent (tests.test_statusline.RenderTests) ... ok
 test_status_line_without_anything (tests.test_statusline.RenderTests) ... ok
+test_hint_follows_the_trigger (tests.test_statusline.TriggerTests) ... ok
+test_override_lowers_the_trigger (tests.test_statusline.TriggerTests) ... ok
+test_unreadable_override_keeps_the_default (tests.test_statusline.TriggerTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 10 tests in 1.345s
+Ran 13 tests in 1.376s
 
 OK
 
@@ -24,12 +27,12 @@ OK
 
 ```
 $ printf '{"context_window":{"used_percentage":74}}' | python -m lifecycle statusline   # exit 0
-recorded; status now prints: ['6/7 stages pass  ·  context: 74% used']
+recorded; status now prints: ['5/7 stages pass  ·  context: 74% used']
 ```
 
 ```
 $ printf '{"source":"compact","context_tokens":42000}' | python -m lifecycle resume --hook   # exit 0
-Lifecycle: stage 5 Release - no tag matches version 1.2.1 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0)
+Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R11
 ```
 
 measured

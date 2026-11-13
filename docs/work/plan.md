@@ -29,5 +29,11 @@
 
 - [x] threads: per-thread handoff, plan and owner
 - [x] portfolio table in status, `resume --thread`
-- [ ] claims that warn when an owner goes quiet
+- [x] claims that warn when an owner goes quiet
 - [ ] docs for running a team
+
+## M6 - compaction on your terms
+
+- [x] statusline reading of the live context percentage
+- [x] advice follows `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` instead of fixed 70/85
+- [ ] confirm in a live session that the 55% nudge arrives before the 70% trigger

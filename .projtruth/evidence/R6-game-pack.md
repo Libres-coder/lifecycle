@@ -1,6 +1,6 @@
 # R6 the game pack checks world consistency
 
-_Run at 2026-11-13 21:29:47_
+_Run at 2026-11-13 21:42:15_
 
 ```
 $ python -m unittest tests.test_packs.GamePackTests -v   # exit 0
@@ -27,7 +27,7 @@ test_comments_in_frontmatter_are_stripped (tests.test_review2.GamePackDetectionT
 test_nested_quest_directory_is_scanned (tests.test_review2.GamePackDetectionTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.017s
+Ran 2 tests in 0.016s
 
 OK
 

@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 21:30:01_
+_Run at 2026-11-13 21:42:33_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 6.323s
+Ran 9 tests in 6.089s
 
 OK
 
@@ -24,13 +24,13 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 5 Release - no tag matches version 1.2.1 (tags: v0.1.0, v0.2.0, v0.2.1, v0.3.0, v0.4.0)
-  fix: tag v1.2.1, or fix the version
+Lifecycle: stage 4 Verify - 2 requirement(s) not verified: R9, R11
+  fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
-context: 74% used
+context: 74% (as of 12 min ago - install the statusline hook to keep it current)
 
 
-Context at 74%: fine to keep going; compact before you open a new thread.
+last context reading was 12 min ago (74%); it is not live - the status line is what keeps it current
 # Current work
 
 ## Goal
@@ -85,14 +85,15 @@ None.
 
 ## Last compaction snapshot
 
-- stages: 5/7 pass
-- blocked: Sustain
-- working tree: 12 changed file(s)
+- stages: 6/7 pass
+- blocked: none
+- working tree: 0 changed file(s)
 - plan: 4/5 milestones, 15/17 tasks
-- context: 74% (as of 16 min ago - install the statusline hook to keep it current)
+- transcript: ~6576k tokens
+- context: 74% used
+- 8718453 lifecycle 1.2.1: quiet hook, suggest, context warning
 - 2c3e0d6 lifecycle 1.2.0: context readings
 - f984143 lifecycle 1.1.0: threads
-- 11a9d0a 1.0.0: pre-release review fixes
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

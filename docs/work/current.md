@@ -23,17 +23,19 @@ task alive across context resets.
   session-start tokens; docs on why 74% does not compact.
 - v1.2.1: hook stays silent outside an initialized repo; `lifecycle suggest`
   names the tool and the compaction advice.
+- v1.2.2: the advice follows the real trigger - `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE`
+  moves the nudge to trigger−15 and `/compact now` to trigger−5 (55/65 when the
+  trigger is 70). The machine override is installed at 70% in both
+  `~/.claude/settings.json` and the CC Switch provider. 88 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
 ## Next
 
-- Watch whether the status line actually fires in this desktop app; it did not
-  in a 20 s probe. The command is harmless where it does not.
-- Independent review of the 1.x surface (threads, statusline).
+- Independent review of the 1.x surface (threads, statusline, trigger advice).
 - Try the hooks in a real session: does `resume` after a compaction actually
   restore enough to continue, or is it noise?
-- Publish to GitHub once the thread layer has survived one real handoff.
+- Publish 1.2.2 once the trigger advice has been seen in a live session.
 - Game pack: timeline order and per-character knowledge (who knows what, when).
 
 ## Blockers

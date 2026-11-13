@@ -12,7 +12,7 @@ task alive across context resets.
 - v0.4.0: PreCompact/SessionStart hooks (`lifecycle hook install`), snapshots
   that record the transcript size, a review-note check, and a per-stage toolbox
   in `guide`.
-- 61 tests; 7/7 stages on this repo.
+- 61 tests; 7/7 stages on this repo; v0.4.0 tagged.
 
 ## Next
 

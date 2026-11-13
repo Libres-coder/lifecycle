@@ -17,7 +17,28 @@ import time
 
 CTX_FILE = os.path.join(".lifecycle", "context.json")
 FRESH_MINUTES = 10
-WARN_PERCENT = 85
+DEFAULT_TRIGGER = 95          # Claude Code compacts near the end of the window
+
+
+def trigger():
+    """The percentage at which Claude Code will compact this session.
+
+    An explicit `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` (1-100) lowers the default;
+    anything unreadable keeps the default. The advice lifecycle gives is only
+    useful if it arrives before the thing it warns about.
+    """
+    raw = os.environ.get("CLAUDE_AUTOCOMPACT_PCT_OVERRIDE", "")
+    try:
+        value = int(str(raw).strip())
+    except ValueError:
+        return DEFAULT_TRIGGER
+    return min(max(value, 1), 99)
+
+
+def thresholds(trigger_pct=None):
+    """(nudge, warn): start thinking about a compaction, and compact now."""
+    t = trigger() if trigger_pct is None else trigger_pct
+    return (max(t - 15, 1), max(t - 5, 1))
 
 
 def parse(text):

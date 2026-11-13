@@ -271,6 +271,10 @@ export CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=70     # 1-100, can only lower the defaul
 `/compact` compacts now; `autoCompactEnabled` (or `/config`) turns auto-compact
 off, and `DISABLE_COMPACT=1` turns off both.
 
+lifecycle reads that override and moves its advice with it: with the trigger at
+70, the nudge comes at 55% and "run /compact now" at 65%. Advising a compaction
+at 85 when the harness compacts at 70 would be advice about the past.
+
 ## Limits, stated honestly
 
 - The contract is opinionated and generic. A game, a library and a service do

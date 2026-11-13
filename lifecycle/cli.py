@@ -23,12 +23,17 @@ def _context_hint(repo):
     if age is not None and age > statusline.FRESH_MINUTES * 60:
         return ("last context reading was %d min ago (%d%%); it is not live - "
                 "the status line is what keeps it current" % (age // 60, pct))
-    if pct >= 85:
-        return ("Context at %d%%: run /compact before starting something new - "
-                "afterwards `lifecycle resume` brings the thread back." % pct)
-    if pct >= 70:
-        return ("Context at %d%%: fine to keep going; compact before you open a "
-                "new thread." % pct)
+    trigger = statusline.trigger()
+    nudge, warn = statusline.thresholds(trigger)
+    if pct >= warn:
+        return ("Context at %d%% (auto-compact fires at %d%%): run /compact now - "
+                "afterwards `lifecycle resume` brings the thread back. "
+                "A snapshot is written first, so nothing is lost."
+                % (pct, trigger))
+    if pct >= nudge:
+        return ("Context at %d%%: fine for the current step; run /compact before "
+                "starting a new thread (auto-compact fires at %d%%)."
+                % (pct, trigger))
     return ""
 
 

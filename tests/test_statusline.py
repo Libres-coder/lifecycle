@@ -104,5 +104,39 @@ class CliTests(unittest.TestCase):
             self.assertEqual(data["total_input_tokens"], 42000)
 
 
+class TriggerTests(unittest.TestCase):
+    """The advice must arrive before the thing it warns about."""
+
+    def setUp(self):
+        self._old = os.environ.get("CLAUDE_AUTOCOMPACT_PCT_OVERRIDE")
+        os.environ.pop("CLAUDE_AUTOCOMPACT_PCT_OVERRIDE", None)
+
+    def tearDown(self):
+        if self._old is None:
+            os.environ.pop("CLAUDE_AUTOCOMPACT_PCT_OVERRIDE", None)
+        else:
+            os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = self._old
+
+    def test_override_lowers_the_trigger(self):
+        os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = "70"
+        self.assertEqual(statusline.trigger(), 70)
+        self.assertEqual(statusline.thresholds(), (55, 65))
+
+    def test_unreadable_override_keeps_the_default(self):
+        os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = "soon"
+        self.assertEqual(statusline.trigger(), statusline.DEFAULT_TRIGGER)
+        for bad in ("0", "-3", "500"):
+            os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = bad
+            self.assertTrue(1 <= statusline.trigger() <= 99)
+
+    def test_hint_follows_the_trigger(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            statusline.save(tmp, statusline.parse(json.dumps(PAYLOAD)))  # 74%
+            os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = "70"
+            self.assertIn("/compact", cli._context_hint(tmp))
+            os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = "95"
+            self.assertEqual(cli._context_hint(tmp), "")
+
+
 if __name__ == "__main__":
     unittest.main()

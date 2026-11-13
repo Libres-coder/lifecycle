@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.2] - 2026-11-13
+
+### Changed
+- The context advice now follows the real compaction trigger. `lifecycle`
+  reads `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` and moves its warnings with it:
+  the nudge at trigger − 15, "run /compact now" at trigger − 5. With the
+  override at 70 that is a nudge at 55% and a warning at 65% - early enough
+  for the compaction to happen on your terms instead of mid-thought. Without
+  the override the default trigger (95%) keeps the old late behaviour.
+- The warning names the trigger (`auto-compact fires at 70%`), so a reading
+  and the advice cannot disagree silently.
+
 ## [1.2.1] - 2026-11-13
 
 ### Fixed

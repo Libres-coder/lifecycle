@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-14 03:54:14_
+_Run at 2026-11-14 05:02:06_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 7.351s
+Ran 9 tests in 6.619s
 
 OK
 
@@ -89,15 +89,21 @@ task alive across context resets.
 - v1.4.5: fixed root finding - a stray `.projtruth/` or `.lifecycle/` in an
   ancestor hijacked subdirectories (found in a game dry run); home and drive
   root are never roots now. README.zh-CN brought up to 1.4.x. 147 tests.
+- v1.4.6: `--with <pack>` - a project can be more than one kind of work (a game
+  with a written narrative keeps architecture, source and tests while its story
+  checks run); the secondary pack adds, never replaces. CI installs the sibling
+  tools so the cross-tool contract runs on Linux, and dogfoods stage 4. 148
+  tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
 ## Next
 
-- Try the hooks in a real session: does `resume` after a compaction actually
-  restore enough to continue, or is it noise?
-- Push 1.2.2-1.2.4 (the trigger advice needs one live session to confirm).
-- Game pack: timeline order and per-character knowledge (who knows what, when).
+- Use it on a real long task (not a demo) and see whether `resume` after a
+  compaction restores enough to continue, and whether `--with` matches how the
+  work actually spans kinds (game + its tooling, app + its docs).
+- Calibrate the 60k context budget against that real project.
+- Add a pack only when a real project needs it (service, film, site).
 
 ## Blockers
 
@@ -115,13 +121,13 @@ None.
 
 ## Last compaction snapshot
 
-- stages: 5/7 pass
-- blocked: Sustain
-- working tree: 9 changed file(s)
+- stages: 6/7 pass
+- blocked: none
+- working tree: 11 changed file(s)
 - plan: 4/7 milestones, 22/25 tasks
+- 8f83183 lifecycle 1.4.5: a stray marker in an ancestor must not hijack a project
+- d969266 evidence: regenerate for 1.4.4; thread records the integration test
 - 792c454 tests: end-to-end contract with projtruth and corpus; docs: writing a pack
-- 870b1a7 lifecycle 1.4.4: kinds of work are peers
-- ad4e501 lifecycle 1.4.3: a pack can add checks automatically, never remove one
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

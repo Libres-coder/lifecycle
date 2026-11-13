@@ -1,6 +1,6 @@
 # R5 depth checks flag shallow artifacts without blocking
 
-_Run at 2026-11-14 03:53:50_
+_Run at 2026-11-14 05:01:47_
 
 ```
 $ python -m unittest tests.test_packs.DepthTests -v   # exit 0
@@ -10,7 +10,7 @@ test_short_vision_warns (tests.test_packs.DepthTests) ... ok
 test_thin_criteria_warn (tests.test_packs.DepthTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 4 tests in 0.034s
+Ran 4 tests in 0.023s
 
 OK
 
@@ -41,7 +41,7 @@ Stage 4 Verify: **evidence** - 4 requirement(s) not verified: R7, R9, R11, R12
 
     re-run each requirement's verification and write evidence, then `projtruth report`
 
-_2026-11-14 03:53_
+_2026-11-14 05:01_
 ```
 
 measured

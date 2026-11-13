@@ -1,6 +1,6 @@
 # R12 packs extend the stages for non-software work
 
-_Run at 2026-11-14 03:54:44_
+_Run at 2026-11-14 05:02:30_
 
 ```
 $ python -m unittest tests.test_packs.StoryPackTests -v   # exit 0
@@ -23,10 +23,11 @@ test_thread_resolved_before_its_last_advance_warns (tests.test_packs.StoryPackTe
 test_undeclared_pov_blocks (tests.test_packs.StoryPackTests) ... ok
 test_unknown_thread_blocks_and_open_thread_warns (tests.test_packs.StoryPackTests) ... ok
 test_valid_story_passes (tests.test_packs.StoryPackTests) ... ok
+test_with_adds_checks_without_replacing_the_gate (tests.test_packs.StoryPackTests) ... ok
 test_word_count_counts_kana_and_hangul (tests.test_packs.StoryPackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 19 tests in 1.772s
+Ran 20 tests in 1.602s
 
 OK
 
@@ -55,7 +56,7 @@ test_unknown_actor_blocks (tests.test_packs.GamePackTests) ... ok
 test_valid_world_passes (tests.test_packs.GamePackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 19 tests in 0.239s
+Ran 19 tests in 0.169s
 
 OK
 

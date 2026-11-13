@@ -1,6 +1,6 @@
 # R11 context usage is recorded when the harness exposes it
 
-_Run at 2026-11-14 03:54:40_
+_Run at 2026-11-14 05:02:27_
 
 ```
 $ python -m unittest tests.test_statusline -v   # exit 0
@@ -28,7 +28,7 @@ test_status_line_asks_for_a_compaction_before_the_trigger (tests.test_statusline
 test_unreadable_override_keeps_the_default (tests.test_statusline.TriggerTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 22 tests in 2.249s
+Ran 22 tests in 1.619s
 
 OK
 

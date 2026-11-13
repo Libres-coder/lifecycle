@@ -6,7 +6,8 @@ stale is a gate people stop trusting.
 """
 import time
 
-STATE_MARK = {"passed": "PASS", "flagged": "WARN", "failed": "FAIL"}
+STATE_MARK = {"passed": "PASS", "flagged": "WARN", "failed": "FAIL",
+              "skipped": "SKIP"}
 
 
 def summary(stages):

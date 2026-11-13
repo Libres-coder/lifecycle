@@ -17,8 +17,23 @@ import os
 SETTINGS = os.path.join(".claude", "settings.json")
 SNAPSHOT_CMD = "lifecycle snapshot --hook"
 RESUME_CMD = "lifecycle resume"
+SNAPSHOT_CMD_MODULE = "python -m lifecycle snapshot --hook"
+RESUME_CMD_MODULE = "python -m lifecycle resume"
+
+
+def _commands():
+    """Prefer the console script; fall back to -m when only the module exists."""
+    import shutil as _shutil
+    if _shutil.which("lifecycle"):
+        return SNAPSHOT_CMD, RESUME_CMD
+    return SNAPSHOT_CMD_MODULE, RESUME_CMD_MODULE
 HOOKS = [("PreCompact", "", SNAPSHOT_CMD),
          ("SessionStart", "compact|resume", RESUME_CMD)]
+
+
+def _hooks():
+    snap, resume = _commands()
+    return [("PreCompact", "", snap), ("SessionStart", "compact|resume", resume)]
 
 
 def _path(repo):
@@ -56,7 +71,7 @@ def installed(repo):
         return {}
     hooks = data.get("hooks") or {}
     out = {}
-    for event, _matcher, cmd in HOOKS:
+    for event, _matcher, cmd in _hooks():
         out[event] = any(cmd in _entry_commands(e) for e in hooks.get(event, []))
     return out
 
@@ -67,7 +82,7 @@ def install(repo):
         return False, "cannot read %s - fix the JSON first" % SETTINGS
     hooks = data.setdefault("hooks", {})
     added = []
-    for event, matcher, cmd in HOOKS:
+    for event, matcher, cmd in _hooks():
         entries = hooks.setdefault(event, [])
         if any(cmd in _entry_commands(e) for e in entries):
             continue
@@ -88,7 +103,7 @@ def uninstall(repo):
         return False, "cannot read %s" % SETTINGS
     hooks = data.get("hooks") or {}
     removed = []
-    for event, _matcher, cmd in HOOKS:
+    for event, _matcher, cmd in _hooks():
         entries = hooks.get(event) or []
         keep = []
         for e in entries:
@@ -120,4 +135,4 @@ def status(repo):
     if not any(state.values()):
         return "not installed (%s)" % SETTINGS
     return ", ".join("%s: %s" % (e, "on" if state.get(e) else "off")
-                     for e, _m, _c in HOOKS) + " (%s)" % SETTINGS
+                     for e, _m, _c in _hooks()) + " (%s)" % SETTINGS

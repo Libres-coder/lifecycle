@@ -1,6 +1,6 @@
 # R4 sibling tools compose, missing ones are advisory
 
-_Run at 2026-11-13 20:28:02_
+_Run at 2026-11-13 20:34:08_
 
 ```
 $ python -m unittest tests.test_lifecycle.StageTests.test_verify_skips_when_tools_missing -v   # exit 0
@@ -19,7 +19,7 @@ test_verify_does_not_pass_without_requirements (tests.test_lifecycle.StageTests)
 No registry is stage 1's problem; stage 4 must not claim success. ... ok
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.008s
+Ran 1 test in 0.007s
 
 OK
 
@@ -27,7 +27,7 @@ OK
 
 ```
 $ python -m lifecycle status   # in an empty directory   # exit 0
-# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmpmi5ywcdk)
+# lifecycle (C:\Users\LiuDing\AppData\Local\Temp\tmpthi2x_9i)
 0/7 stages pass
 
 | # | stage | state | what the stage asks |
@@ -72,15 +72,16 @@ Stage 0 Discovery: **vision** - no product vision document
 - stage 6 Sustain: no docs/work/current.md yet - create docs/work/current.md: Goal / Done / Next / Blockers
 - stage 6 Sustain: no journal entries - one file per working session in docs/work/log/: what you tried, what happened, what is next
 - stage 6 Sustain: no status report yet - `lifecycle report` writes one with the stage state and the open questions
-- stage 6 Sustain: no review note in docs/reviews/ - record an adversarial review per stage: what you tried to break, what broke, what you decided to live with
+- stage 6 Sustain: no docs/work/plan.md - a long task needs milestones and checkboxes, or 'how far along' is an opinion
+- stage 6 Sustain: no review note in docs/reviews/ - record an adversarial review: what you tried to break, what broke, what you decided to live with
 
-_2026-11-13 20:28_
+_2026-11-13 20:34_
 ```
 
 ```
 $ python -m lifecycle check --stage 4   # exit 1
 stage 4 Verify     FAIL
-  - evidence: 5 requirement(s) not verified: R4, R7, R8, R9, R10
+  - evidence: 4 requirement(s) not verified: R4, R8, R9, R10
     -> re-run each requirement's verification and write evidence, then `projtruth report`
 ```
 

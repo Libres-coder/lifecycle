@@ -1,6 +1,6 @@
 # R7 guide prints the playbook for the blocking stage
 
-_Run at 2026-11-13 20:28:06_
+_Run at 2026-11-13 20:34:14_
 
 ```
 $ python -m lifecycle guide design   # exit 0

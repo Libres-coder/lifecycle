@@ -391,6 +391,11 @@ def check_release(repo):
     return out
 
 
+def skip_result(key):
+    return {"name": key, "ok": True, "detail": "skipped in this run",
+            "required": False}
+
+
 def check_sustain(repo):
     """Stage 6 lives in thread.py; imported here to keep the cycle one-way."""
     from . import thread
@@ -444,7 +449,7 @@ STAGES = [
 ]
 
 
-def evaluate(repo, pack="auto"):
+def evaluate(repo, pack="auto", skip=()):
     """Run every stage's checks: structural, then depth, then the active pack.
 
     Returns [stage dict + results + state]. Depth checks are advisory; pack
@@ -463,6 +468,12 @@ def evaluate(repo, pack="auto"):
     out = []
     for stage in STAGES:
         results = []
+        if stage["key"] in skip:
+            out.append({"id": stage["id"], "key": stage["key"], "title": stage["title"],
+                        "question": stage["question"],
+                        "results": [skip_result(stage["key"])],
+                        "state": "skipped", "pack": active})
+            continue
         for check in stage["checks"]:
             results.extend(check(repo))
         for check in depthmod.DEPTH.get(stage["key"], []):

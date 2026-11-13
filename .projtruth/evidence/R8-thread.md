@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-13 20:28:14_
+_Run at 2026-11-13 20:34:23_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -15,7 +15,7 @@ test_resume_prints_state_and_journal (tests.test_thread.SustainTests) ... ok
 test_stale_thread_blocks_after_release (tests.test_thread.SustainTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 3.736s
+Ran 9 tests in 3.894s
 
 OK
 
@@ -37,11 +37,15 @@ task alive across context resets.
 - v0.4.0: PreCompact/SessionStart hooks (`lifecycle hook install`), snapshots
   that record the transcript size, a review-note check, and a per-stage toolbox
   in `guide`.
-- 61 tests; 7/7 stages on this repo; v0.4.0 tagged.
+- v1.0.0: plan artifact with milestone progress, `lifecycle init`, thread
+  structure checks, compaction cadence.
+- 71 tests; 10 requirements verified; 7/7 stages on this repo.
+- Pre-release hardening: snapshots skip the heavy verify stage; hook commands
+  fall back to `python -m lifecycle` when the console script is absent.
 
 ## Next
 
-- Finish M4: init on an empty repo, docs pass, review, publish 1.0.
+- Independent review of 1.0, then publish with a release note.
 - Try the hooks in a real session: does `resume` after a compaction actually
   restore enough to continue, or is it noise?
 - Publish to GitHub once the thread layer has survived one real handoff.
@@ -64,11 +68,12 @@ None.
 ## Last compaction snapshot
 
 - stages: 5/7 pass
-- blocked: Verify, Sustain
-- working tree: 24 changed file(s)
-- c29bc6a docs: long-running work in the README
-- 515e269 lifecycle 0.3.0: the long-running thread
-- b0a75a9 lifecycle 0.2.1: review fixes
+- blocked: Sustain
+- working tree: 4 changed file(s)
+- plan: 3/4 milestones, 9/13 tasks
+- cddd690 docs: where things live, linked from CONTRIBUTING
+- d0bd1ce lifecycle 1.0.0: plan, init, thread structure, cadence
+- 23fae5f thread: record the 0.4.0 release
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

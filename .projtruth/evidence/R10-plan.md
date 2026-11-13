@@ -1,6 +1,6 @@
 # R10 a plan makes progress visible
 
-_Run at 2026-11-13 20:28:22_
+_Run at 2026-11-13 20:34:31_
 
 ```
 $ python -m unittest tests.test_plan -v   # exit 0
@@ -16,7 +16,7 @@ test_missing_sections_warn (tests.test_plan.ThreadStructureTests) ... ok
 test_next_needs_a_bullet (tests.test_plan.ThreadStructureTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 10 tests in 0.096s
+Ran 10 tests in 0.101s
 
 OK
 
@@ -38,21 +38,17 @@ task alive across context resets.
 - v0.4.0: PreCompact/SessionStart hooks (`lifecycle hook install`), snapshots
   that record the transcript size, a review-note check, and a per-stage toolbox
   in `guide`.
-- 61 tests; 7/7 stages on this repo; v0.4.0 tagged.
-
-## Next
-
-- Finish M4: init on an empty repo, docs pass, review, publish 1.0.
-- Try the hooks in a real session: does `resume` after a compaction actually
-  restore enough to continue, or is it noise?
-- Publish to GitHub once the thread layer has survived one real handoff.
-
+- v1.0.0: plan artifact with milestone progress, `lifecycle init`, thread
+  structure checks, compaction cadence.
+- 71 tests; 10 requirements verified; 7/7 stages on this repo.
+- Pre-release hardening: snapshots skip the heavy verify stage; hook commands
+  fall back to `python -m lifecycle` when the console script is absent.
 ```
 
 ```
 $ python -m lifecycle status   # exit 0
 # lifecycle (D:\my_idea\lifecycle)
-5/7 stages pass
+6/7 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -62,14 +58,15 @@ $ python -m lifecycle status   # exit 0
 | 3 | Build | **PASS** | Does the code and its tests exist? |
 | 4 | Verify | **FAIL** | 1 requirement(s) not verified: R10 |
 | 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
-| 6 | Sustain | **FAIL** | code changed after docs/work/current.md |
+| 6 | Sustain | **PASS** | Does the work survive a context reset, and is it summarised? |
 
 ## Blocked
 **Stage 4 Verify**
 - evidence: 1 requirement(s) not verified: R10
   - re-run each requirement's verification and write evidence, then `projtruth report`
-**Stage 6 Sustain**
-- thread:fre
+
+## Next
+St
 ```
 
 measured

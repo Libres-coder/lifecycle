@@ -297,7 +297,7 @@ def snapshot(repo, transcript=None, trigger=""):
     """
     from . import contract as contractmod
 
-    stages = contractmod.evaluate(repo)
+    stages = contractmod.evaluate(repo, skip=("verify",))
     blocked = [s for s in stages if s["state"] == "failed"]
     passed = len([s for s in stages if s["state"] == "passed"])
     status = git(repo, "status", "--porcelain") or ""

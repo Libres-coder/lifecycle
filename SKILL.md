@@ -27,23 +27,23 @@ because someone ran a command last week.
 ## Use it
 
 ```bash
-$ lifecycle --repo . status
-# lifecycle (/path/to/repo)
+$ lifecycle --repo ../projtruth status
+# lifecycle (.../projtruth)
 4/6 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
-| 0 | Discovery | **PASS** | Why does this exist, and what will it not do? |
+| 0 | Discovery | **FAIL** | no product vision document |
 | 1 | Spec | **PASS** | What exactly is promised, in a way a stranger can check? |
 | 2 | Design | **FAIL** | no architecture document |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
 | 4 | Verify | **PASS** | Is every promise backed by evidence that still holds? |
-| 5 | Release | **FAIL** | no release tag |
+| 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
 
 ## Next
-Stage 2 Design: **architecture** - no architecture document
+Stage 0 Discovery: **vision** - no product vision document
 
-    write docs/design/architecture.md: components, data flow, and the trade-off you chose
+    write docs/product/vision.md with Problem, Audience and Non-goals
 ```
 
 Commands:

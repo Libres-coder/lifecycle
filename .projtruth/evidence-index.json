@@ -19,5 +19,12 @@
       "tier": "measured",
       "mtime": 1794568326.4044218
     }
+  ],
+  "R4": [
+    {
+      "file": ".projtruth/evidence/R4-compose.md",
+      "tier": "measured",
+      "mtime": 1794568327.81609
+    }
   ]
 }

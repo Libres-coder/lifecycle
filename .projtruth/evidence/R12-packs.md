@@ -1,9 +1,12 @@
 # R12 packs extend the stages for non-software work
 
-_Run at 2026-11-14 00:09:35_
+_Run at 2026-11-14 00:41:05_
 
 ```
 $ python -m unittest tests.test_packs.StoryPackTests -v   # exit 0
+test_craft_flags_a_character_without_a_want (tests.test_packs.StoryPackTests) ... ok
+test_craft_flags_a_quest_without_stakes (tests.test_packs.StoryPackTests) ... ok
+test_craft_flags_a_summary_chapter (tests.test_packs.StoryPackTests) ... ok
 test_detected_by_outline_not_an_empty_directory (tests.test_packs.StoryPackTests) ... ok
 test_discovery_needs_an_outline (tests.test_packs.StoryPackTests) ... ok
 test_discovery_warns_without_threads (tests.test_packs.StoryPackTests) ... ok
@@ -14,7 +17,7 @@ test_unknown_thread_blocks_and_open_thread_warns (tests.test_packs.StoryPackTest
 test_valid_story_passes (tests.test_packs.StoryPackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 8 tests in 0.113s
+Ran 11 tests in 0.152s
 
 OK
 
@@ -37,7 +40,7 @@ test_unknown_actor_blocks (tests.test_packs.GamePackTests) ... ok
 test_valid_world_passes (tests.test_packs.GamePackTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 13 tests in 0.143s
+Ran 13 tests in 0.152s
 
 OK
 
@@ -45,9 +48,9 @@ OK
 
 ```
 $ python -m lifecycle pack init story   # exit 0
-created docs/story/outline.md
-created docs/story/characters.md
-created docs/story/chapters/_template.md
+kept    docs/story/outline.md (exists)
+kept    docs/story/characters.md (exists)
+kept    docs/story/chapters/_template.md (exists)
 
 Next: fill the TODOs, then `lifecycle check`. The checks read these files; they do not read intention.
 ```

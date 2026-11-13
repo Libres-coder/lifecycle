@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-14 00:00:15_
+_Run at 2026-11-14 00:29:07_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 6.441s
+Ran 9 tests in 7.484s
 
 OK
 
@@ -24,7 +24,7 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 4 Verify - 3 requirement(s) not verified: R9, R11, R12
+Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R12
   fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
 # Current work
@@ -68,6 +68,10 @@ task alive across context resets.
 - v1.3.1: `suggest` names the active pack at stages 0/2; corpus 0.1.3 skips
   `_template.md` scaffold files so the two tools agree on what a document is.
   118 tests.
+- v1.4.0: packs carry a craft standard, not only structure - story (concrete
+  scenes, conflict engine, no evasion, stakes, contradictions) and game (verb
+  with a cost, choices, a world that remembers), plus advisory craft checks on
+  declared `want`/`obstacle`/`turn`/`stakes` and length. 121 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
@@ -98,9 +102,9 @@ None.
 - blocked: none
 - working tree: 10 changed file(s)
 - plan: 4/7 milestones, 22/25 tasks
+- 585fa9c lifecycle 1.3.1: suggest names the active pack
+- be9ae60 evidence: regenerate for 1.3.0; R12 covers the packs
 - 77f9016 lifecycle 1.3.0: packs for work that is not software
-- 1b00de9 evidence: regenerate for 1.2.4; thread records the review round
-- 1545066 lifecycle 1.2.4: fix the independent review of the 1.2.x surface
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

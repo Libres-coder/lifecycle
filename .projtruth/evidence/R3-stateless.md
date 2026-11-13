@@ -1,6 +1,6 @@
 # R3 no gate state is stored
 
-_Run at 2026-11-13 23:57:59_
+_Run at 2026-11-14 00:25:20_
 
 ```
 $ python -m unittest tests.test_lifecycle.ReportTests -v   # exit 0
@@ -19,7 +19,7 @@ $ python -m lifecycle status   # twice, in a copy of this repo
 identical: False (exit 0, 0)
 
 # lifecycle (C:\Users\LiuDing)
-1/7 stages pass
+1/7 stages pass  ·  pack: story
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -29,13 +29,13 @@ identical: False (exit 0, 0)
 | 3 | Build | **PASS** | Does the code and its tests exist? |
 | 4 | Verify | **WARN** | Is every promise backed by evidence that still holds? |
 | 5 | Release | **FAIL** | no CHANGELOG |
-| 6 | Sustain | **WARN** | Does the work su
+| 6 | Sustain | **WARN** | 
 ```
 
 ```
 $ rm docs/product/vision.md && python -m lifecycle status   # exit 0
 # lifecycle (C:\Users\LiuDing)
-1/7 stages pass
+1/7 stages pass  ·  pack: story
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -45,7 +45,7 @@ $ rm docs/product/vision.md && python -m lifecycle status   # exit 0
 | 3 | Build | **PASS** | Does the code and its tests exist? |
 | 4 | Verify | **WARN** | Is every promise backed by evidence that still holds? |
 | 5 | Release | **FAIL** | no CHANGELOG |
-| 6 | Sustain | **WARN** | Does the work su
+| 6 | Sustain | **WARN** | 
 ```
 
 measured

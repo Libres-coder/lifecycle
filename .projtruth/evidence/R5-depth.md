@@ -1,6 +1,6 @@
 # R5 depth checks flag shallow artifacts without blocking
 
-_Run at 2026-11-13 23:59:54_
+_Run at 2026-11-14 00:28:43_
 
 ```
 $ python -m unittest tests.test_packs.DepthTests -v   # exit 0
@@ -27,21 +27,21 @@ $ python -m lifecycle status   # WARN items never fail a stage   # exit 0
 | 1 | Spec | **PASS** | What exactly is promised, in a way a stranger can check? |
 | 2 | Design | **PASS** | How is it built, and why this way? |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
-| 4 | Verify | **FAIL** | 4 requirement(s) not verified: R7, R9, R11, R12 |
+| 4 | Verify | **FAIL** | 3 requirement(s) not verified: R6, R7, R12 |
 | 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
 | 6 | Sustain | **PASS** | Does the work survive a context reset, and is it summarised? |
 
 ## Blocked
 **Stage 4 Verify**
-- evidence: 4 requirement(s) not verified: R7, R9, R11, R12
+- evidence: 3 requirement(s) not verified: R6, R7, R12
   - re-run each requirement's verification and write evidence, then `projtruth report`
 
 ## Next
-Stage 4 Verify: **evidence** - 4 requirement(s) not verified: R7, R9, R11, R12
+Stage 4 Verify: **evidence** - 3 requirement(s) not verified: R6, R7, R12
 
     re-run each requirement's verification and write evidence, then `projtruth report`
 
-_2026-11-13 23:59_
+_2026-11-14 00:28_
 ```
 
 measured

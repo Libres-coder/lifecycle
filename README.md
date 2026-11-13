@@ -29,6 +29,20 @@ Stage 0 Discovery: **vision** - no product vision document
 That report is correct: projtruth has requirements, code, tests, evidence and a
 release, but no vision document and no architecture doc.
 
+## What it covers
+
+| what a long task needs | how lifecycle answers it |
+|---|---|
+| where am I | seven stages computed from artifacts, not from a meeting |
+| what is next | the first blocking item with the command that fixes it |
+| what does "good" look like here | `lifecycle guide <stage>`: questions, shallow examples, tools |
+| how far along | `docs/work/plan.md` milestones and checkbox counts |
+| what happened last session | `docs/work/log/` and `lifecycle resume` |
+| survive a context reset | PreCompact snapshot + SessionStart resume, installed as hooks |
+| periodic summary | `lifecycle report` drafts it; three sections stay yours |
+| is anyone looking critically | `docs/reviews/` note, checked for age and findings |
+| is it getting too big to load | context budget for the always-loaded documents |
+
 ## Why
 
 An agent declares a product done because the code compiles. The missing pieces -

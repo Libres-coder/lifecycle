@@ -137,6 +137,14 @@ class TriggerTests(unittest.TestCase):
             os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = "95"
             self.assertEqual(cli._context_hint(tmp), "")
 
+    def test_status_line_asks_for_a_compaction_before_the_trigger(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            statusline.save(tmp, statusline.parse(json.dumps(PAYLOAD)))  # 74%
+            os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = "70"
+            self.assertIn("/compact", statusline.render(tmp))
+            os.environ["CLAUDE_AUTOCOMPACT_PCT_OVERRIDE"] = "95"
+            self.assertNotIn("/compact", statusline.render(tmp))
+
 
 if __name__ == "__main__":
     unittest.main()

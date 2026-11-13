@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.3] - 2026-11-13
+
+### Added
+- The status line carries the advice, not just the number: once the reading is
+  within five points of the trigger it renders `74% ctx - /compact`. The status
+  line is the one surface always in view, so the compaction is asked for there
+  instead of waiting for someone to run `status`.
+
 ## [1.2.2] - 2026-11-13
 
 ### Changed

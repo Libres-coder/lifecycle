@@ -113,5 +113,7 @@ def render(repo):
             parts.append("%d/%d" % (active["plan"]["done"], active["plan"]["total"]))
     data, _ = last(repo)
     if data and data.get("used_percentage") is not None:
-        parts.append("%d%% ctx" % data["used_percentage"])
+        pct = data["used_percentage"]
+        _, warn = thresholds()
+        parts.append("%d%% ctx%s" % (pct, " - /compact" if pct >= warn else ""))
     return " · ".join(parts) or "lifecycle"

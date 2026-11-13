@@ -251,7 +251,8 @@ compaction - Claude Code decides that itself. What is available:
 - **statusline**: its payload carries `context_window.used_percentage`. Install
   it with `lifecycle hook install` (it adds `statusLine` only when you do not
   already have one); `lifecycle statusline` records the payload to
-  `.lifecycle/context.json` and renders `74% ctx` on the status line.
+  `.lifecycle/context.json` and renders `74% ctx` - or `74% ctx - /compact` once
+  the reading is within five points of the trigger.
 - **SessionStart on resume/compact**: carries `context_tokens`; `resume --hook`
   records it, so the work thread knows how full the window was.
 - **PreCompact**: carries the transcript path; `snapshot` records its size.

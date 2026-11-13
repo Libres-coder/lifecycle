@@ -1,0 +1,23 @@
+{
+  "R1": [
+    {
+      "file": ".projtruth/evidence/R1-status.md",
+      "tier": "measured",
+      "mtime": 1794568317.4946046
+    }
+  ],
+  "R2": [
+    {
+      "file": ".projtruth/evidence/R2-check.md",
+      "tier": "measured",
+      "mtime": 1794568323.0288074
+    }
+  ],
+  "R3": [
+    {
+      "file": ".projtruth/evidence/R3-stateless.md",
+      "tier": "measured",
+      "mtime": 1794568326.4044218
+    }
+  ]
+}

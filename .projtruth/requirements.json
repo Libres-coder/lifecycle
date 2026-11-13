@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "requirements": [
+    {
+      "id": "R1",
+      "title": "Status is computed from repository artifacts",
+      "status": "pending",
+      "files": [
+        "lifecycle/contract.py"
+      ],
+      "criteria": [
+        {
+          "id": "R1.1",
+          "text": "each stage reports pass, warn or fail",
+          "judge": "command"
+        },
+        {
+          "id": "R1.2",
+          "text": "a missing artifact names the command that fixes it",
+          "judge": "command"
+        }
+      ]
+    },
+    {
+      "id": "R2",
+      "title": "check exits 1 on a failing stage",
+      "status": "pending",
+      "files": [
+        "lifecycle/cli.py"
+      ],
+      "criteria": [
+        {
+          "id": "R2.1",
+          "text": "check exits 1 and prints the blocker",
+          "judge": "command"
+        },
+        {
+          "id": "R2.2",
+          "text": "check --stage N asserts one stage; an unknown stage exits 2",
+          "judge": "command"
+        }
+      ]
+    },
+    {
+      "id": "R3",
+      "title": "No gate state is stored",
+      "status": "pending",
+      "files": [
+        "lifecycle/report.py",
+        "lifecycle/contract.py"
+      ],
+      "criteria": [
+        {
+          "id": "R3.1",
+          "text": "running status twice with no change gives the same answer",
+          "judge": "command"
+        },
+        {
+          "id": "R3.2",
+          "text": "editing an artifact reopens its stage without any pass command",
+          "judge": "command"
+        }
+      ]
+    },
+    {
+      "id": "R4",
+      "title": "Sibling tools compose, missing ones are advisory",
+      "status": "pending",
+      "files": [
+        "lifecycle/contract.py"
+      ],
+      "criteria": [
+        {
+          "id": "R4.1",
+          "text": "projtruth/corpus results feed stage 4",
+          "judge": "command"
+        },
+        {
+          "id": "R4.2",
+          "text": "a missing tool produces a WARN with the install command, not a FAIL",
+          "judge": "command"
+        }
+      ]
+    }
+  ]
+}

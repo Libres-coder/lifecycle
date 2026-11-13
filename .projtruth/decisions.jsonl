@@ -1,0 +1,2 @@
+{"ts": "2026-11-13 19:00:00", "decision": "Store no gate state", "why": "a pass record that can go stale is a gate people stop trusting"}
+{"ts": "2026-11-13 19:01:00", "decision": "Six generic stages, not a configurable engine", "why": "a solo product does not need 33 stages; forks beat configuration"}

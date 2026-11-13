@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lifecycle"
+version = "0.1.0"
+description = "A checkable contract for each stage of shipping a product: discovery, spec, design, build, verify, release."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [{name = "lifecycle contributors"}]
+keywords = ["claude-code", "sdlc", "product", "agents", "definition-of-done"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.scripts]
+lifecycle = "lifecycle.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Libres-coder/lifecycle"
+
+[tool.setuptools]
+packages = ["lifecycle"]

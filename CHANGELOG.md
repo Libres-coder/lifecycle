@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.1] - 2026-11-15
+
+### Fixed
+- The craft warning said a character had "no" want/obstacle/flaw/need/lie when
+  the character had some of them; it now says the set is incomplete.
+- Repeated want/obstacle/turn reports list chapters in story order, not
+  filename order.
+
 ## [1.5.0] - 2026-11-15
 
 ### Added

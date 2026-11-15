@@ -361,8 +361,8 @@ def story_craft(repo):
                 or c not in needs or c not in lies]
         if thin:
             out.append(warn("story:craft-character",
-                            "character(s) with no declared want/obstacle/flaw/"
-                            "need/lie: %s" % ", ".join(thin[:5]),
+                            "character(s) with an incomplete want/obstacle/flaw/"
+                            "need/lie set: %s" % ", ".join(thin[:5]),
                             "add want/obstacle/flaw/need/lie lines to characters.md - "
                             "a character is a want meeting an obstacle; the need is "
                             "what they actually require, the lie is what they believe "
@@ -913,7 +913,7 @@ def story_design(repo):
     if len(chapters) >= 3:
         for key in ("want", "obstacle", "turn"):
             values = {}
-            for c in chapters:
+            for c in _ordered(chapters):
                 value = str(c.get(key) or "").strip()
                 if value and not _unfilled(value):
                     values.setdefault(value, []).append(c["id"])

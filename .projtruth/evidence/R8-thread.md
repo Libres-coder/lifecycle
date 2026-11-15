@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-15 18:42:30_
+_Run at 2026-11-15 18:46:39_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 5.909s
+Ran 9 tests in 6.245s
 
 OK
 
@@ -133,9 +133,9 @@ None.
 - blocked: none
 - working tree: 11 changed file(s)
 - plan: 4/7 milestones, 22/25 tasks
+- 71a7982 lifecycle 1.5.0: the story pack checks the heart and the network
+- 53116df evidence: regenerate for 1.4.7 (12/12 verified)
 - ceb12c2 lifecycle 1.4.7: auto-detection runs every kind of work present
-- 7936abb evidence: regenerate for 1.4.6 (12/12 verified)
-- 4924084 lifecycle 1.4.6: a project can be more than one kind of work (--with)
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long

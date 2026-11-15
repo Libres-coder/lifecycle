@@ -73,6 +73,8 @@ task alive across context resets.
   goal/plan/constraint; faction wants/ties; act density, per-chapter cast,
   and repeated beats. Driven by a real outline that was wide and empty. 162
   tests.
+- v1.5.1: craft wording names an incomplete character set instead of claiming
+  it is empty; repeated beats report in story order. 162 tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

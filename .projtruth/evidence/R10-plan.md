@@ -1,6 +1,6 @@
 # R10 a plan makes progress visible
 
-_Run at 2026-11-15 18:42:50_
+_Run at 2026-11-15 18:46:58_
 
 ```
 $ python -m unittest tests.test_plan -v   # exit 0
@@ -21,7 +21,7 @@ test_shared_owner_warns (tests.test_plan.ThreadTests) ... ok
 test_slug_is_validated (tests.test_plan.ThreadTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 15 tests in 0.471s
+Ran 15 tests in 0.482s
 
 OK
 
@@ -54,7 +54,7 @@ task alive across context resets.
 ```
 $ python -m lifecycle status   # exit 0
 # lifecycle (D:\my_idea\lifecycle)
-6/7 stages pass
+5/7 stages pass
 
 | # | stage | state | what the stage asks |
 |---|---|---|---|
@@ -64,15 +64,14 @@ $ python -m lifecycle status   # exit 0
 | 3 | Build | **PASS** | Does the code and its tests exist? |
 | 4 | Verify | **FAIL** | 1 requirement(s) not verified: R12 |
 | 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
-| 6 | Sustain | **PASS** | Does the work survive a context reset, and is it summarised? |
+| 6 | Sustain | **FAIL** | code changed after docs/work/current.md |
 
 ## Blocked
 **Stage 4 Verify**
 - evidence: 1 requirement(s) not verified: R12
   - re-run each requirement's verification and write evidence, then `projtruth report`
-
-## Next
-St
+**Stage 6 Sustain**
+- thread:fre
 ```
 
 measured

@@ -68,6 +68,11 @@ task alive across context resets.
 - v1.4.7: auto-detection runs every kind of work present, not just the first -
   a game+story project gets both check sets and the table says `pack:
   game+story`; replacement still belongs to an explicit primary. 149 tests.
+- v1.5.0: story checks the heart, not only the graph - premise, theme, main
+  thread, inciting incident; protagonist want/need/lie; antagonist
+  goal/plan/constraint; faction wants/ties; act density, per-chapter cast,
+  and repeated beats. Driven by a real outline that was wide and empty. 162
+  tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 

@@ -40,7 +40,7 @@ $ lifecycle --repo ../game status
 
 ```
 game    支柱、世界设定、任务图（act/order、依赖、揭示、知情状态）
-story   大纲（幕、情节线）、人物（欲望/障碍/缺陷、初始知情）、章节（顺序、POV、伏笔回收）
+story   故事心脏（premise/主题/主线/引子）、人物（定位/欲望/需要/谎言/关系/反派计划）、势力（利益与关系）、章节（幕/顺序/POV/出场人物/伏笔回收）
 ```
 
 ```bash
@@ -53,6 +53,7 @@ lifecycle pack guide story       # 该类工作的深度手册与工艺标准
 - 替换必须显式：`lifecycle --pack story check`。小说的构建产物是稿子（`story:draft`，报告章节与字数），不是源码和测试。
 - 一个项目可以同时属于多类工作：`lifecycle --pack game --with story check` 在保留架构/源码/测试门槛的同时检查剧情（stage 表显示 `pack: game+story`）；`--with` 只加检查，绝不替换。自动检测本身会运行所有产物已存在的包，`--with` 用于提前启用尚未搭好结构的包。
 - 每个包同时是工艺标准：story 要求具体场景、冲突是引擎、困难题材正面写、情节线必须回收；game 要求任务有动词、有代价、世界记得你做过什么。
+- story 先逼你回答"故事的心脏"：`premise`、`theme`、`main_thread`、`inciting_incident`；反派必须有 `plan` 和 `constraint`（为什么不能直接杀主角），势力必须有 `faction_wants` 和 `faction_ties`，章节必须声明 `act` 与 `characters`。缺心脏只警告；指向未声明的名字、主线或章节会阻塞。
 
 新增一类工作（service、视频、网页）见 [references/writing-a-pack.md](references/writing-a-pack.md)。
 

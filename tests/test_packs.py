@@ -54,10 +54,14 @@ def quest(repo, name, qid, requires=(), reveals=(), characters=(), factions=(),
 def chapter(repo, name, cid, order=10, pov="aria", reveals=(), threads=(),
             resolves=(), reveals_to=(), want="to get the boat back",
             obstacle="the harbormaster holds the writ",
-            turn="she learns who signed it"):
+            turn="she learns who signed it", act="", characters=None):
     lines = ["---", "id: %s" % cid, "order: %s" % order]
+    if act:
+        lines.append("act: %s" % act)
     if pov:
         lines.append("pov: %s" % pov)
+    cast = ([pov] if pov else []) if characters is None else list(characters)
+    lines.append("characters: [%s]" % ", ".join(cast))
     if want:
         lines.append("want: %s" % want)
     if obstacle:
@@ -80,19 +84,42 @@ characters: [aria, borin]
 facts: [war-started, king-dead]
 knows:
   - aria: war-started
+role:
+  - aria: protagonist
+  - borin: antagonist
 want:
   - aria: to reclaim the harbor
   - borin: to keep the guild's ledger
+need:
+  - aria: to be seen as herself
+  - borin: to be forgiven by his father
+lie:
+  - aria: a lie can keep everyone safe
+  - borin: the guild is the only order
 obstacle:
   - aria: the guild holds the deed
   - borin: the guild owns him
 flaw:
   - aria: trusts the wrong people
   - borin: cannot lie to his father
+relations:
+  - aria: borin
+  - borin: aria
+goal:
+  - borin: to keep the guild's charter
+plan:
+  - borin: to marry aria into the crown's debt
+constraint:
+  - borin: the guild needs aria alive and publicly legitimate
 ---
 """
 
 STORY_OUTLINE = """---
+premise: a smuggler must return the dead king's seal before the war it can start
+theme: can a lie told to protect someone survive the truth?
+main_thread: the-heir
+inciting_incident: the seal is found on a body in the harbor
+inciting_chapter: ""
 acts: [setup, turn, resolution]
 threads: [the-heir, the-war]
 ---
@@ -317,6 +344,131 @@ class StoryPackTests(unittest.TestCase):
         out = packs.story_discovery(self.repo)
         self.assertTrue(any(r["name"] == "story:threads" for r in out), out)
 
+    def test_discovery_warns_without_a_premise_or_theme(self):
+        mk(os.path.join(self.repo, "docs", "story", "outline.md"),
+           "---\nacts: [setup, turn]\nthreads: [the-heir]\n"
+           "main_thread: the-heir\ninciting_incident: the seal is found\n---\n")
+        names = {r["name"] for r in packs.story_discovery(self.repo)}
+        self.assertIn("story:premise", names)
+        self.assertIn("story:theme", names)
+
+    def test_main_thread_must_be_a_declared_thread(self):
+        self.write_world()
+        mk(os.path.join(self.repo, "docs", "story", "outline.md"),
+           STORY_OUTLINE.replace("main_thread: the-heir", "main_thread: ghost"))
+        bad = [r for r in packs.story_discovery(self.repo)
+               if not r["ok"] and r["required"]]
+        self.assertTrue(any(r["name"] == "story:main-thread" for r in bad), bad)
+
+    def test_inciting_chapter_must_exist(self):
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10)
+        mk(os.path.join(self.repo, "docs", "story", "outline.md"),
+           STORY_OUTLINE.replace('inciting_chapter: ""',
+                                 "inciting_chapter: ch-99"))
+        bad = [r for r in packs.story_discovery(self.repo)
+               if not r["ok"] and r["required"]]
+        self.assertTrue(any(r["name"] == "story:inciting-chapter" for r in bad), bad)
+
+    def test_antagonist_needs_a_plan_and_a_constraint(self):
+        self.write_world()
+        chars = STORY_CHARS.replace(
+            "plan:\n  - borin: to marry aria into the crown's debt\n", "").replace(
+            "constraint:\n  - borin: the guild needs aria alive and publicly legitimate\n", "")
+        mk(os.path.join(self.repo, "docs", "story", "characters.md"), chars)
+        out = packs.story_design(self.repo)
+        warned = [r for r in out if r["name"] == "story:antagonist-plan"][0]
+        self.assertIn("borin (plan)", warned["detail"])
+        self.assertIn("borin (constraint)", warned["detail"])
+
+    def test_relations_must_name_the_cast(self):
+        self.write_world()
+        chars = STORY_CHARS.replace(
+            "relations:\n  - aria: borin\n  - borin: aria\n",
+            "relations:\n  - aria: ghost\n")
+        mk(os.path.join(self.repo, "docs", "story", "characters.md"), chars)
+        bad = [r for r in packs.story_design(self.repo)
+               if not r["ok"] and r["required"]]
+        self.assertTrue(any(r["name"] == "story:relations" for r in bad), bad)
+
+    def test_factions_need_interests_and_ties(self):
+        self.write_world()
+        chars = STORY_CHARS.replace(
+            "characters: [aria, borin]",
+            "characters: [aria, borin]\nfactions: [guild, crown]")
+        mk(os.path.join(self.repo, "docs", "story", "characters.md"), chars)
+        names = {r["name"] for r in packs.story_design(self.repo) if not r["ok"]}
+        self.assertIn("story:faction-wants", names)
+        self.assertIn("story:faction-ties", names)
+
+    def test_a_faction_tie_to_an_undeclared_faction_blocks(self):
+        self.write_world()
+        chars = STORY_CHARS.replace(
+            "characters: [aria, borin]",
+            "characters: [aria, borin]\nfactions: [guild]\nfaction_wants:\n"
+            "  - guild: keep the harbor\nfaction_ties:\n"
+            "  - guild -- ghost: an old debt")
+        mk(os.path.join(self.repo, "docs", "story", "characters.md"), chars)
+        bad = [r for r in packs.story_design(self.repo)
+               if not r["ok"] and r["required"]]
+        self.assertTrue(any(r["name"] == "story:faction-tie" for r in bad), bad)
+
+    def test_chapter_cast_must_be_declared(self):
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, characters=["ghost"])
+        bad = [r for r in packs.story_design(self.repo)
+               if not r["ok"] and r["required"]]
+        self.assertTrue(any(r["name"] == "story:cast" for r in bad), bad)
+
+    def test_a_major_character_who_never_appears_warns(self):
+        self.write_world()
+        chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
+                resolves=["the-heir"])
+        chapter(self.repo, "two", "ch-02", order=20, threads=["the-war"],
+                resolves=["the-war"])
+        out = packs.story_design(self.repo)
+        warned = [r for r in out if r["name"] == "story:cast-unused"][0]
+        self.assertIn("borin", warned["detail"])
+
+    def test_act_density_is_checked_when_chapters_declare_acts(self):
+        self.write_world()
+        for i, name in enumerate(("one", "two", "three"), 1):
+            chapter(self.repo, name, "ch-%02d" % i, order=i * 10, act="setup")
+        names = {r["name"] for r in packs.story_design(self.repo) if not r["ok"]}
+        self.assertIn("story:act-density", names)
+
+    def test_a_repeated_want_is_a_template_not_a_scene(self):
+        self.write_world()
+        for i, name in enumerate(("one", "two", "three"), 1):
+            chapter(self.repo, name, "ch-%02d" % i, order=i * 10,
+                    pov="aria" if i % 2 else "borin")
+        names = {r["name"] for r in packs.story_design(self.repo) if not r["ok"]}
+        self.assertIn("story:repetition-want", names)
+
+    def test_a_character_seen_once_in_a_long_story_warns(self):
+        self.write_world()
+        for i, name in enumerate(("one", "two", "three", "four"), 1):
+            chapter(self.repo, name, "ch-%02d" % i, order=i * 10,
+                    pov="borin" if i == 2 else "aria")
+        out = packs.story_design(self.repo)
+        warned = [r for r in out if r["name"] == "story:cast-once"]
+        self.assertTrue(warned, out)
+        self.assertIn("borin", warned[0]["detail"])
+
+    def test_scaffold_teaches_the_story_heart(self):
+        self.assertIn("TODO", packs.OUTLINE)
+        self.assertIn("TODO", packs.CHAPTER_TEMPLATE)
+        self.assertIn("premise:", packs.OUTLINE)
+        self.assertIn("main_thread:", packs.OUTLINE)
+        self.assertIn("inciting_incident:", packs.OUTLINE)
+        self.assertIn("role:", packs.CHARACTERS)
+        self.assertIn("need:", packs.CHARACTERS)
+        self.assertIn("lie:", packs.CHARACTERS)
+        self.assertIn("constraint:", packs.CHARACTERS)
+        self.assertIn("faction_ties:", packs.CHARACTERS)
+        self.assertIn("characters:", packs.CHAPTER_TEMPLATE)
+        self.assertIn("act:", packs.CHAPTER_TEMPLATE)
+
     def test_craft_flags_a_summary_chapter(self):
         self.write_world()
         mk(os.path.join(self.repo, "docs", "story", "chapters", "thin.md"),
@@ -393,8 +545,8 @@ class StoryPackTests(unittest.TestCase):
         self.write_world()
         chapter(self.repo, "one", "ch-01", order=10, threads=["the-heir"],
                 resolves=["the-heir"])
-        chapter(self.repo, "two", "ch-02", order=20, threads=["the-war"],
-                resolves=["the-war"])
+        chapter(self.repo, "two", "ch-02", order=20, pov="borin",
+                threads=["the-war"], resolves=["the-war"])
         results = []
         for check in packs.PACKS["story"]["design"]:
             results.extend(check(self.repo))

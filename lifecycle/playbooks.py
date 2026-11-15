@@ -354,33 +354,55 @@ This pack adds checks to stages 0 and 2. It applies when `docs/story/` exists.
 ## Answer these
 
 1. **What is the premise in one sentence?** Who wants what, and what stands in
-   the way. If it takes a paragraph, it is not decided yet.
-2. **What are the acts, and where does the story turn?** Two turns minimum;
-   frontmatter `acts: [setup, turn, resolution]`.
-3. **What does the story promise the reader?** Each promise is a plot thread:
-   the heir must be found, the war must end. List them under `threads:`.
-4. **Who wants what, and what do they hide?** Characters with goals that
-   conflict; a character with no want is scenery.
-5. **What facts are true in this world?** What a chapter may reveal. If it is
-   not under `facts:`, it does not exist.
-6. **Who knows what, when?** `knows:` is the starting state; `reveals_to:` in a
+   the way. If it takes a paragraph, it is setting, not a premise. A premise
+   that could be swapped for another story's premise has not been decided.
+2. **What is the main thread?** Name it under `main_thread:`. If two threads
+   compete, pick the spine and let the other run beside it. A story whose main
+   thread changes every volume is an anthology of unfinished openings.
+3. **What is the inciting incident?** The event that starts *every* faction and
+   character at once. "The hero sees something and runs" starts only the hero;
+   a real inciting incident changes what each power wants next.
+4. **What question does the story ask, and who pays to answer it?** `theme:` is
+   a question, not a slogan. If no character has to choose between two things
+   they cannot both keep, the theme is decoration.
+5. **What does the protagonist want, what do they need, and what lie do they
+   believe?** Want drives the plot; need is what they actually require; the lie
+   is why they cannot see it. The gap is the character arc.
+6. **What is the antagonist's plan, and why does it not simply kill the hero?**
+   `goal`, `plan`, `constraint`. The plan must be one that would work if the
+   hero did nothing; the constraint is the structural reason the hero is alive.
+   "The villain had no time" is not a constraint.
+7. **What does each faction want, and what ties it to another?** `faction_wants`
+   and `faction_ties` (`a -- b: reason`). Trade, debt, marriage, fear: the tie
+   decides what each will sacrifice. A list of powers is a map; a network of
+   interests is a plot.
+8. **How many chapters does each act carry, and who is in them?** `act:` and
+   `characters:` on every chapter. One chapter per act is a synopsis; a
+   character who appears once and vanishes is a function.
+9. **Who knows what, when?** `knows:` is the starting state; `reveals_to:` in a
    chapter updates it. A reveal to someone who already knows is a continuity
    bug the reader will feel.
-7. **Which thread does each chapter advance or resolve?** A chapter that moves
-   nothing is a scene looking for a book.
+10. **Which thread does each chapter advance or resolve?** A chapter that moves
+    nothing is a scene looking for a book.
 
 ## Write
 
-`docs/story/outline.md` - premise, acts, threads:
+`docs/story/outline.md` - the heart, then the acts and threads:
 
 ```markdown
 ---
+premise: a smuggler must return the dead king's seal before the war it can start
+theme: can a lie told to protect someone survive the truth?
+main_thread: the-heir
+inciting_incident: the seal is found on a body in the harbor
+inciting_chapter: ch-01
 acts: [setup, turn, resolution]
 threads: [the-heir, the-war]
 ---
 ```
 
-`docs/story/characters.md` - characters, facts, starting knowledge:
+`docs/story/characters.md` - characters, facts, starting knowledge, and the
+network:
 
 ```markdown
 ---
@@ -388,6 +410,38 @@ characters: [aria, borin]
 facts: [war-started, king-dead]
 knows:
   - aria: war-started
+role:
+  - aria: protagonist
+  - borin: antagonist
+want:
+  - aria: to reclaim the harbor
+  - borin: to keep the guild's ledger
+need:
+  - aria: to be seen as herself, not as the heir
+  - borin: to be forgiven by his father
+lie:
+  - aria: believes a lie can keep everyone safe
+  - borin: believes the guild is the only order
+obstacle:
+  - aria: the guild holds the deed
+  - borin: the guild owns him
+flaw:
+  - aria: trusts the wrong people
+  - borin: cannot lie to his father
+relations:
+  - aria: borin
+  - borin: aria
+goal:
+  - borin: to keep the guild's charter
+plan:
+  - borin: to marry aria into the crown's debt
+constraint:
+  - borin: the guild needs aria alive and publicly legitimate
+faction_wants:
+  - guild: keep the harbor monopoly
+  - crown: tax the harbor without another war
+faction_ties:
+  - guild -- crown: the crown holds their charter
 ---
 ```
 
@@ -397,7 +451,9 @@ knows:
 ---
 id: ch-03
 order: 30
+act: turn
 pov: aria
+characters: [aria, borin]
 reveals: [king-dead]
 threads: [the-heir]
 resolves: []
@@ -439,6 +495,22 @@ reading; this section is the standard they stand in for.
    seasoning, not the meal.
 8. **Read it aloud.** A line passes if a person would say it and the reader
    hears the silence around it.
+9. **The protagonist chooses.** A hero who is chased, rescued and chased again
+   is a package the plot ships between locations. At least once per volume
+   they must choose between two things they cannot both keep, and the choice
+   must cost something the reader has seen them value.
+10. **The antagonist is competent.** Their plan would work if the hero did
+    nothing, and the reason they do not simply kill the hero is structural
+    (they need the hero alive, publicly, married, blamed) - never "they had no
+    time" or "they underestimated him". A villain who acts because the plot
+    needs it is a plot hole with a face.
+11. **Theme is paid in scenes.** The question in `theme:` is answered by a
+    choice someone makes and a price someone pays. If no scene would change if
+    you deleted the theme, it is a label on the cover, not the book.
+12. **Networks, not lists.** Every faction wants something another faction can
+    give or withhold, and every relation has a history. When a new map or
+    faction appears, an old character or debt must appear with it; otherwise
+    the story is widening, not deepening.
 
 ### Weak chapter looks like
 
@@ -446,12 +518,17 @@ reading; this section is the standard they stand in for.
 - the POV wants nothing in the moment, and the prose drifts;
 - the hard scene is skipped with "later that night";
 - every character speaks in the author's voice;
-- it ends where it began, with more words.
+- it ends where it began, with more words;
+- the villain spares the hero for a reason the book never states;
+- a character exists for one scene and then vanishes without a trace;
+- the same chase, the same escape, the same "everyone thinks he knows",
+  renamed for a new town.
 
 The advisory checks read the shadow of this standard: a chapter without
 `want`/`obstacle`/`turn`, a chapter under 200 words, a character without a
-declared want, obstacle or flaw. They do not grade prose. They make the empty
-case visible.
+declared want/need/lie, a repeated want or turn across chapters, a cast that
+never appears, an antagonist with no plan or constraint, factions with no wants
+or ties. They do not grade prose. They make the empty case visible.
 
 ## Build
 
@@ -464,6 +541,19 @@ because they are not this kind of work.
 
 ## What the checks catch
 
+- an outline with no premise, theme, main thread or inciting incident;
+- a `main_thread:` that names a thread the outline never declares;
+- an `inciting_chapter:` that is not a chapter file;
+- a cast with no protagonist or antagonist role;
+- an antagonist with no goal, plan or constraint;
+- a relation or faction tie that names something undeclared;
+- a cast with no relations at all, or factions with no wants or ties;
+- a chapter listing a character the cast never declares;
+- a declared character who never appears, or appears in only one chapter;
+- a chapter whose `act:` the outline never names, or an act with fewer than
+  two chapters;
+- the same `want`, `obstacle` or `turn` reused across chapters (a template,
+  not a scene);
 - a chapter without an `order:`, or two chapters sharing one;
 - a POV character who is not in the cast;
 - a reveal of a fact the characters file never establishes;
@@ -474,7 +564,10 @@ because they are not this kind of work.
 ## Shallow looks like
 
 A cast list with no wants, chapters named "Chapter 1" with no order or POV, a
-thread declared and forgotten, and a twist nobody planted.
+thread declared and forgotten, and a twist nobody planted. A premise that is
+really a setting. A villain who waits. A new volume that adds a map and three
+factions but no tie to the old ones. A cast that is a list of functions - the
+healer, the informant, the love interest - with no wants that could collide.
 
 ## Exit
 

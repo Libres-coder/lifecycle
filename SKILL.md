@@ -234,11 +234,19 @@ wiki cannot do: a quest requiring a quest that does not exist, a quest that
 requires one the timeline puts later, a prerequisite loop, a reveal of a fact
 the bible never establishes, a reveal to a character who already knows it.
 
-**story** (`docs/story/`) - an outline with acts and the plot threads the
-reader is promised, a cast file with starting knowledge, and chapters with
-`order`, `pov`, `reveals`, `threads`, `resolves`. The checks catch a chapter
-out of order, a POV who is not in the cast, a thread used but never declared,
-a thread nobody resolves, and a reveal to someone who already knows.
+**story** (`docs/story/`) - the heart and the network first: the outline
+declares `premise`, `theme`, `main_thread`, `inciting_incident` and the plot
+threads; the cast declares `role`, `want`, `need`, `lie`, `obstacle`, `flaw`,
+`relations` and starting knowledge; the antagonist declares `goal`, `plan` and
+`constraint` (why they do not simply kill the hero); factions declare
+`faction_wants` and `faction_ties`; chapters declare `order`, `act`, `pov`,
+`characters`, `reveals`, `threads`, `resolves`. The checks catch a chapter out
+of order, a POV or cast member who is not declared, a thread used but never
+declared or resolved, a reveal to someone who already knows, a missing
+premise/theme/main thread/inciting incident, an antagonist with no plan or
+constraint, a relation or tie to an undeclared name, a character with a want
+who never appears or appears once, a thin act, and a repeated
+want/obstacle/turn across chapters.
 
 Both are narrative structure that has to stay consistent while scenes are
 written out of order - which is why the checks are graph checks, not

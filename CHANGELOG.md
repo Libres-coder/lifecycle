@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.5.0] - 2026-11-15
+
+### Added
+- **The story pack now checks the heart and the network, not only the graph.**
+  The outline declares `premise`, `theme`, `main_thread`, `inciting_incident`
+  and `inciting_chapter`; the cast declares `role`, `need`, `lie`, `relations`;
+  the antagonist declares `goal`, `plan` and `constraint` - the structural
+  reason the hero is still alive; factions declare `faction_wants` and
+  `faction_ties`; chapters declare `act` and `characters`.
+- Checks for the failure modes that make a long outline feel wide and empty:
+  a missing premise/theme/main thread/inciting incident (warn), a
+  `main_thread`/`inciting_chapter` that names nothing (fail), no
+  protagonist/antagonist (warn), an antagonist with no plan or constraint
+  (warn), a relation or faction tie to an undeclared name (fail), a chapter
+  cast member who is undeclared (fail), a character with a want who never
+  appears or appears in only one chapter (warn), an act with fewer than two
+  chapters (warn), the same want/obstacle/turn reused across chapters (warn),
+  and factions with no wants or ties (warn).
+- The playbook and scaffold teach the decisions before the outline: premise,
+  theme paid in scenes, protagonist want vs need vs lie, a competent
+  antagonist whose plan would work, and interests/trade/debt as the network
+  under the map.
+
+### Changed
+- `story_craft` now requires `need` and `lie` for every declared character and
+  names the gap; scaffold templates gained all the new fields.
+
 ## [1.4.7] - 2026-11-14
 
 ### Fixed

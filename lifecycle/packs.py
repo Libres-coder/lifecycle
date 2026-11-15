@@ -129,6 +129,25 @@ def _pairs(value):
     return out
 
 
+def _unfilled(value):
+    """A scaffold placeholder is not an answer: empty or starting with TODO."""
+    text = str(value or "").strip()
+    return not text or text.upper().startswith("TODO")
+
+
+def _edges(value):
+    """`- guild -- crown: the charter` -> (guild, crown, reason) plus bad lines."""
+    out, bad = [], []
+    for item in _as_list(value):
+        text = str(item).strip()
+        m = re.match(r"^(.+?)\s+--\s+(.+?)\s*:\s*(.+)$", text)
+        if not m:
+            bad.append(text)
+            continue
+        out.append((m.group(1).strip(), m.group(2).strip(), m.group(3).strip()))
+    return out, bad
+
+
 def _frontmatter_files(repo, sub, pattern="**/*.md"):
     """(rel_path, name, frontmatter, text) for files that are not templates."""
     out = []
@@ -335,15 +354,19 @@ def story_craft(repo):
         wants = set(_pairs(fm.get("want")))
         obstacles = set(_pairs(fm.get("obstacle")))
         flaws = set(_pairs(fm.get("flaw")))
+        needs = set(_pairs(fm.get("need")))
+        lies = set(_pairs(fm.get("lie")))
         thin = [c for c in chars
-                if c not in wants or c not in obstacles or c not in flaws]
+                if c not in wants or c not in obstacles or c not in flaws
+                or c not in needs or c not in lies]
         if thin:
             out.append(warn("story:craft-character",
-                            "character(s) with no declared want/obstacle/flaw: %s"
-                            % ", ".join(thin[:5]),
-                            "add want/obstacle/flaw lines to characters.md - a "
-                            "character is a want meeting an obstacle, and the flaw "
-                            "is why the obstacle wins for a while"))
+                            "character(s) with no declared want/obstacle/flaw/"
+                            "need/lie: %s" % ", ".join(thin[:5]),
+                            "add want/obstacle/flaw/need/lie lines to characters.md - "
+                            "a character is a want meeting an obstacle; the need is "
+                            "what they actually require, the lie is what they believe "
+                            "instead, and the theme lives in the gap"))
     vague, short = [], []
     for _rel, name, cfm, text in _frontmatter_files(repo, STORY_DIR,
                                                     "chapters/**/*.md"):
@@ -561,6 +584,11 @@ def _story_chapters(repo):
         out.append({"path": rel, "id": str(fm.get("id") or name),
                     "order": _as_int(fm.get("order")),
                     "pov": str(fm.get("pov") or "").strip(),
+                    "act": str(fm.get("act") or "").strip(),
+                    "characters": _as_list(fm.get("characters")),
+                    "want": str(fm.get("want") or "").strip(),
+                    "obstacle": str(fm.get("obstacle") or "").strip(),
+                    "turn": str(fm.get("turn") or "").strip(),
                     "reveals": _as_list(fm.get("reveals")),
                     "reveals_to": _pairs(fm.get("reveals_to")),
                     "threads": _as_list(fm.get("threads")),
@@ -581,16 +609,56 @@ def story_discovery(repo):
         acts = [l for l in text.splitlines()
                 if re.match(r"^#{2,3}\s+(act|第\s*[一二三四五六七八九十\d]+\s*幕|chapter)",
                             l.strip(), re.IGNORECASE)]
+    out = []
     if len(acts) < 2:
-        return [warn("story:acts", "fewer than two acts",
-                     "a long story turns; two acts is the minimum that makes the "
-                     "turn visible (frontmatter `acts: [setup, turn]`)")]
+        out.append(warn("story:acts", "fewer than two acts",
+                        "a long story turns; two acts is the minimum that makes the "
+                        "turn visible (frontmatter `acts: [setup, turn]`)"))
     threads = _as_list(fm.get("threads"))
     if not threads:
-        return [warn("story:threads", "no plot threads declared",
-                     "list the promises the story makes under `threads:` so the "
-                     "chapters can be checked against them")]
-    return [ok("story:outline", "%d act(s), %d thread(s)" % (len(acts), len(threads)))]
+        out.append(warn("story:threads", "no plot threads declared",
+                        "list the promises the story makes under `threads:` so the "
+                        "chapters can be checked against them"))
+    premise = str(fm.get("premise") or "").strip()
+    if _unfilled(premise):
+        out.append(warn("story:premise", "outline declares no premise",
+                        "write `premise:` as one sentence - who wants what, and what "
+                        "stands in the way. Setting is not a premise: if the answer "
+                        "takes a paragraph, the story's heart is not decided yet"))
+    theme = str(fm.get("theme") or "").strip()
+    if _unfilled(theme):
+        out.append(warn("story:theme", "outline declares no theme",
+                        "write `theme:` as the question the story asks, and the "
+                        "choice that answers it. A slogan is not a theme until a "
+                        "character pays for it in a scene"))
+    main = str(fm.get("main_thread") or "").strip()
+    if threads:
+        if _unfilled(main):
+            out.append(warn("story:main-thread", "no main thread chosen",
+                            "set `main_thread:` to the thread the whole story pulls. "
+                            "If two compete, name the spine and let the other run "
+                            "beside it - otherwise every volume invents its own"))
+        elif main not in threads:
+            out.append(fail("story:main-thread",
+                            "`main_thread: %s` is not one of the declared threads" % main,
+                            "use one of: %s - or declare the thread" % ", ".join(threads)))
+    inciting = str(fm.get("inciting_incident") or "").strip()
+    if _unfilled(inciting):
+        out.append(warn("story:inciting", "no inciting incident",
+                        "write `inciting_incident:` as the event that starts every "
+                        "faction and character at once. 'The hero sees something and "
+                        "runs' starts only the hero"))
+    inc_ch = str(fm.get("inciting_chapter") or "").strip()
+    if not _unfilled(inc_ch):
+        chapters = _story_chapters(repo)
+        ids = set(c["id"] for c in chapters)
+        if chapters and inc_ch not in ids:
+            out.append(fail("story:inciting-chapter",
+                            "`inciting_chapter: %s` is not a chapter file" % inc_ch,
+                            "name an existing chapter under docs/story/chapters/"))
+    if not out:
+        return [ok("story:outline", "%d act(s), %d thread(s)" % (len(acts), len(threads)))]
+    return out
 
 
 def story_design(repo):
@@ -607,6 +675,93 @@ def story_design(repo):
     if not ids["characters"]:
         out.append(fail("story:characters:list", "no characters declared",
                         "list them under `characters:`"))
+
+    chars = set(ids["characters"])
+    roles = dict((who, str(vals[0]).strip().lower())
+                 for who, vals in _pairs(fm.get("role")).items() if vals)
+    unknown_role = sorted(set(roles) - chars)
+    if unknown_role:
+        out.append(fail("story:role",
+                        "`role:` names undeclared character(s): %s"
+                        % ", ".join(unknown_role),
+                        "declare them under `characters:`"))
+    protagonists = [w for w, r in roles.items() if r in ("protagonist", "主角")]
+    antagonists = [w for w, r in roles.items() if r in ("antagonist", "反派")]
+    if chars and not protagonists:
+        out.append(warn("story:protagonist", "no protagonist role declared",
+                        "add `role:` in characters.md, e.g. `- aria: protagonist`. "
+                        "Without one, no choice can drive the story"))
+    if chars and not antagonists:
+        out.append(warn("story:antagonist", "no antagonist role declared",
+                        "a story with no opposing will is a travelogue; declare "
+                        "`role:` with a value of `antagonist` and say what they want"))
+    missing_plan = []
+    for who in antagonists:
+        for key in ("goal", "plan", "constraint"):
+            if _unfilled((_pairs(fm.get(key)).get(who) or [""])[0]):
+                missing_plan.append("%s (%s)" % (who, key))
+    if missing_plan:
+        out.append(warn("story:antagonist-plan",
+                        "antagonist(s) missing goal/plan/constraint: %s"
+                        % ", ".join(missing_plan),
+                        "write what they want, the plan that would actually work, and "
+                        "the constraint that stops them from simply killing the hero. "
+                        "A villain who acts because the plot needs it is a plot hole "
+                        "with a face, and the hero survives on luck"))
+    relations = _pairs(fm.get("relations"))
+    bad_rel = []
+    for who, targets in relations.items():
+        if who not in chars:
+            bad_rel.append(who)
+        for target in targets:
+            if target not in chars:
+                bad_rel.append("%s -> %s" % (who, target))
+    if bad_rel:
+        out.append(fail("story:relations",
+                        "`relations:` names undeclared character(s): %s"
+                        % ", ".join(sorted(set(bad_rel))[:5]),
+                        "declare them under `characters:` or fix the name"))
+    if len(chars) >= 2 and not relations:
+        out.append(warn("story:relations-missing",
+                        "no relations declared between the cast",
+                        "add `relations:` lines (e.g. `- aria: borin`). A cast with "
+                        "no ties is a list of functions, and every scene has to "
+                        "invent its stakes from nothing"))
+    factions = set(ids["factions"])
+    faction_wants = _pairs(fm.get("faction_wants"))
+    unknown_fw = sorted(set(faction_wants) - factions)
+    if unknown_fw:
+        out.append(fail("story:faction-want",
+                        "`faction_wants:` names undeclared faction(s): %s"
+                        % ", ".join(unknown_fw),
+                        "declare them under `factions:`"))
+    no_want = sorted(f for f in factions if f not in faction_wants)
+    if no_want:
+        out.append(warn("story:faction-wants",
+                        "faction(s) with no declared want: %s" % ", ".join(no_want),
+                        "a faction is an interest, not a banner: add "
+                        "`faction_wants:` lines saying what they are trying to keep "
+                        "or take"))
+    ties, bad_ties = _edges(fm.get("faction_ties"))
+    if bad_ties:
+        out.append(fail("story:faction-tie-format",
+                        "`faction_ties:` line(s) not in `a -- b: reason` form: %s"
+                        % "; ".join(bad_ties[:3]),
+                        "write each tie as `- guild -- crown: the crown holds their "
+                        "charter`"))
+    unknown_tie = ["%s -- %s" % (a, b) for a, b, _ in ties
+                   if a not in factions or b not in factions]
+    if unknown_tie:
+        out.append(fail("story:faction-tie",
+                        "`faction_ties:` names undeclared faction(s): %s"
+                        % ", ".join(sorted(set(unknown_tie))[:5]),
+                        "declare both sides under `factions:`"))
+    if len(factions) >= 2 and not ties:
+        out.append(warn("story:faction-ties",
+                        "no ties declared between the factions",
+                        "add `faction_ties:` - trade, debt, marriage, fear: the "
+                        "relation that decides what each will sacrifice. A list of "
+                        "powers is a map; a network of interests is a plot"))
 
     outline_fm = frontmatter(read(repo, "docs/story/outline.md")[1] or "")
     threads = set(_as_list(outline_fm.get("threads")))
@@ -690,6 +845,88 @@ def story_design(repo):
                         "move the resolution after the last chapter that advances "
                         "the thread, or drop the late mention"))
 
+    bad_cast = ["%s -> %s" % (c["id"], who) for c in chapters
+                for who in c["characters"] if who not in chars]
+    if bad_cast:
+        out.append(fail("story:cast",
+                        "chapter lists undeclared character(s): %s"
+                        % ", ".join(bad_cast[:5]),
+                        "declare them under `characters:` in characters.md"))
+    cast_chapters = [c for c in chapters if c["characters"]]
+    if chars and chapters and len(cast_chapters) < len(chapters):
+        out.append(warn("story:cast-unlisted",
+                        "%d of %d chapter(s) do not list their cast"
+                        % (len(chapters) - len(cast_chapters), len(chapters)),
+                        "add `characters: [...]` to chapter frontmatter so the pack "
+                        "can see who appears where - a character who vanishes for "
+                        "three volumes is invisible without it"))
+    elif cast_chapters:
+        appearances = {}
+        for c in cast_chapters:
+            in_scene = set(c["characters"])
+            if c["pov"]:
+                in_scene.add(c["pov"])
+            for who in in_scene:
+                appearances[who] = appearances.get(who, 0) + 1
+        major = set(_pairs(fm.get("want")))
+        unused = sorted(who for who in chars & major if who not in appearances)
+        if unused:
+            out.append(warn("story:cast-unused",
+                            "character(s) with a declared want who appear in no "
+                            "chapter: %s" % ", ".join(unused[:5]),
+                            "give them a scene or cut them - a character who exists "
+                            "only in the cast file is a plan, not a person"))
+        if len(cast_chapters) >= 4:
+            once = sorted(who for who in chars & major
+                          if appearances.get(who) == 1)
+            if once:
+                out.append(warn("story:cast-once",
+                                "character(s) who appear in only one chapter: %s"
+                                % ", ".join(once[:5]),
+                                "a want needs a second scene to change or refuse; a "
+                                "character who appears once is a function"))
+
+    acts_declared = _as_list(outline_fm.get("acts"))
+    chapter_acts = [c for c in chapters
+                    if c["act"] and not _unfilled(c["act"])]
+    if chapter_acts:
+        unknown_act = ["%s -> %s" % (c["id"], c["act"]) for c in chapter_acts
+                       if acts_declared and c["act"] not in acts_declared]
+        if unknown_act:
+            out.append(fail("story:act",
+                            "chapter declares an act the outline never names: %s"
+                            % ", ".join(unknown_act[:5]),
+                            "use one of: %s" % ", ".join(acts_declared)))
+        counts = {}
+        for c in chapter_acts:
+            counts[c["act"]] = counts.get(c["act"], 0) + 1
+        if acts_declared:
+            thin = ["%s (%d)" % (a, counts.get(a, 0)) for a in acts_declared
+                    if counts.get(a, 0) < 2]
+            if thin:
+                out.append(warn("story:act-density",
+                                "act(s) with fewer than two chapters: %s"
+                                % ", ".join(thin),
+                                "one chapter per act is a synopsis with headings; a "
+                                "volume needs at least a setup beat and a turn"))
+
+    if len(chapters) >= 3:
+        for key in ("want", "obstacle", "turn"):
+            values = {}
+            for c in chapters:
+                value = str(c.get(key) or "").strip()
+                if value and not _unfilled(value):
+                    values.setdefault(value, []).append(c["id"])
+            repeated = [(v, ids_) for v, ids_ in values.items() if len(ids_) >= 2]
+            if repeated:
+                out.append(warn("story:repetition-%s" % key,
+                                "chapter(s) reuse the same `%s`: %s"
+                                % (key, "; ".join("'%s' (%s)"
+                                                  % (v[:60], ", ".join(i))
+                                                  for v, i in repeated[:3])),
+                                "a repeated want/obstacle/turn is a template, not a "
+                                "scene: say what is different in this chapter"))
+
     out.extend(_knowledge_checks("story", ids, knows, chapters))
     return out
 
@@ -749,6 +986,11 @@ What the player does, what it costs, what changes. Copy this file to
 """
 
 OUTLINE = """---
+premise: TODO - one sentence: who wants what, and what stands in the way
+theme: TODO - the question the story asks, and the choice that answers it
+main_thread: TODO - which thread below is the spine
+inciting_incident: TODO - the event that starts every faction and character at once
+inciting_chapter: ""
 acts: [setup, turn]
 threads: []
   # - the-heir            # a promise the story makes and must resolve
@@ -756,7 +998,8 @@ threads: []
 
 # Outline
 
-Premise: who wants what, and what stands in the way.
+Premise: who wants what, and what stands in the way. If it takes a paragraph,
+it is setting, not a premise.
 
 ## Act 1 - setup
 
@@ -768,23 +1011,52 @@ characters: []
 facts: []
 knows: []
   # - aria: war-started
+role:
+  # - aria: protagonist
+  # - borin: antagonist
 want:
   # - aria: to reclaim the harbor her father lost
+need:
+  # - aria: to be seen as herself, not as the heir
+lie:
+  # - aria: believes a lie can keep everyone safe
 obstacle:
   # - aria: the guild holds the deed and the law is on its side
 flaw:
   # - aria: trusts the wrong people when she is afraid
+relations:
+  # - aria: borin
+goal:
+  # - borin: to keep the guild's charter
+plan:
+  # - borin: to marry aria into the crown's debt
+constraint:
+  # - borin: the guild needs aria alive and publicly legitimate
+faction_wants:
+  # - guild: keep the harbor monopoly
+faction_ties:
+  # - guild -- crown: the crown holds their charter
 ---
 
 # Characters
 
-One line each: what they want, what stands in the way, what is wrong with them.
+One line each: what they want, what they need but will not admit, the lie they
+believe, what stands in the way, and what is wrong with them. The antagonist
+also needs a goal, a plan that would work, and the constraint that keeps the
+hero alive.
+
+# Factions
+
+A faction is an interest, not a banner: what it wants, and the tie (trade,
+debt, marriage, fear) that binds it to another.
 """
 
 CHAPTER_TEMPLATE = """---
 id: ch-01
 order: 10
+act: TODO - one of the acts named in outline.md
 pov: aria
+characters: [aria]
 want: TODO - what the POV wants in this scene, in this moment
 obstacle: TODO - what stands in the way, concretely
 turn: TODO - what changes by the end, even if only for the POV

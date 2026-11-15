@@ -244,12 +244,21 @@ requires one the timeline puts later, a reveal of a fact the bible never
 establishes, a reveal to a character who already knows it, an actor used but
 never declared.
 
-**story** (`docs/story/`) - an outline with acts and the plot threads the
-reader is promised, a cast file with starting knowledge, and chapters with
-`order`, `pov`, `reveals`, `threads`, `resolves`. The checks catch a chapter
-out of order, a POV who is not in the cast, a thread used but never declared,
-a thread nobody resolves (the abandoned promise readers call a plot hole), and
-a reveal to someone who already knows.
+**story** (`docs/story/`) - the heart and the power network first: the outline
+declares `premise`, `theme`, `main_thread`, `inciting_incident` and the plot
+threads the reader is promised; the cast declares `role`, `want`, `need`,
+`lie`, `obstacle`, `flaw`, `relations` and starting knowledge; the antagonist
+declares `goal`, `plan` and `constraint` (the structural reason the hero is
+still alive); factions declare `faction_wants` and `faction_ties`; chapters
+declare `order`, `act`, `pov`, `characters`, `reveals`, `threads`, `resolves`.
+The checks catch a chapter out of order, a POV who is not in the cast, a thread
+used but never declared, a thread nobody resolves (the abandoned promise
+readers call a plot hole), a reveal to someone who already knows, a
+premise/theme/main thread/inciting incident that was never decided, an
+antagonist with no plan or constraint, a relation or faction tie to an
+undeclared name, a character with a want who never appears or appears in only
+one chapter, an act with fewer than two chapters, and the same
+want/obstacle/turn reused across chapters (a template, not a scene).
 
 Both packs are narrative structure that has to stay consistent while scenes
 are written out of order; that is why the checks are graph checks, not

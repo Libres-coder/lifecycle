@@ -1,6 +1,6 @@
 # R8 the work thread survives a context reset
 
-_Run at 2026-11-14 05:36:32_
+_Run at 2026-11-15 18:42:30_
 
 ```
 $ python -m unittest tests.test_thread -v   # exit 0
@@ -16,7 +16,7 @@ test_stale_thread_blocks_after_release (tests.test_thread.SustainTests)
 A commit that changes code after the thread's last commit is drift. ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 6.153s
+Ran 9 tests in 5.909s
 
 OK
 
@@ -24,7 +24,7 @@ OK
 
 ```
 $ python -m lifecycle resume   # exit 0
-Lifecycle: stage 4 Verify - 3 requirement(s) not verified: R9, R11, R12
+Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R12
   fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
 # Current work
@@ -97,6 +97,11 @@ task alive across context resets.
 - v1.4.7: auto-detection runs every kind of work present, not just the first -
   a game+story project gets both check sets and the table says `pack:
   game+story`; replacement still belongs to an explicit primary. 149 tests.
+- v1.5.0: story checks the heart, not only the graph - premise, theme, main
+  thread, inciting incident; protagonist want/need/lie; antagonist
+  goal/plan/constraint; faction wants/ties; act density, per-chapter cast,
+  and repeated beats. Driven by a real outline that was wide and empty. 162
+  tests.
 - Pre-release hardening: snapshots skip the heavy verify stage; hook commands
   fall back to `python -m lifecycle` when the console script is absent.
 
@@ -128,9 +133,9 @@ None.
 - blocked: none
 - working tree: 11 changed file(s)
 - plan: 4/7 milestones, 22/25 tasks
+- ceb12c2 lifecycle 1.4.7: auto-detection runs every kind of work present
+- 7936abb evidence: regenerate for 1.4.6 (12/12 verified)
 - 4924084 lifecycle 1.4.6: a project can be more than one kind of work (--with)
-- c380b31 evidence: regenerate for 1.4.5
-- 8f83183 lifecycle 1.4.5: a stray marker in an ancestor must not hijack a project
     # Current work
     ## Goal
     A checkable contract for shipping a product, plus the thread that keeps a long
@@ -144,7 +149,7 @@ None.
 
 ```
 $ python -m lifecycle report   # exit 0
-wrote docs/reports/status-2026-11-14.md
+wrote docs/reports/status-2026-11-15.md
 ```
 
 measured

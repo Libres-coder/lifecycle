@@ -1,6 +1,6 @@
 # R10 a plan makes progress visible
 
-_Run at 2026-11-14 05:36:44_
+_Run at 2026-11-15 18:42:50_
 
 ```
 $ python -m unittest tests.test_plan -v   # exit 0
@@ -21,7 +21,7 @@ test_shared_owner_warns (tests.test_plan.ThreadTests) ... ok
 test_slug_is_validated (tests.test_plan.ThreadTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 15 tests in 0.504s
+Ran 15 tests in 0.471s
 
 OK
 
@@ -29,7 +29,7 @@ OK
 
 ```
 $ python -m lifecycle resume   # includes plan progress   # exit 0
-Lifecycle: stage 4 Verify - 2 requirement(s) not verified: R11, R12
+Lifecycle: stage 4 Verify - 1 requirement(s) not verified: R12
   fix: re-run each requirement's verification and write evidence, then `projtruth report`
 
 # Current work
@@ -48,7 +48,7 @@ task alive across context resets.
   in `guide`.
 - v1.0.0: plan artifact with milestone progress, `lifecycle init`, thread
   structure checks, compaction cadence.
-- 71 tests; 10 requirements verified; 7/7 stages on t
+- 71 tests; 10 requirements verified; 7/7 stages on this r
 ```
 
 ```
@@ -62,16 +62,17 @@ $ python -m lifecycle status   # exit 0
 | 1 | Spec | **PASS** | What exactly is promised, in a way a stranger can check? |
 | 2 | Design | **PASS** | How is it built, and why this way? |
 | 3 | Build | **PASS** | Does the code and its tests exist? |
-| 4 | Verify | **FAIL** | 2 requirement(s) not verified: R11, R12 |
+| 4 | Verify | **FAIL** | 1 requirement(s) not verified: R12 |
 | 5 | Release | **PASS** | Is there a version, a changelog and a tag? |
 | 6 | Sustain | **PASS** | Does the work survive a context reset, and is it summarised? |
 
 ## Blocked
 **Stage 4 Verify**
-- evidence: 2 requirement(s) not verified: R11, R12
+- evidence: 1 requirement(s) not verified: R12
   - re-run each requirement's verification and write evidence, then `projtruth report`
 
-
+## Next
+St
 ```
 
 measured
